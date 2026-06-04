@@ -427,9 +427,6 @@ const Clients = () => {
         </div>
         <div className="topbar-spacer"></div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="topbar-btn secondary" style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid var(--border)', color: '#0f172a', fontSize: '14px', fontWeight: 700 }}>
-            <span style={{ fontSize: '16px' }}>📋</span> Client Form
-          </button>
           <button className="topbar-btn" onClick={openAddClient} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Plus size={14} /> Add Client
           </button>
@@ -456,7 +453,7 @@ const Clients = () => {
                 onClick={() => setActiveTab(tab)}
                 style={{
                   padding: '8px 20px',
-                  background: activeTab === tab ? 'var(--blue)' : '#fff',
+                  background: activeTab === tab ? 'var(--blue)' : 'var(--card)',
                   color: activeTab === tab ? '#fff' : 'var(--text-light)',
                   border: activeTab === tab ? 'none' : '1px solid var(--border)',
                   borderRadius: '24px',
@@ -518,10 +515,10 @@ const Clients = () => {
               gap: '12px',
               borderBottom: '1px solid var(--border)',
               flexWrap: 'wrap',
-              background: '#f8fafc'
+              background: 'transparent'
             }}
           >
-            <div className="search-input" style={{ flex: 1, minWidth: '240px', background: '#fff' }}>
+            <div className="search-input" style={{ flex: 1, minWidth: '240px', background: 'var(--card)' }}>
               <Search size={16} color="var(--text-light)" />
               <input
                 type="text"
@@ -533,7 +530,7 @@ const Clients = () => {
             </div>
             <select
               className="form-select"
-              style={{ width: '130px', background: '#fff' }}
+              style={{ width: '130px', background: 'var(--card)', color: 'var(--text)' }}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -543,7 +540,7 @@ const Clients = () => {
             </select>
             <select
               className="form-select"
-              style={{ width: '150px', background: '#fff' }}
+              style={{ width: '150px', background: 'var(--card)', color: 'var(--text)' }}
               value={serviceTypeFilter}
               onChange={(e) => setServiceTypeFilter(e.target.value)}
             >
@@ -555,7 +552,7 @@ const Clients = () => {
             </select>
             <select
               className="form-select"
-              style={{ width: '140px', background: '#fff' }}
+              style={{ width: '140px', background: 'var(--card)', color: 'var(--text)' }}
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
             >
@@ -563,7 +560,7 @@ const Clients = () => {
               <option value="Claim">Claim</option>
               <option value="Service">Service</option>
             </select>
-            <div className="export-btn" onClick={handleExport} style={{ background: '#fff' }}>
+            <div className="export-btn" onClick={handleExport} style={{ background: 'var(--card)', color: 'var(--text)' }}>
               <Download size={14} /> Export CSV
             </div>
           </div>

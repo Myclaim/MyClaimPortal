@@ -91,7 +91,7 @@ const EmployeeProfile = () => {
       setStats(statsRes.data);
       setFormData(prev => ({ ...prev, email: p.email || '', phone: p.phone || '' }));
       if (p.profilePicture) {
-        setAvatarPreview(`https://myclaimportal.onrender.com${p.profilePicture}`);
+        setAvatarPreview(`http://localhost:5005${p.profilePicture}`);
       }
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -156,7 +156,7 @@ const EmployeeProfile = () => {
       
       setProfile(data);
       if (data.profilePicture) {
-        setAvatarPreview(`https://myclaimportal.onrender.com${data.profilePicture}`);
+        setAvatarPreview(`http://localhost:5005${data.profilePicture}`);
       }
       
       // Clear password fields on success

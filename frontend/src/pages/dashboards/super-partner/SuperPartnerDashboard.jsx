@@ -262,10 +262,10 @@ const OverviewModule = ({ setPage }) => {
       try {
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
         const [leadsRes, usersRes, ticketsRes, activityRes] = await Promise.all([
-          axios.get('https://myclaimportal.onrender.com/api/leads', config),
-          axios.get('https://myclaimportal.onrender.com/api/users', config),
-          axios.get('https://myclaimportal.onrender.com/api/tickets', config),
-          axios.get('https://myclaimportal.onrender.com/api/activity', config)
+          axios.get('http://localhost:5005/api/leads', config),
+          axios.get('http://localhost:5005/api/users', config),
+          axios.get('http://localhost:5005/api/tickets', config),
+          axios.get('http://localhost:5005/api/activity', config)
         ]);
 
         const allUsers = usersRes.data;
@@ -564,7 +564,7 @@ const LeadsModule = () => {
     const fetchLeads = async () => {
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/leads', config);
+        const { data } = await axios.get('http://localhost:5005/api/leads', config);
         setRealLeads(data);
       } catch (error) {
         console.error('Failed to fetch leads', error);
@@ -916,7 +916,7 @@ const LeadsModule = () => {
                       source: 'Super Partner'
                     };
                     const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-                    const { data } = await axios.post('https://myclaimportal.onrender.com/api/leads', payload, config);
+                    const { data } = await axios.post('http://localhost:5005/api/leads', payload, config);
                     alert('Lead submitted successfully!');
                     setShowModal(false);
                     setForm({ priority: 'Medium' });
@@ -960,8 +960,8 @@ const PartnersModule = () => {
       try {
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
         const [usersRes, leadsRes] = await Promise.all([
-          axios.get('https://myclaimportal.onrender.com/api/users', config),
-          axios.get('https://myclaimportal.onrender.com/api/leads', config)
+          axios.get('http://localhost:5005/api/users', config),
+          axios.get('http://localhost:5005/api/leads', config)
         ]);
         
         const allPartners = usersRes.data.filter(u => u.role === 'partner' && u.parent_id === user?._id);
@@ -997,7 +997,7 @@ const PartnersModule = () => {
     const timer = setTimeout(async () => {
       try {
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/users', config);
+        const { data } = await axios.get('http://localhost:5005/api/users', config);
         const taken = data.some(u => u.username && u.username.toLowerCase() === value.trim().toLowerCase());
         setUsernameStatus(taken ? 'taken' : 'available');
       } catch {
@@ -1035,7 +1035,7 @@ const PartnersModule = () => {
         permissions: form.permissions || []
       };
       const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-      const { data } = await axios.post('https://myclaimportal.onrender.com/api/users', payload, config);
+      const { data } = await axios.post('http://localhost:5005/api/users', payload, config);
       setSuccessMsg(`✅ Partner "${data.name}" created successfully!`);
       const newPartnerFormatted = {
         ...data,
@@ -1070,7 +1070,7 @@ const PartnersModule = () => {
       const fetchDetails = async () => {
         try {
           const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-          const { data } = await axios.get('https://myclaimportal.onrender.com/api/leads', config);
+          const { data } = await axios.get('http://localhost:5005/api/leads', config);
           const filtered = data.filter(l => l.sourceUserId?._id === selected._id);
           setPartnerLeads(filtered.map(l => ({
             id: String(l._id).substring(0, 6).toUpperCase(),
@@ -1339,8 +1339,8 @@ const ClientsModule = () => {
         setLoading(true);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
         const [usersRes, ticketsRes] = await Promise.all([
-          axios.get('https://myclaimportal.onrender.com/api/users', config),
-          axios.get('https://myclaimportal.onrender.com/api/tickets', config)
+          axios.get('http://localhost:5005/api/users', config),
+          axios.get('http://localhost:5005/api/tickets', config)
         ]);
         
         const data = usersRes.data;
@@ -1506,8 +1506,8 @@ const TicketsModule = () => {
       const config = { headers: { Authorization: `Bearer ${user?.token}` } };
       
       const [usersRes, ticketsRes] = await Promise.all([
-        axios.get('https://myclaimportal.onrender.com/api/users', config),
-        axios.get('https://myclaimportal.onrender.com/api/tickets', config)
+        axios.get('http://localhost:5005/api/users', config),
+        axios.get('http://localhost:5005/api/tickets', config)
       ]);
 
       const allUsers = usersRes.data;
@@ -1571,7 +1571,7 @@ const TicketsModule = () => {
         notes: form.notes,
       };
 
-      await axios.post('https://myclaimportal.onrender.com/api/tickets', payload, config);
+      await axios.post('http://localhost:5005/api/tickets', payload, config);
       setShowModal(false);
       setForm({ client: '', service: '', notes: '' });
       fetchTicketsData();
@@ -1740,8 +1740,8 @@ const ActivityModule = () => {
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
         
         const [activityRes, usersRes] = await Promise.all([
-          axios.get('https://myclaimportal.onrender.com/api/activity', config),
-          axios.get('https://myclaimportal.onrender.com/api/users', config)
+          axios.get('http://localhost:5005/api/activity', config),
+          axios.get('http://localhost:5005/api/users', config)
         ]);
 
         const allUsers = usersRes.data;

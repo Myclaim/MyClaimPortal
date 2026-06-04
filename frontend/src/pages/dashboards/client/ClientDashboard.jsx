@@ -73,8 +73,8 @@ const ClientDashboard = ({ user }) => {
       const config = { headers: { Authorization: `Bearer ${user?.token}` } };
       // We fetch both tickets (for the services tab) and dashboard stats
       const [ticketRes, dashboardRes] = await Promise.all([
-        axios.get('https://myclaimportal.onrender.com/api/tickets', config),
-        axios.get('https://myclaimportal.onrender.com/api/dashboard/client', config)
+        axios.get('http://localhost:5005/api/tickets', config),
+        axios.get('http://localhost:5005/api/dashboard/client', config)
       ]);
       setTickets(ticketRes.data);
       setDashboardData(dashboardRes.data);
@@ -480,7 +480,7 @@ const ClientDashboard = ({ user }) => {
     const fetchNotifs = async () => {
       try {
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/notifications', config);
+        const { data } = await axios.get('http://localhost:5005/api/notifications', config);
         setNotifs(data.notifications || data || []);
         setErrorNotifs(null);
       } catch (err) {
@@ -495,7 +495,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setNotifs(notifs.map(n => n._id === id ? { ...n, isRead: true } : n)); // Optimistic UI
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        await axios.patch(`https://myclaimportal.onrender.com/api/notifications/${id}/read`, {}, config);
+        await axios.patch(`http://localhost:5005/api/notifications/${id}/read`, {}, config);
       } catch (err) {
         console.error(err);
       }
@@ -505,7 +505,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setNotifs(notifs.map(n => ({ ...n, isRead: true }))); // Optimistic UI
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        await axios.patch('https://myclaimportal.onrender.com/api/notifications/read-all', {}, config);
+        await axios.patch('http://localhost:5005/api/notifications/read-all', {}, config);
       } catch (err) {
         console.error(err);
       }
@@ -632,7 +632,7 @@ const ClientDashboard = ({ user }) => {
         setLoadingProfile(true);
         setErrorProfile(null);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/users/client/profile', config);
+        const { data } = await axios.get('http://localhost:5005/api/users/client/profile', config);
         setProfile(data);
         setPersonalForm({
           name: data.name || '',
@@ -657,7 +657,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setSubmittingPersonal(true);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        await axios.patch('https://myclaimportal.onrender.com/api/users/client/profile', personalForm, config);
+        await axios.patch('http://localhost:5005/api/users/client/profile', personalForm, config);
         alert('Personal information updated successfully!');
         setIsEditingPersonalInfo(false);
         fetchProfile(); // Refresh
@@ -681,7 +681,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setSubmittingPassword(true);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        await axios.patch('https://myclaimportal.onrender.com/api/users/client/profile', {
+        await axios.patch('http://localhost:5005/api/users/client/profile', {
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword
         }, config);
@@ -709,7 +709,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setUploadingPic(true);
         const config = { headers: { Authorization: `Bearer ${user?.token}`, 'Content-Type': 'multipart/form-data' } };
-        await axios.patch('https://myclaimportal.onrender.com/api/users/client/profile', formData, config);
+        await axios.patch('http://localhost:5005/api/users/client/profile', formData, config);
         alert('Profile picture updated!');
         fetchProfile();
       } catch (err) {
@@ -758,7 +758,7 @@ const ClientDashboard = ({ user }) => {
               <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 16px' }}>
                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: CL.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: CL.primary, fontSize: '40px', fontWeight: 800, overflow: 'hidden', border: `4px solid var(--bg)` }}>
                     {profile.profilePicture ? (
-                      <img src={`https://myclaimportal.onrender.com${profile.profilePicture}`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={`http://localhost:5005${profile.profilePicture}`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       profile.name?.substring(0,2).toUpperCase() || <UserCircle size={48} />
                     )}
@@ -956,7 +956,7 @@ const ClientDashboard = ({ user }) => {
         setErrorSupport(null);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
         // Fetch tickets with hubType = Support Hub
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/tickets?hubType=Support Hub', config);
+        const { data } = await axios.get('http://localhost:5005/api/tickets?hubType=Support Hub', config);
         setSupportTickets(data);
       } catch (err) {
         console.error('Failed to fetch support tickets', err);
@@ -971,7 +971,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setSubmittingSupport(true);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        await axios.post('https://myclaimportal.onrender.com/api/tickets', {
+        await axios.post('http://localhost:5005/api/tickets', {
           clientId: user?._id,
           hubType: 'Support Hub',
           subject: supportModal.subject,
@@ -1118,7 +1118,7 @@ const ClientDashboard = ({ user }) => {
         setLoadingDocs(true);
         setErrorDocs(null);
         const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/documents', config);
+        const { data } = await axios.get('http://localhost:5005/api/documents', config);
         setDocs(data);
       } catch (err) {
         console.error('Failed to fetch documents', err);
@@ -1141,7 +1141,7 @@ const ClientDashboard = ({ user }) => {
       try {
         setUploading(true);
         const config = { headers: { Authorization: `Bearer ${user?.token}`, 'Content-Type': 'multipart/form-data' } };
-        await axios.post('https://myclaimportal.onrender.com/api/documents/upload', formData, config);
+        await axios.post('http://localhost:5005/api/documents/upload', formData, config);
         alert('Document uploaded successfully!');
         fetchDocuments();
       } catch (err) {
@@ -1199,7 +1199,7 @@ const ClientDashboard = ({ user }) => {
                   
                   // Fix document URL path to include the backend host
                   const rawUrl = doc.fileUrl || doc.file_url || '';
-                  const fullUrl = rawUrl.startsWith('http') ? rawUrl : `https://myclaimportal.onrender.com${rawUrl}`;
+                  const fullUrl = rawUrl.startsWith('http') ? rawUrl : `http://localhost:5005${rawUrl}`;
                   
                   return (
                     <tr key={doc._id} style={{ borderBottom: '1px solid var(--border)' }}>
@@ -1264,7 +1264,7 @@ const ClientDashboard = ({ user }) => {
       const fetchDetails = async () => {
         try {
           const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-          const { data } = await axios.get(`https://myclaimportal.onrender.com/api/tickets/${ticketInfo._id}`, config);
+          const { data } = await axios.get(`http://localhost:5005/api/tickets/${ticketInfo._id}`, config);
           setDetails(data);
         } catch (err) {
           console.error('Failed to fetch details', err);
@@ -1420,7 +1420,7 @@ const ClientDashboard = ({ user }) => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                      {documents && documents.length > 0 ? documents.map(doc => {
                        const rawUrl = doc.fileUrl || doc.file_url || '';
-                       const fullUrl = rawUrl.startsWith('http') ? rawUrl : `https://myclaimportal.onrender.com${rawUrl}`;
+                       const fullUrl = rawUrl.startsWith('http') ? rawUrl : `http://localhost:5005${rawUrl}`;
                        return (
                        <div key={doc._id} style={{ padding: '12px', background: 'var(--bg)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--border)' }}>
                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
@@ -1466,7 +1466,7 @@ const ClientDashboard = ({ user }) => {
       const fetchProgress = async () => {
         try {
           const config = { headers: { Authorization: `Bearer ${user?.token}` } };
-          const promises = activeTickets.map(t => axios.get(`https://myclaimportal.onrender.com/api/tickets/${t._id}`, config));
+          const promises = activeTickets.map(t => axios.get(`http://localhost:5005/api/tickets/${t._id}`, config));
           const results = await Promise.all(promises);
           
           const newProgressData = {};

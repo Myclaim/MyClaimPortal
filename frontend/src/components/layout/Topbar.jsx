@@ -21,7 +21,7 @@ const Topbar = ({ title }) => {
 
   useEffect(() => {
     fetchLogs();
-    const socket = io('https://myclaimportal.onrender.com');
+    const socket = io('http://localhost:5005');
     socket.on('activity_created', () => {
       setUnreadCount(prev => prev + 1);
       fetchLogs();
