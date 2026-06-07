@@ -98,6 +98,11 @@ const TicketCard = ({ ticket: t, color, onOpen }) => (
           : <div style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>Unassigned</div>
         }
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, margin: '0 12px' }}>
+        <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+          <div style={{ width: `${t.progress || 0}%`, height: '100%', background: color, borderRadius: 10 }} />
+        </div>
+      </div>
       <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
         <Clock size={10} /> {fmt(t.dueDate)}
       </div>
@@ -209,9 +214,18 @@ const AdminTicketManagement = () => {
     try {
       const { data } = await api.patch(`/tickets/${activePanel._id}/status`, { status: newStatus });
       setTickets(prev => prev.map(t => t._id === data._id ? { ...t, ...data } : t));
-      setActivePanel(prev => ({ ...prev, status: newStatus }));
+      setActivePanel(prev => ({ ...prev, status: data.status, progress: data.progress }));
     } catch (e) { alert(e.response?.data?.message || 'Failed to change status'); }
     finally { setChangingStatus(false); }
+  };
+
+  const handleProgressChange = async (newProgress) => {
+    if (!activePanel) return;
+    try {
+      const { data } = await api.patch(`/tickets/${activePanel._id}/status`, { progress: newProgress });
+      setTickets(prev => prev.map(t => t._id === data._id ? { ...t, progress: data.progress } : t));
+      setActivePanel(prev => ({ ...prev, progress: data.progress }));
+    } catch (e) { alert(e.response?.data?.message || 'Failed to update progress'); }
   };
 
   const handleAssign = async (empId) => {
@@ -323,6 +337,14 @@ const AdminTicketManagement = () => {
       </td>
       <td>{t.client?.name || '—'}</td>
       <td><StatusBadge status={t.status} /></td>
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 40, height: 6, background: 'var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+            <div style={{ width: `${t.progress || 0}%`, height: '100%', background: 'var(--blue)', borderRadius: 10 }} />
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>{t.progress || 0}%</span>
+        </div>
+      </td>
       <td><PriBadge priority={t.priority} /></td>
       <td style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>
         {t.assignedTo?.name || <span style={{ color: '#ef4444', fontWeight: 700 }}>Unassigned</span>}
@@ -418,6 +440,21 @@ const AdminTicketManagement = () => {
                         <Icon size={12} /> {label}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Update progress */}
+                <div style={{ marginTop: 22 }}>
+                  <div className="atm-section-label">UPDATE PROGRESS</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <input 
+                      type="range" 
+                      min="0" max="100" step="5" 
+                      value={t.progress || 0}
+                      onChange={e => handleProgressChange(Number(e.target.value))}
+                      style={{ flex: 1, accentColor: 'var(--accent-green)' }}
+                    />
+                    <div style={{ fontSize: 13, fontWeight: 800, width: '40px', textAlign: 'right', color: 'var(--blue)' }}>{t.progress || 0}%</div>
                   </div>
                 </div>
 
@@ -655,7 +692,7 @@ const AdminTicketManagement = () => {
                       <table className="atm-table">
                         <thead>
                           <tr>
-                            <th>ID</th><th>Service</th><th>Client</th><th>Status</th><th>Priority</th><th>Assigned To</th><th>Due</th><th></th>
+                            <th>ID</th><th>Service</th><th>Client</th><th>Status</th><th>Progress</th><th>Priority</th><th>Assigned To</th><th>Due</th><th></th>
                           </tr>
                         </thead>
                         <tbody>

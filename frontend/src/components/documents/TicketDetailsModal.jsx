@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Upload, MessageSquare, Send, Clock, User as UserIcon } from 'lucide-react';
+import { X, Upload, MessageSquare, Send, Clock, User as UserIcon, Activity } from 'lucide-react';
 import api from '../../services/api';
+import useAuth from '../../hooks/useAuth';
 import DocumentList from './DocumentList';
 import DocumentUploadModal from './DocumentUploadModal';
 
 const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
+  const { user } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [updatingProgress, setUpdatingProgress] = useState(false);
 
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -18,6 +22,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
     if (isOpen && ticket) {
       fetchDocuments();
       setComments(ticket.comments || []);
+      setProgress(ticket.progress || 0);
     }
   }, [isOpen, ticket]);
 
@@ -34,6 +39,18 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
       console.error('Error fetching ticket docs', err);
     } finally {
       setLoadingDocs(false);
+    }
+  };
+
+  const handleUpdateProgress = async () => {
+    setUpdatingProgress(true);
+    try {
+      const endpoint = user?.role === 'employee' ? `/tickets/${ticket._id}/employee/status` : `/tickets/${ticket._id}/status`;
+      await api.patch(endpoint, { progress });
+    } catch (err) {
+      console.error('Failed to update progress', err);
+    } finally {
+      setUpdatingProgress(false);
     }
   };
 
@@ -97,6 +114,31 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
                   <div style={{ fontSize: '11px', color: 'var(--text-light)' }}>Notes</div>
                   <div style={{ fontSize: '13px', lineHeight: 1.5 }}>{ticket?.notes || 'No notes provided.'}</div>
                 </div>
+
+                {['admin', 'super_admin', 'employee'].includes(user?.role) && (
+                  <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: 600 }}>Update Progress</div>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>{progress}%</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input 
+                        type="range" 
+                        min="0" max="100" step="5" 
+                        value={progress} 
+                        onChange={e => setProgress(Number(e.target.value))}
+                        style={{ flex: 1, accentColor: 'var(--blue)' }}
+                      />
+                      <button 
+                        onClick={handleUpdateProgress} 
+                        disabled={updatingProgress || progress === ticket?.progress}
+                        style={{ padding: '4px 10px', fontSize: '11px', background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '6px', cursor: (updatingProgress || progress === ticket?.progress) ? 'not-allowed' : 'pointer', opacity: (updatingProgress || progress === ticket?.progress) ? 0.6 : 1 }}
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

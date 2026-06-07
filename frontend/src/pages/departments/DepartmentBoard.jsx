@@ -121,70 +121,70 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
       <style>{`
         /* ✨ Fintech Theme for Dept Board */
         .db-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-        .db-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
-        .db-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
+        .db-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .db-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
         
-        .db-btn-primary { background: linear-gradient(135deg, #059669, var(--accent-green)); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .db-btn-primary { background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
         .db-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4); }
         
-        .db-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--glass-border); margin-bottom: 24px; }
-        .db-tab { padding: 12px 0; font-size: 14px; font-weight: 700; color: var(--text-secondary); cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; transition: 0.2s; border-bottom: 2px solid transparent; }
-        .db-tab:hover { color: var(--text-primary); }
-        .db-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
-        .db-tab-count { font-size: 11px; font-weight: 800; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px; }
-        .db-tab.active .db-tab-count { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .db-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+        .db-tab { padding: 12px 0; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; transition: 0.2s; border-bottom: 2px solid transparent; }
+        .db-tab:hover { color: var(--text); }
+        .db-tab.active { color: var(--green); border-bottom-color: var(--green); }
+        .db-tab-count { font-size: 11px; font-weight: 800; background: var(--border); padding: 2px 8px; border-radius: 12px; }
+        .db-tab.active .db-tab-count { background: rgba(16, 185, 129, 0.15); color: var(--green); }
         
         .db-toolbar { display: flex; gap: 16px; margin-bottom: 24px; }
-        .db-search { flex: 1; position: relative; background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 10px; display: flex; align-items: center; }
-        .db-search input { width: 100%; background: transparent; border: none; padding: 12px 16px 12px 42px; color: var(--text-primary); font-size: 14px; outline: none; }
-        .db-search svg { position: absolute; left: 14px; color: var(--muted); }
+        .db-search { flex: 1; position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; }
+        .db-search input { width: 100%; background: transparent; border: none; padding: 12px 16px 12px 42px; color: var(--text); font-size: 14px; outline: none; }
+        .db-search svg { position: absolute; left: 14px; color: var(--text-light); }
         
-        .db-select { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 0 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 160px; }
+        .db-select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 0 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 160px; }
         
-        .db-table-wrap { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .db-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
         .db-table { width: 100%; border-collapse: collapse; }
-        .db-table th { text-align: left; padding: 16px 24px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); background: rgba(13, 19, 38, 0.4); }
-        .db-table td { padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text-primary); font-size: 13.5px; font-weight: 600; }
+        .db-table th { text-align: left; padding: 16px 24px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); background: var(--bg); }
+        .db-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 13.5px; font-weight: 600; }
         .db-table tr:last-child td { border-bottom: none; }
-        .db-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .db-table tr:hover td { background: var(--sidebar-hover); }
         
         .db-pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
-        .db-pill.blue { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .db-pill.blue { background: rgba(16, 185, 129, 0.15); color: var(--green); }
         .db-pill.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
         
-        .db-toggle { position: relative; width: 44px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: 0.3s; }
-        .db-toggle.active { background: var(--accent-green); }
-        .db-toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .db-toggle { position: relative; width: 44px; height: 24px; background: var(--border); border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .db-toggle.active { background: var(--green); }
+        .db-toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
         .db-toggle.active::after { transform: translateX(20px); }
         
         .db-actions { display: flex; gap: 8px; }
-        .db-action-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; transition: 0.2s; }
-        .db-action-icon:hover { border-color: var(--accent-green); color: var(--accent-green); background: rgba(16, 185, 129, 0.1); }
+        .db-action-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .db-action-icon:hover { border-color: var(--green); color: var(--green); background: rgba(16, 185, 129, 0.1); }
         
         /* Service Details View */
         .db-details-header { display: flex; justify-content: space-between; align-items: flex-start; margin: 24px 0; }
         .db-icon-box { width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 24px; }
         
         .db-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-        .db-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
-        .db-card-title { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 20px; }
+        .db-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .db-card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 20px; }
         
-        .db-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .db-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .db-row:last-child { border-bottom: none; }
-        .db-label { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
-        .db-value { color: var(--text-primary); font-size: 13.5px; font-weight: 700; text-align: right; max-width: 60%; }
+        .db-label { color: var(--text-muted); font-size: 13px; font-weight: 500; }
+        .db-value { color: var(--text); font-size: 13.5px; font-weight: 700; text-align: right; max-width: 60%; }
         
-        .db-stage { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 8px; }
-        .db-stage-num { width: 24px; height: 24px; background: var(--accent-green); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+        .db-stage { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--sidebar-hover); border-radius: 10px; margin-bottom: 8px; }
+        .db-stage-num { width: 24px; height: 24px; background: var(--green); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
         
         /* Modal */
         .db-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .db-modal { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .db-modal-header { padding: 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+        .db-modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .db-modal-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .db-modal-body { padding: 24px; }
-        .db-modal-footer { padding: 24px; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end; gap: 12px; }
-        .db-input { width: 100%; background: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px 14px; color: var(--text-primary); font-size: 14px; outline: none; margin-top: 6px; font-family: inherit; }
-        .db-input:focus { border-color: var(--accent-green); }
+        .db-modal-footer { padding: 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+        .db-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; margin-top: 6px; font-family: inherit; }
+        .db-input:focus { border-color: var(--green); }
       `}</style>
 
       {/* Main View */}
@@ -231,10 +231,10 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                   <tr key={service.id}>
                     <td>
                       <div style={{ fontWeight: 800 }}>{service.name}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, fontFamily: 'monospace' }}>{service.code}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'monospace' }}>{service.code}</div>
                     </td>
                     <td><span className="db-pill blue">{service.category}</span></td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{service.subCategory}</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{service.subCategory}</td>
                     <td style={{ fontWeight: 800 }}>₹{service.price.toLocaleString('en-IN')}</td>
                     <td><span className="db-pill purple">{service.stages} stages</span></td>
                     <td>
@@ -255,7 +255,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                 ))}
                 {filteredServices.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No services found for this hub.</td>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No services found for this hub.</td>
                   </tr>
                 )}
               </tbody>
@@ -268,7 +268,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
       {activeService && (
         <div className="animate-fade-in">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', color: 'var(--text-primary)', fontWeight: 700, fontSize: 13, cursor: 'pointer', width: 'fit-content' }} onClick={closeView}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', color: 'var(--text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', width: 'fit-content' }} onClick={closeView}>
               <ArrowLeft size={16} /> Back to List
             </div>
             <div className="db-search" style={{ maxWidth: '300px', margin: 0 }}>
@@ -281,8 +281,8 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
               <div className="db-icon-box">{activeTab === 'service' ? '🔧' : '⚖️'}</div>
               <div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{activeService.name}</h2>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 4 }}>{activeService.code}</div>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>{activeService.name}</h2>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 4 }}>{activeService.code}</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -290,7 +290,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
               {activeService.status ? (
                  <span style={{ fontSize: 12, fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 6, height: 6, background: '#10b981', borderRadius: '50%' }}></span> Active</span>
               ) : (
-                 <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 6, height: 6, background: 'var(--text-secondary)', borderRadius: '50%' }}></span> Inactive</span>
+                 <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 6, height: 6, background: 'var(--text-muted)', borderRadius: '50%' }}></span> Inactive</span>
               )}
               <button className="db-btn-primary" onClick={() => openEdit(activeService)}><Edit2 size={14} /> Edit</button>
               <button className="db-btn-primary" style={{ background: '#3b82f6', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }} onClick={() => {
@@ -327,7 +327,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                 <div className="db-card-title">Pricing</div>
                 <div className="db-row" style={{ border: 'none', padding: 0 }}>
                   <span className="db-label">Base Price</span>
-                  <span className="db-value" style={{ color: 'var(--accent-green)', fontSize: 18 }}>₹{activeService.price.toLocaleString('en-IN')}</span>
+                  <span className="db-value" style={{ color: 'var(--green)', fontSize: 18 }}>₹{activeService.price.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
@@ -336,7 +336,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                 {activeService.tracking?.map((stage, idx) => (
                   <div className="db-stage" key={idx}>
                     <div className="db-stage-num">{idx + 1}</div> 
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>{stage}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{stage}</span>
                   </div>
                 ))}
               </div>
@@ -350,37 +350,37 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
         <div className="db-modal-overlay" onClick={() => { setIsEditing(false); setIsAdding(false); }}>
           <div className="db-modal" onClick={e => e.stopPropagation()}>
             <div className="db-modal-header">
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{isAdding ? 'Add New Service' : `Edit — ${editForm.name}`}</h2>
-              <button style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: 8, color: 'var(--text-primary)', cursor: 'pointer' }} onClick={() => { setIsEditing(false); setIsAdding(false); }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: 0 }}>{isAdding ? 'Add New Service' : `Edit — ${editForm.name}`}</h2>
+              <button style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', cursor: 'pointer' }} onClick={() => { setIsEditing(false); setIsAdding(false); }}>
                 <X size={16} />
               </button>
             </div>
             <div className="db-modal-body">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Service Name</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Service Name</div>
                   <input type="text" className="db-input" placeholder="e.g. IEPF Claim Recovery" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Service Code</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Service Code</div>
                   <input type="text" className="db-input" placeholder="e.g. CLM-IEPF-001" value={editForm.code} onChange={e => setEditForm({...editForm, code: e.target.value})} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Category</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Category</div>
                   <input type="text" className="db-input" placeholder="e.g. Physical Shares" value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Sub Category</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Sub Category</div>
                   <input type="text" className="db-input" placeholder="e.g. IEPF Authority" value={editForm.subCategory} onChange={e => setEditForm({...editForm, subCategory: e.target.value})} />
                 </div>
               </div>
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Description</div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Description</div>
                 <textarea className="db-input" placeholder="Service description..." style={{ height: 80, resize: 'vertical' }} value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})}></textarea>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Mapped Store</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Mapped Store</div>
                   <select className="db-input" value={editForm.mappedStore || 'All Stores'} onChange={e => setEditForm({...editForm, mappedStore: e.target.value})}>
                     <option value="All Stores">All Stores</option>
                     <option value="Store A">Store A</option>
@@ -389,13 +389,13 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                   </select>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Base Price (₹)</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Base Price (₹)</div>
                   <input type="number" className="db-input" placeholder="e.g. 2499" value={editForm.price || ''} onChange={e => setEditForm({...editForm, price: Number(e.target.value)})} />
                 </div>
               </div>
             </div>
             <div className="db-modal-footer">
-              <button style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }} onClick={() => { setIsEditing(false); setIsAdding(false); }}>Cancel</button>
+              <button style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }} onClick={() => { setIsEditing(false); setIsAdding(false); }}>Cancel</button>
               <button className="db-btn-primary" onClick={handleSaveEdit}>Save Service</button>
             </div>
           </div>

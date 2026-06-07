@@ -92,7 +92,7 @@ const Activity = () => {
         .timeline-dot { width: 44px; height: 44px; border-radius: 50%; background: var(--card); border: 2px solid #22c55e; display: flex; align-items: center; justify-content: center; z-index: 2; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.1); }
         .log-item:hover .timeline-dot { transform: scale(1.1); box-shadow: 0 6px 15px rgba(34, 197, 94, 0.2); border-color: #4ade80; }
         
-        .premium-gradient { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); }
+        .premium-gradient { background: linear-gradient(135deg, var(--green) 0%, #22c55e 100%); }
       `}</style>
 
       <div className="topbar">
@@ -121,7 +121,7 @@ const Activity = () => {
             <div style={{ position: 'absolute', right: '-20px', top: '-10px', opacity: 0.05 }}><ActivityIcon size={120} /></div>
             <div className="stat-label">Log Volume</div>
             <div className="stat-value" style={{ margin: '12px 0' }}>{logs.length} <span style={{ fontSize: '16px', fontWeight: 600, color: '#94a3b8' }}>Total Items</span></div>
-            <div style={{ fontSize: '12px', color: '#15803d', fontWeight: 700 }}>↑ 14% growth this week</div>
+            <div style={{ fontSize: '12px', color: 'var(--blue)', fontWeight: 700 }}>↑ 14% growth this week</div>
           </div>
         </div>
 
@@ -152,10 +152,10 @@ const Activity = () => {
                     fontWeight: 700, 
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    background: filter === r ? '#16a34a' : 'transparent',
-                    color: filter === r ? '#fff' : 'var(--text-muted)',
+                    background: filter === r ? 'var(--blue)' : 'var(--card)',
+                    color: filter === r ? '#fff' : 'var(--text)',
                     border: '1px solid',
-                    borderColor: filter === r ? '#16a34a' : 'var(--border)',
+                    borderColor: filter === r ? 'var(--blue)' : 'var(--border)',
                   }}
                 >
                   {r.toUpperCase()}
@@ -169,7 +169,7 @@ const Activity = () => {
             
             {loading ? (
               <div style={{ padding: '40px', textAlign: 'center' }}>
-                <div style={{ width: '40px', height: '40px', border: '3px solid #f1f5f9', borderTopColor: '#15803d', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }}></div>
+                <div style={{ width: '40px', height: '40px', border: '3px solid #f1f5f9', borderTopColor: 'var(--blue)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }}></div>
                 <div style={{ marginTop: '16px', color: '#94a3b8', fontWeight: 600 }}>Analyzing trail hooks...</div>
               </div>
             ) : filteredLogs.length > 0 ? (
@@ -186,7 +186,7 @@ const Activity = () => {
                   }}
                 >
                   <div className="timeline-dot">
-                    <div style={{ color: '#15803d' }}>
+                    <div style={{ color: 'var(--blue)' }}>
                       {log.action.toLowerCase().includes('create') ? <Clock size={20} /> : 
                        log.action.toLowerCase().includes('delete') ? <ActivityIcon size={20} /> :
                        <ShieldCheck size={20} />}

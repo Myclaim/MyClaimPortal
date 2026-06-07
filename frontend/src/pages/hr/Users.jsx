@@ -511,7 +511,7 @@ const Users = () => {
             {title}
             <span className="section-count">{count}</span>
           </div>
-          <ChevronRight size={16} style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: '0.3s', color: 'var(--muted)' }} />
+          <ChevronRight size={16} style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: '0.3s', color: 'var(--text-light)' }} />
         </div>
         {!isCollapsed && <div className="animate-fade">{children}</div>}
       </div>
@@ -578,14 +578,14 @@ const Users = () => {
   };
 
   return (
-    <div className="um-page" style={{ background: 'var(--bg-primary)', minHeight: '100vh', padding: '24px 32px', color: 'var(--text-primary)', boxSizing: 'border-box', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div className="um-page" style={{ background: 'var(--bg)', minHeight: '100vh', padding: '24px 32px', color: 'var(--text)', boxSizing: 'border-box', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
       <style>{`
         /* ✨ Fintech Theme Overrides */
         .um-topbar { 
           display: flex; justify-content: space-between; align-items: center; 
-          margin-bottom: 32px; background: var(--card-bg); 
+          margin-bottom: 32px; background: var(--card); 
           padding: 20px 32px; border-radius: 24px; 
-          border: 1px solid var(--glass-border); 
+          border: 1px solid var(--border); 
           box-shadow: 0 8px 32px rgba(0,0,0,0.4);
           position: relative; overflow: hidden;
         }
@@ -597,15 +597,15 @@ const Users = () => {
         
         .um-title-wrap { display: flex; align-items: center; gap: 18px; }
         .um-icon-badge { 
-          width: 48px; height: 48px; background: var(--accent-green); 
+          width: 48px; height: 48px; background: var(--green); 
           border-radius: 14px; display: flex; align-items: center; 
-          justify-content: center; color: #000; 
+          justify-content: center; color: #ffffff; 
           border: 1px solid rgba(0, 0, 0, 0.1);
           box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
         }
         .um-title { 
           font-family: 'Syne', sans-serif; font-size: 1.6rem; 
-          font-weight: 800; color: var(--text-primary); 
+          font-weight: 800; color: var(--text); 
           letter-spacing: -0.02em; margin: 0;
         }
         
@@ -618,8 +618,8 @@ const Users = () => {
           font-family: inherit;
         }
         .btn-primary { 
-          background: linear-gradient(135deg, #0F9D58, #22C55E, #34D399);
-          color: #000; border: none;
+          background: linear-gradient(135deg, var(--green), var(--blue));
+          color: #ffffff; border: none;
           box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
         }
         .btn-primary:hover { 
@@ -628,54 +628,54 @@ const Users = () => {
           filter: brightness(1.1);
         }
         .btn-secondary { 
-          background: rgba(17, 24, 45, 0.5); 
-          color: var(--text-primary); 
-          border: 1px solid var(--glass-border);
+          background: var(--card); 
+          color: var(--text); 
+          border: 1px solid var(--border);
           backdrop-filter: blur(8px);
         }
         .btn-secondary:hover { 
           background: rgba(34, 197, 94, 0.05); 
-          border-color: var(--accent-green);
+          border-color: var(--green);
           box-shadow: 0 0 15px rgba(34, 197, 94, 0.1);
         }
 
         .um-toolbar { 
           display: flex; gap: 18px; margin-bottom: 32px; 
-          background: var(--bg-secondary); padding: 16px; 
-          border-radius: 20px; border: 1px solid var(--glass-border);
+          background: var(--card); padding: 16px; 
+          border-radius: 20px; border: 1px solid var(--border);
         }
         .um-search-wrap { flex: 1; position: relative; }
         .um-search-wrap svg { 
           position: absolute; left: 16px; top: 50%; 
-          transform: translateY(-50%); color: var(--muted); 
+          transform: translateY(-50%); color: var(--text-light); 
         }
         .um-search-input { 
-          width: 100%; height: 48px; background: var(--bg-primary); 
-          border: 1px solid var(--glass-border); border-radius: 12px; 
+          width: 100%; height: 48px; background: var(--bg); 
+          border: 1px solid var(--border); border-radius: 12px; 
           padding: 0 16px 0 48px; font-size: 14px; 
-          color: var(--text-primary); outline: none; 
+          color: var(--text); outline: none; 
           transition: all 0.3s ease; 
         }
         .um-search-input:focus { 
-          border-color: var(--accent-green); 
+          border-color: var(--green); 
           box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1); 
-          background: #000;
+          background: var(--bg);
         }
 
         .um-filter-select { 
-          height: 48px; background: var(--bg-primary); 
-          border: 1px solid var(--glass-border); border-radius: 12px; 
+          height: 48px; background: var(--bg); 
+          border: 1px solid var(--border); border-radius: 12px; 
           padding: 0 16px; font-size: 14px; font-weight: 600; 
-          color: var(--text-primary); outline: none; 
+          color: var(--text); outline: none; 
           cursor: pointer; transition: all 0.3s; 
         }
-        .um-filter-select:focus { border-color: var(--accent-green); }
+        .um-filter-select:focus { border-color: var(--green); }
 
         .um-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: start; }
         
         .fintech-section { 
-          background: var(--card-bg); border-radius: 24px; 
-          border: 1px solid var(--glass-border); 
+          background: var(--card); border-radius: 24px; 
+          border: 1px solid var(--border); 
           box-shadow: 0 4px 24px rgba(0,0,0,0.3); 
           margin-bottom: 32px; overflow: hidden;
           transition: all 0.3s ease;
@@ -685,20 +685,20 @@ const Users = () => {
           box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
         .fintech-section-header { 
-          padding: 20px 28px; background: rgba(13, 19, 38, 0.5); 
-          border-bottom: 1px solid var(--glass-border); 
+          padding: 20px 28px; background: var(--bg); 
+          border-bottom: 1px solid var(--border); 
           display: flex; justify-content: space-between; 
           align-items: center; cursor: pointer;
         }
         .section-title { 
-          font-size: 14px; font-weight: 700; color: var(--text-primary); 
+          font-size: 14px; font-weight: 700; color: var(--text); 
           letter-spacing: 0.05em; text-transform: uppercase; 
           display: flex; align-items: center; gap: 12px;
         }
-        .section-icon { color: var(--accent-green); }
+        .section-icon { color: var(--green); }
         .section-count { 
           font-size: 11px; font-weight: 800; background: rgba(34, 197, 94, 0.1); 
-          color: var(--accent-green); padding: 4px 10px; 
+          color: var(--green); padding: 4px 10px; 
           border-radius: 20px; border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
@@ -706,26 +706,26 @@ const Users = () => {
         .fintech-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .fintech-table th { 
           padding: 18px 28px; font-size: 11px; font-weight: 700; 
-          color: var(--text-secondary); text-transform: uppercase; 
-          letter-spacing: 1.5px; border-bottom: 1px solid var(--glass-border);
-          background: rgba(13, 19, 38, 0.3);
+          color: var(--text-muted); text-transform: uppercase; 
+          letter-spacing: 1.5px; border-bottom: 1px solid var(--border);
+          background: var(--bg);
         }
         .fintech-table td { 
           padding: 16px 28px; font-size: 14px; 
-          color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.03);
+          color: var(--text); border-bottom: 1px solid var(--border);
           transition: all 0.2s ease;
         }
         .fintech-table tr:hover td { 
-          background: rgba(34, 197, 94, 0.03); 
-          color: var(--accent-green);
+          background: var(--sidebar-hover); 
+          color: var(--green);
         }
         
         .user-info { display: flex; align-items: center; gap: 14px; }
         .user-avatar { 
           width: 38px; height: 38px; border-radius: 12px; 
-          background: var(--bg-secondary); border: 1px solid var(--glass-border); 
+          background: var(--card); border: 1px solid var(--border); 
           display: flex; align-items: center; justify-content: center; 
-          color: var(--accent-green); font-weight: 700; font-size: 14px;
+          color: var(--green); font-weight: 700; font-size: 14px;
           box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         
@@ -735,7 +735,7 @@ const Users = () => {
           font-weight: 700; text-transform: uppercase;
         }
         .status-active { 
-          background: rgba(34, 197, 94, 0.1); color: var(--neon-green); 
+          background: rgba(34, 197, 94, 0.1); color: var(--green); 
           border: 1px solid rgba(34, 197, 94, 0.2);
           box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
         }
@@ -747,12 +747,12 @@ const Users = () => {
         .action-btn-wrap { display: flex; gap: 10px; }
         .action-btn-circle { 
           width: 34px; height: 34px; border-radius: 10px; 
-          border: 1px solid var(--glass-border); background: var(--bg-primary); 
+          border: 1px solid var(--border); background: var(--bg); 
           display: flex; align-items: center; justify-content: center; 
-          color: var(--text-secondary); cursor: pointer; transition: all 0.3s; 
+          color: var(--text-muted); cursor: pointer; transition: all 0.3s; 
         }
         .action-btn-circle:hover { 
-          border-color: var(--accent-green); color: var(--accent-green); 
+          border-color: var(--green); color: var(--green); 
           background: rgba(34, 197, 94, 0.05); transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
@@ -760,40 +760,40 @@ const Users = () => {
         .right-panel-sticky { position: sticky; top: 24px; }
         .panel-label { 
           font-family: 'Syne', sans-serif; font-size: 12px; 
-          font-weight: 800; color: var(--accent-green); 
+          font-weight: 800; color: var(--green); 
           text-transform: uppercase; letter-spacing: 2px; 
           margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
         }
 
         /* 📋 Form Cards */
         .fintech-form-card {
-          background: var(--card-bg); border: 1px solid var(--glass-border);
+          background: var(--card); border: 1px solid var(--border);
           border-radius: 20px; padding: 20px; margin-bottom: 16px;
           cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative; overflow: hidden;
         }
         .fintech-form-card::after {
           content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-          background: var(--accent-green); opacity: 0; transition: 0.3s;
+          background: var(--green); opacity: 0; transition: 0.3s;
         }
         .fintech-form-card:hover {
           transform: translateX(6px);
           border-color: rgba(34, 197, 94, 0.3);
-          background: rgba(17, 24, 45, 0.8);
+          background: var(--sidebar-hover);
           box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         .fintech-form-card:hover::after { opacity: 1; }
 
         /* ➕ Create User Rectangle Button */
         .btn-create-rect {
-          background: linear-gradient(135deg, #0F9D58, #22C55E, #34D399);
+          background: linear-gradient(135deg, var(--green), var(--blue));
           border-radius: 18px;
           padding: 12px 24px;
           display: flex;
           align-items: center;
           gap: 14px;
           border: none;
-          color: #000;
+          color: #ffffff;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
@@ -820,7 +820,7 @@ const Users = () => {
           gap: 20px; margin-bottom: 32px;
         }
         .fintech-stat-card {
-          background: var(--card-bg); border: 1px solid var(--glass-border);
+          background: var(--card); border: 1px solid var(--border);
           border-radius: 20px; padding: 24px; position: relative;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
         }
@@ -830,46 +830,46 @@ const Users = () => {
           box-shadow: 0 12px 30px rgba(0,0,0,0.4);
         }
         .fintech-stat-card.active {
-          border-color: var(--accent-green);
-          background: rgba(34, 197, 94, 0.03);
+          border-color: var(--green);
+          background: var(--sidebar-hover);
           box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
         }
         .stat-icon-wrap {
           width: 42px; height: 42px; border-radius: 12px;
           display: flex; align-items: center; justify-content: center;
           margin-bottom: 16px; transition: 0.3s;
-          border: 1.5px solid var(--accent-green);
+          border: 1.5px solid var(--green);
           background: rgba(34, 197, 94, 0.05);
           box-shadow: 0 0 15px rgba(34, 197, 94, 0.1);
         }
         .fintech-stat-card:hover .stat-icon-wrap {
           transform: scale(1.1) rotate(-5deg);
         }
-        .stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
-        .stat-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+        .stat-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
 
         /* 🔄 Toggle Switch Styles */
         .va-toggle-wrap { 
           display: flex; align-items: center; justify-content: space-between; 
-          padding: 12px 16px; border: 1px solid var(--glass-border); 
-          border-radius: 12px; background: rgba(13, 19, 38, 0.3); 
+          padding: 12px 16px; border: 1px solid var(--border); 
+          border-radius: 12px; background: var(--sidebar-hover); 
           transition: all 0.3s ease;
         }
-        .va-toggle-wrap:hover { border-color: var(--accent-green); box-shadow: 0 0 15px rgba(34, 197, 94, 0.1); }
-        .va-toggle-label { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+        .va-toggle-wrap:hover { border-color: var(--green); box-shadow: 0 0 15px rgba(34, 197, 94, 0.1); }
+        .va-toggle-label { font-size: 12px; font-weight: 700; color: var(--text); }
         .va-toggle { 
           position: relative; width: 40px; height: 22px; appearance: none; 
           background: #1e293b; outline: none; border-radius: 20px; 
           transition: 0.3s; cursor: pointer; flex-shrink: 0; margin: 0; 
-          border: 1px solid var(--glass-border);
+          border: 1px solid var(--border);
         }
-        .va-toggle:checked { background: var(--accent-green); border-color: var(--accent-green); }
+        .va-toggle:checked { background: var(--green); border-color: var(--green); }
         .va-toggle::before { 
           content: ''; position: absolute; width: 16px; height: 16px; 
           border-radius: 50%; top: 2px; left: 2px; background: #fff; 
           transition: 0.3s; 
         }
-        .va-toggle:checked::before { transform: translateX(18px); background: #000; }
+        .va-toggle:checked::before { transform: translateX(18px); background: var(--sidebar-hover); }
 
         /* 🆕 Clean Light Modal Style for Create User */
         .clean-modal {
@@ -1007,13 +1007,13 @@ const Users = () => {
           <div className="um-icon-badge"><LayoutDashboard size={24} /></div>
           <div>
             <h1 className="um-title">User Management</h1>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500, marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, marginTop: 4 }}>
               System Users: <span className="fintech-gradient-text" style={{ fontWeight: 800, fontSize: 15 }}><CountUp value={allUsers.length} /></span>
             </div>
           </div>
         </div>
         <div className="um-actions">
-          <button className="fintech-btn" onClick={() => setShowAdvFilters(true)} style={{ background: 'var(--accent-green)', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 800 }}>
+          <button className="fintech-btn" onClick={() => setShowAdvFilters(true)} style={{ background: 'var(--green)', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 800 }}>
             <Settings size={18} /> Advanced Filters
           </button>
         </div>
@@ -1027,12 +1027,12 @@ const Users = () => {
             className={`fintech-stat-card ${roleFilter === card.filter ? 'active' : ''}`}
             onClick={() => setRoleFilter(card.filter)}
           >
-            <div className="stat-icon-wrap" style={{ background: card.iconBg, color: 'var(--accent-green)' }}>
+            <div className="stat-icon-wrap" style={{ background: card.iconBg, color: 'var(--green)' }}>
               {card.icon}
             </div>
             <div className="stat-value"><CountUp value={card.value} /></div>
             <div className="stat-label">{card.label}</div>
-            <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 800, color: 'var(--accent-green)', opacity: 0.6 }}>
+            <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 800, color: 'var(--green)', opacity: 0.6 }}>
               {Math.round((card.active / card.value) * 100 || 0)}% LIVE
             </div>
           </div>
@@ -1056,7 +1056,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'System User', 'Username', 'Email', 'Status', 'Actions']} 
                   rows={filteredSuperAdmins.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace', color: 'var(--accent-green)' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace', color: 'var(--green)' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
                       <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
                       <td>{u.username}</td>
                       <td>{u.email}</td>
@@ -1093,7 +1093,7 @@ const Users = () => {
                       <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
                       <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
                       <td>{u.department || 'General'}</td>
-                      <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{u.skills || '—'}</td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{u.skills || '—'}</td>
                       <td><StatusBadge status={u.is_active} /></td>
                       <td><ActionButtons user={u} /></td>
                     </tr>
@@ -1126,7 +1126,7 @@ const Users = () => {
                     <tr key={u._id}>
                       <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
                       <td><b>{u.companyName || u.name}</b></td>
-                      <td style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{allUsers.find(p => p._id === u.parent_id)?.name || 'Direct'}</td>
+                      <td style={{ color: 'var(--green)', fontWeight: 600 }}>{allUsers.find(p => p._id === u.parent_id)?.name || 'Direct'}</td>
                       <td>{u.email}</td>
                       <td><StatusBadge status={u.is_active} /></td>
                       <td><ActionButtons user={u} /></td>
@@ -1141,10 +1141,10 @@ const Users = () => {
                 <TableComponent headers={['ID', 'Client Name', 'Portfolio Manager', 'Relation', 'Status', 'Actions']} 
                   rows={filteredClients.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace', color: 'var(--accent-green)' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace', color: 'var(--green)' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
                       <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
                       <td>{allUsers.find(p => p._id === u.parent_id)?.name || '—'}</td>
-                      <td><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>{u.relation?.toUpperCase() || 'DIRECT'}</span></td>
+                      <td><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>{u.relation?.toUpperCase() || 'DIRECT'}</span></td>
                       <td><StatusBadge status={u.is_active} /></td>
                       <td><ActionButtons user={u} /></td>
                     </tr>
@@ -1161,7 +1161,7 @@ const Users = () => {
             <div className="panel-label">
               <ClipboardList size={16} /> Form Sections
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
               Quickly onboard new users via specialized forms.
             </div>
 
@@ -1169,7 +1169,7 @@ const Users = () => {
               <div key={idx} onClick={() => navigate(`/users/add?role=${card.role}`)} className="fintech-form-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ 
-                    width: '42px', height: '42px', background: 'var(--accent-green)', 
+                    width: '42px', height: '42px', background: 'var(--green)', 
                     borderRadius: '12px', display: 'flex', alignItems: 'center', 
                     justifyContent: 'center', border: '1px solid rgba(0, 0, 0, 0.1)',
                     boxShadow: '0 0 15px rgba(34, 197, 94, 0.2)',
@@ -1178,19 +1178,19 @@ const Users = () => {
                     {card.icon}
                   </div>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{card.label}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: 2 }}>{card.sub}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{card.label}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 2 }}>{card.sub}</div>
                   </div>
                 </div>
               </div>
             ))}
 
-            <div style={{ borderTop: '1px solid var(--glass-border)', margin: '24px 0' }}></div>
+            <div style={{ borderTop: '1px solid var(--border)', margin: '24px 0' }}></div>
             
             <div onClick={handleExport} className="fintech-form-card" style={{ background: 'rgba(34, 197, 94, 0.05)', borderColor: 'rgba(34, 197, 94, 0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ 
-                  width: '42px', height: '42px', background: 'var(--accent-green)', 
+                  width: '42px', height: '42px', background: 'var(--green)', 
                   borderRadius: '12px', display: 'flex', alignItems: 'center', 
                   justifyContent: 'center', border: '1px solid rgba(0, 0, 0, 0.1)',
                   boxShadow: '0 0 15px rgba(34, 197, 94, 0.2)',
@@ -1199,8 +1199,8 @@ const Users = () => {
                   <Download size={20} strokeWidth={2.5} color="#000" />
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Export CSV</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: 2 }}>Download all user records</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>Export CSV</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 2 }}>Download all user records</div>
                 </div>
               </div>
             </div>
@@ -1426,7 +1426,7 @@ const Users = () => {
               .va-btn.red-outline:hover { background: rgba(244, 63, 94, 0.1); }
               .va-btn.gray-outline { background: #111827; border: 1.5px solid #1e293b; color: #f8fafc; }
               .va-btn.gray-outline:hover { background: #1e293b; }
-              .va-btn.blue-solid { background: #22c55e; color: #000; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); }
+              .va-btn.blue-solid { background: #22c55e; color: var(--text); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); }
               .va-btn.blue-solid:hover { background: #16a34a; }
               .va-select { padding: 8px 12px; border: 1.5px solid #1e293b; border-radius: 8px; font-size: 13.5px; font-weight: 700; color: #f8fafc; background: #0a0f18; outline: none; cursor: pointer; font-family: inherit; }
               .va-select:focus { border-color: #22c55e; }
@@ -1502,24 +1502,24 @@ const Users = () => {
       {/* Addon: Advanced Filter Modal */}
       {showAdvFilters && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.2s' }}>
-          <div style={{ background: 'var(--card-bg)', width: '600px', borderRadius: '24px', border: '1px solid var(--glass-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-            <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34, 197, 94, 0.05)' }}>
+          <div style={{ background: 'var(--card)', width: '600px', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34, 197, 94, 0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000' }}>
                   <Settings size={20} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>Advanced User Filters</h3>
-                  <p style={{ margin: '4px 0 0 0', fontSize: 12, color: 'var(--muted)' }}>Apply global filters to the user management lists</p>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>Advanced User Filters</h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: 12, color: 'var(--text-light)' }}>Apply global filters to the user management lists</p>
                 </div>
               </div>
-              <button onClick={() => setShowAdvFilters(false)} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}><X size={24} /></button>
+              <button onClick={() => setShowAdvFilters(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-light)', cursor: 'pointer' }}><X size={24} /></button>
             </div>
             <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>User Role</label>
-                  <select className="um-filter-select" value={advFilters.role} onChange={e => setAdvFilters({...advFilters, role: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg-primary)' }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>User Role</label>
+                  <select className="um-filter-select" value={advFilters.role} onChange={e => setAdvFilters({...advFilters, role: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg)' }}>
                     <option value="">All Roles</option>
                     <option value="super_admin">Super Admin</option>
                     <option value="admin">Admin</option>
@@ -1530,8 +1530,8 @@ const Users = () => {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Status (Active/Inactive)</label>
-                  <select className="um-filter-select" value={advFilters.status} onChange={e => setAdvFilters({...advFilters, status: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg-primary)' }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Status (Active/Inactive)</label>
+                  <select className="um-filter-select" value={advFilters.status} onChange={e => setAdvFilters({...advFilters, status: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg)' }}>
                     <option value="">All Statuses</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -1540,15 +1540,15 @@ const Users = () => {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Store Location</label>
-                  <select className="um-filter-select" value={advFilters.store} onChange={e => setAdvFilters({...advFilters, store: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg-primary)' }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Store Location</label>
+                  <select className="um-filter-select" value={advFilters.store} onChange={e => setAdvFilters({...advFilters, store: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg)' }}>
                     <option value="">All Stores</option>
                     {uniqueStores.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Department</label>
-                  <select className="um-filter-select" value={advFilters.department} onChange={e => setAdvFilters({...advFilters, department: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg-primary)' }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Department</label>
+                  <select className="um-filter-select" value={advFilters.department} onChange={e => setAdvFilters({...advFilters, department: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg)' }}>
                     <option value="">All Departments</option>
                     {uniqueDepartments.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
@@ -1556,32 +1556,32 @@ const Users = () => {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Service Type</label>
-                  <select className="um-filter-select" value={advFilters.serviceType} onChange={e => setAdvFilters({...advFilters, serviceType: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg-primary)' }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Service Type</label>
+                  <select className="um-filter-select" value={advFilters.serviceType} onChange={e => setAdvFilters({...advFilters, serviceType: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg)' }}>
                     <option value="">All Services</option>
                     {uniqueServices.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Date From</label>
-                  <input type="date" className="um-search-input" value={advFilters.dateFrom} onChange={e => setAdvFilters({...advFilters, dateFrom: e.target.value})} style={{ width: '100%', height: '44px', paddingLeft: 16, paddingRight: 16, background: 'var(--bg-primary)' }} />
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Date From</label>
+                  <input type="date" className="um-search-input" value={advFilters.dateFrom} onChange={e => setAdvFilters({...advFilters, dateFrom: e.target.value})} style={{ width: '100%', height: '44px', paddingLeft: 16, paddingRight: 16, background: 'var(--bg)' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Date To</label>
-                  <input type="date" className="um-search-input" value={advFilters.dateTo} onChange={e => setAdvFilters({...advFilters, dateTo: e.target.value})} style={{ width: '100%', height: '44px', paddingLeft: 16, paddingRight: 16, background: 'var(--bg-primary)' }} />
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Date To</label>
+                  <input type="date" className="um-search-input" value={advFilters.dateTo} onChange={e => setAdvFilters({...advFilters, dateTo: e.target.value})} style={{ width: '100%', height: '44px', paddingLeft: 16, paddingRight: 16, background: 'var(--bg)' }} />
                 </div>
               </div>
             </div>
-            <div style={{ padding: '24px 32px', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '24px 32px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button 
                 onClick={() => setAdvFilters({ role: '', store: '', department: '', status: '', dateFrom: '', dateTo: '', serviceType: '' })}
-                style={{ background: 'transparent', border: '1px solid var(--border)', padding: '10px 20px', borderRadius: 8, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}
+                style={{ background: 'transparent', border: '1px solid var(--border)', padding: '10px 20px', borderRadius: 8, color: 'var(--text)', cursor: 'pointer', fontWeight: 600 }}
               >
                 Reset Filters
               </button>
               <button 
                 onClick={() => setShowAdvFilters(false)}
-                style={{ background: 'var(--accent-green)', border: 'none', padding: '10px 32px', borderRadius: 8, color: '#000', cursor: 'pointer', fontWeight: 700, display: 'flex', gap: 8, alignItems: 'center' }}
+                style={{ background: 'var(--green)', border: 'none', padding: '10px 32px', borderRadius: 8, color: '#000', cursor: 'pointer', fontWeight: 700, display: 'flex', gap: 8, alignItems: 'center' }}
               >
                 Apply Filters <CheckCircle size={16} />
               </button>

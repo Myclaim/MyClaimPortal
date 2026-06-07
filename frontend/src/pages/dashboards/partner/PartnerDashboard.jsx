@@ -775,8 +775,10 @@ function TicketsTab({ tickets: initialTickets = [], clients = [] }) {
         service: t.service,
         vertical: 'service', // default
         status: t.status === 'in_process' ? 'In Process' : t.status === 'completed' ? 'Completed' : 'Active',
+        progress: t.progress || 0,
         created: new Date(t.createdAt).toLocaleDateString('en-GB'),
-        lastUpdate: 'Recently updated'
+        lastUpdate: 'Recently updated',
+        rawTicket: t
       };
     }));
   }, [initialTickets, clients]);
@@ -865,7 +867,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [] }) {
           <thead>
             <tr>
               <th>Ticket ID</th><th>Client</th><th>Service</th>
-              <th>Vertical</th><th>Status</th><th>Created</th><th>Last Update</th><th>Actions</th>
+              <th>Vertical</th><th>Status</th><th>Progress</th><th>Created</th><th>Last Update</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -888,11 +890,19 @@ function TicketsTab({ tickets: initialTickets = [], clients = [] }) {
                 <td style={{ fontSize: 13, color: 'var(--text)' }}>{ticket.service}</td>
                 <td><ServiceBadge vertical={ticket.vertical} /></td>
                 <td><StatusBadge status={ticket.status} /></td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '40px', height: '6px', background: 'var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ width: `${ticket.progress}%`, height: '100%', background: 'var(--blue)', borderRadius: '10px' }} />
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{ticket.progress}%</span>
+                  </div>
+                </td>
                 <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{ticket.created}</td>
                 <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{ticket.lastUpdate}</td>
                 <td>
                   <div className="action-icons">
-                    <button type="button" className="action-icon" title="View" onClick={() => setSelectedTicket(ticket)} style={{ cursor: 'pointer' }}>
+                    <button type="button" className="action-icon" title="View" onClick={() => setSelectedTicket(ticket.rawTicket)} style={{ cursor: 'pointer' }}>
                       <Eye size={14} />
                     </button>
                   </div>

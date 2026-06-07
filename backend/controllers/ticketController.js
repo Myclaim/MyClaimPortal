@@ -145,11 +145,20 @@ const createTicket = async (req, res) => {
 };
 
 const updateTicketStatus = async (req, res) => {
-  const { status } = req.body;
+  const { status, progress } = req.body;
   const ticket = await Ticket.findById(req.params.id);
   if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
+  const oldStatus = ticket.status;
   ticket.status = status || ticket.status;
+  if (progress !== undefined) {
+    ticket.progress = progress;
+  }
+  if (ticket.status === 'completed' || ticket.status === 'closed') {
+    ticket.progress = 100;
+  } else if ((oldStatus === 'completed' || oldStatus === 'closed') && progress === undefined) {
+    ticket.progress = 0;
+  }
   const updated = await ticket.save();
 
   const Client = require('../models/client/Client');
@@ -176,7 +185,7 @@ const updateTicketStatus = async (req, res) => {
 };
 
 const updateEmployeeTicketStatus = async (req, res) => {
-  const { status } = req.body;
+  const { status, progress } = req.body;
   if (req.user.role !== 'employee') {
     return res.status(403).json({ message: 'Not authorized' });
   }
@@ -188,7 +197,16 @@ const updateEmployeeTicketStatus = async (req, res) => {
     return res.status(403).json({ message: 'Not authorized to update this ticket' });
   }
 
+  const oldStatus = ticket.status;
   ticket.status = status || ticket.status;
+  if (progress !== undefined) {
+    ticket.progress = progress;
+  }
+  if (ticket.status === 'completed' || ticket.status === 'closed') {
+    ticket.progress = 100;
+  } else if ((oldStatus === 'completed' || oldStatus === 'closed') && progress === undefined) {
+    ticket.progress = 0;
+  }
   const updated = await ticket.save();
 
   const Client = require('../models/client/Client');

@@ -315,26 +315,27 @@ const Tickets = () => {
         }
         .filter-btn:hover { border-color: var(--blue); background: var(--sidebar-hover); }
 
-        .status-toggle { display: flex; background: #0f172a; border-radius: 12px; padding: 6px; gap: 6px; }
+        .status-toggle { display: flex; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px; gap: 6px; }
         .status-toggle-btn {
           padding: 10px 18px; 
           font-size: 13px; 
           font-weight: 800; 
           border: none;
           background: transparent;
-          color: #f8fafc;
+          color: var(--text-muted);
           border-radius: 10px;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .status-toggle-btn:hover {
-          color: #10b981;
+          color: var(--blue);
           background: rgba(16, 185, 129, 0.05);
         }
         .status-toggle-btn.active { 
-          background: #1e293b; 
-          color: #10b981; 
-          box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+          background: var(--bg); 
+          color: var(--blue); 
+          border: 1px solid var(--border);
+          box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
         }
 
         .board-column {
@@ -366,7 +367,7 @@ const Tickets = () => {
         </div>
         <div className="topbar-spacer"></div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={handleExport} className="topbar-btn secondary" style={{ background: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}>
+          <button onClick={handleExport} className="topbar-btn secondary" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>
             <Download size={16} /> Export
           </button>
           <button className="topbar-btn" onClick={() => setShowModal(true)} style={{ background: 'var(--sidebar-active)', color: 'white', border: 'none' }}>
@@ -547,6 +548,7 @@ const Tickets = () => {
                 </th>
                 <th>Ticket ID</th>
                 <th>Status</th>
+                <th>Progress</th>
                 <th>Client Name</th>
                 <th>Phone</th>
                 <th>Email</th>
@@ -621,6 +623,14 @@ const Tickets = () => {
                         <option value="closed">Closed</option>
                       </select>
                       <ChevronDown size={12} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'currentColor', opacity: 0.7 }} />
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '40px', height: '6px', background: 'var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+                        <div style={{ width: `${t.progress || 0}%`, height: '100%', background: 'var(--blue)', borderRadius: '10px' }} />
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700 }}>{t.progress || 0}%</span>
                     </div>
                   </td>
                   <td>

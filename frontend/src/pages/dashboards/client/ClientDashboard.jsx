@@ -323,6 +323,14 @@ const ClientDashboard = ({ user }) => {
                    </div>
                  </div>
 
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 8px', marginTop: '4px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                   <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 0.5 }}>PROGRESS</div>
+                   <div style={{ flex: 1, height: '8px', background: 'var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+                     <div style={{ width: `${t.progress || 0}%`, height: '100%', background: 'var(--green)', borderRadius: '10px', transition: 'width 1s ease-in-out' }} />
+                   </div>
+                   <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text)' }}>{t.progress || 0}%</div>
+                 </div>
+
                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                    <button onClick={() => setSelectedTicket(t)} className="topbar-btn" style={{ flex: 1, padding: '10px', fontSize: '13px', borderRadius: '8px' }}>
                      <Eye size={16} style={{ marginRight: '6px' }} /> View Details
@@ -441,6 +449,14 @@ const ClientDashboard = ({ user }) => {
                      <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>Last Updated</div>
                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{new Date(t.updatedAt || t.createdAt).toLocaleDateString()}</div>
                    </div>
+                 </div>
+
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 8px', marginTop: '4px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                   <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 0.5 }}>PROGRESS</div>
+                   <div style={{ flex: 1, height: '8px', background: 'var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+                     <div style={{ width: `${t.progress || 0}%`, height: '100%', background: 'var(--blue)', borderRadius: '10px', transition: 'width 1s ease-in-out' }} />
+                   </div>
+                   <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text)' }}>{t.progress || 0}%</div>
                  </div>
 
                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>

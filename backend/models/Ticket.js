@@ -16,6 +16,7 @@ const ticketSchema = mongoose.Schema(
       enum: ['active', 'in_process', 'completed', 'closed'],
       default: 'active',
     },
+    progress: { type: Number, default: 0, min: 0, max: 100 },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     creatorRole: { type: String },
