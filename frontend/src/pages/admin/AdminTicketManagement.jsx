@@ -558,7 +558,7 @@ const AdminTicketManagement = () => {
                          <span>Uploaded by {doc.uploaded_by?.name || 'Unknown'} • {fmt(doc.createdAt)} • {doc.file_type?.toUpperCase()}</span>
                          <div style={{ display: 'flex', gap: 8 }}>
                            <button onClick={() => setPreviewDoc(doc)} style={{ background: 'none', border: 'none', color: 'var(--accent-green)', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>Preview</button>
-                           <a href={`http://localhost:5005${doc.file_url}`} download target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', textDecoration: 'none', fontWeight: 700 }}>Download</a>
+                           <a href={`https://myclaimportal.onrender.com${doc.file_url}`} download target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', textDecoration: 'none', fontWeight: 700 }}>Download</a>
                          </div>
                       </div>
                     </div>
@@ -723,11 +723,11 @@ const AdminTicketManagement = () => {
           </div>
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
             {previewDoc.file_type?.toLowerCase() === 'pdf' ? (
-              <iframe src={`http://localhost:5005${previewDoc.file_url}`} style={{ width: '100%', maxWidth: 900, height: '100%', border: 'none', background: '#fff', borderRadius: 12 }} title="PDF Preview" />
+              <iframe src={`https://myclaimportal.onrender.com${previewDoc.file_url}`} style={{ width: '100%', maxWidth: 900, height: '100%', border: 'none', background: '#fff', borderRadius: 12 }} title="PDF Preview" />
             ) : ['jpg', 'jpeg', 'png', 'webp'].includes((previewDoc.file_type || '').toLowerCase()) ? (
-              <img src={`http://localhost:5005${previewDoc.file_url}`} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }} />
+              <img src={`https://myclaimportal.onrender.com${previewDoc.file_url}`} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }} />
             ) : (
-               <div style={{ color: '#fff', fontSize: 14 }}>Preview not available for this file type. Please <a href={`http://localhost:5005${previewDoc.file_url}`} download style={{ color: 'var(--blue)' }}>download</a> to view.</div>
+               <div style={{ color: '#fff', fontSize: 14 }}>Preview not available for this file type. Please <a href={`https://myclaimportal.onrender.com${previewDoc.file_url}`} download style={{ color: 'var(--blue)' }}>download</a> to view.</div>
             )}
           </div>
         </div>

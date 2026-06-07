@@ -120,7 +120,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5005/api/tickets', {
+      const res = await fetch('https://myclaimportal.onrender.com/api/tickets', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (!res.ok) return;
@@ -177,7 +177,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
 
   useEffect(() => {
     fetchTickets();
-    const socket = io('http://localhost:5005');
+    const socket = io('https://myclaimportal.onrender.com');
     socket.on('ticket_created', fetchTickets);
     socket.on('ticket_updated', fetchTickets);
     socket.on('ticket_comment', fetchTickets);
@@ -195,7 +195,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
       if (status === 'Completed') backendStatus = 'completed';
       if (status === 'Blocked' || status === 'Waiting Client') backendStatus = 'closed'; // Fallback mapping
       
-      await fetch(`http://localhost:5005/api/tickets/${ticketId}/status`, {
+      await fetch(`https://myclaimportal.onrender.com/api/tickets/${ticketId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +254,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
     if (!newComment.trim() || !selectedTaskDetail) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5005/api/tickets/${selectedTaskDetail.id}/comments`, {
+      await fetch(`https://myclaimportal.onrender.com/api/tickets/${selectedTaskDetail.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ text: newComment })
@@ -268,7 +268,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
     if (!selectedTaskDetail) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5005/api/tickets/${selectedTaskDetail.id}/escalate`, {
+      await fetch(`https://myclaimportal.onrender.com/api/tickets/${selectedTaskDetail.id}/escalate`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({})
@@ -286,7 +286,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
       formData.append('files', e.target.files[i]);
     }
     try {
-      await fetch(`http://localhost:5005/api/tickets/${selectedTaskDetail.id}/attachments`, {
+      await fetch(`https://myclaimportal.onrender.com/api/tickets/${selectedTaskDetail.id}/attachments`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
