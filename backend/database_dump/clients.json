@@ -1,0 +1,102 @@
+[
+  {
+    "_id": "69d5eda117fad4b70e3f4382",
+    "email": "client@myclaim.com",
+    "__v": 0,
+    "createdAt": "2026-04-08T05:54:41.487Z",
+    "is_active": true,
+    "name": "Client User",
+    "password": "$2a$10$C.Tr9IU/5DkIMngy0pBAquslyidrnG1frHBypbOjqwBUsflsgcjnW",
+    "role": "client",
+    "updatedAt": "2026-04-08T05:54:41.487Z"
+  },
+  {
+    "_id": "69e12c16ece437b4a4b8ccf3",
+    "name": "Hello",
+    "email": "pratham010504@gmail.com",
+    "password": "$2a$10$1FLyvPMJc4F/ZSzWVDbrOu8TVND3RjkJFSnaYULcCGQWt6BqyiKmG",
+    "role": "client",
+    "phone": "223213313",
+    "parent_id": "69dcc823bd8d31ca047075d0",
+    "is_active": true,
+    "createdAt": "2026-04-16T18:36:06.924Z",
+    "updatedAt": "2026-04-16T18:36:06.924Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12c6b8fb93b2b60fa07bc",
+    "name": "honey",
+    "email": "client_69e12c5c@example.com",
+    "password": "$2a$10$jw8lloK39eVkvybWHRQ1SeEOpMwKe5io5XUC2fLOknpS2oynHlCrW",
+    "role": "client",
+    "phone": "+917774954741",
+    "parent_id": "69de8389c573a910cbb1d77f",
+    "is_active": true,
+    "createdAt": "2026-04-16T18:37:31.151Z",
+    "updatedAt": "2026-04-16T18:37:31.151Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e132c4114fab6a5ddbc86d",
+    "name": "jhjh",
+    "email": "client_69e12ec9@example.com",
+    "password": "$2a$10$2ticBjWitnCwfatVYVUzG.Acf0.tnBbipVHujB1JHXiA8aS.TpG0y",
+    "role": "client",
+    "phone": "575t7t8",
+    "parent_id": "69de8389c573a910cbb1d77f",
+    "is_active": true,
+    "createdAt": "2026-04-16T19:04:36.669Z",
+    "updatedAt": "2026-04-16T19:04:36.669Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e362314157da3cfed28e3e",
+    "name": "Om",
+    "email": "patil0105@gmail.com",
+    "username": "patil0105",
+    "password": "$2a$10$4VzZ4fiSuArvoSskWyPgJe3K7NSkBUWhasxm4FguvUawpXXFhcpoO",
+    "role": "client",
+    "is_active": true,
+    "createdAt": "2026-04-18T10:51:29.750Z",
+    "updatedAt": "2026-04-18T10:51:29.750Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e37d5d11ee92d8f5e3f2b4",
+    "name": "CL1",
+    "email": "patil05@gmail.com",
+    "username": "patil05",
+    "password": "$2a$10$kRjuK560axTqCM1LsXc2vuHT/QiYlDJSDeF7Vy4Oz9qW5J2C14BrO",
+    "role": "client",
+    "is_active": true,
+    "createdAt": "2026-04-18T12:47:25.539Z",
+    "updatedAt": "2026-04-18T12:47:25.539Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c3861f6f0db2b461e2fc",
+    "name": "Manas",
+    "email": "client_69e4c345@example.com",
+    "password": "$2a$10$ruW5GCC9wmA8uZIPq8SLhODignF27L7aqzV8j7HG/jRZg5095Xp8u",
+    "role": "client",
+    "phone": "34124131",
+    "parent_id": "69de8389c573a910cbb1d77f",
+    "is_active": true,
+    "createdAt": "2026-04-19T11:59:02.242Z",
+    "updatedAt": "2026-04-19T11:59:02.242Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c83749c24e95db1b93d5",
+    "name": "Prasad",
+    "email": "prasad5@gmail.com",
+    "password": "$2a$10$ks9XS7Tig1baFtNhRFPlje8iU2oe8Pk0qT9Nvu1FKIO5yKWVIj1da",
+    "role": "client",
+    "phone": "76868678",
+    "parent_id": "69de8389c573a910cbb1d77f",
+    "is_active": true,
+    "createdAt": "2026-04-19T12:19:03.981Z",
+    "updatedAt": "2026-04-19T12:24:24.731Z",
+    "__v": 0
+  }
+]
