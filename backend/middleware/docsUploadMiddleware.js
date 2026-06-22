@@ -39,20 +39,8 @@ const storage = multer.diskStorage({
   }
 });
 
-const fileFilter = (req, file, cb) => {
-  const allowed = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PDF, Word, and image files are allowed'), false);
-  }
-};
-
 const uploadDocs = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  storage
 });
 
 module.exports = uploadDocs;

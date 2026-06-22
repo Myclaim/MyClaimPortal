@@ -72,6 +72,8 @@ const clientSchema = mongoose.Schema({
     panNo: { type: String }
   }],
 
+  customFolders: [{ type: String }],
+
   parent_id: { type: mongoose.Schema.Types.ObjectId, index: true },
   client_id_ref: { type: String, unique: true, sparse: true },
   is_active: { type: Boolean, default: true }

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import DocumentUploadModal from '../../components/documents/DocumentUploadModal';
+import DocumentsView from '../../components/documents/DocumentsView';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
 import AddFamilyMemberModal from '../../components/forms/AddFamilyMemberModal';
 
@@ -182,12 +183,13 @@ const ClientProfile = () => {
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
         {activeTab === 'profile' && <ProfileView client={client} onEdit={(section) => { setEditSection(section); setIsEditModalOpen(true); }} />}
         {activeTab === 'overview' && <OverviewView client={client} claims={claims} tickets={tickets} documents={documents} />}
-        {activeTab === 'documents' && <DocumentsView documents={documents} onRefresh={fetchData} setIsUploadModalOpen={setIsUploadModalOpen} />}
+        {activeTab === 'documents' && <DocumentsView documents={documents} client={client} onRefresh={fetchData} setIsUploadModalOpen={setIsUploadModalOpen} />}
         {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} />}
         {activeTab === 'tickets' && <TicketsView tickets={tickets} />}
-        {!['profile', 'overview', 'documents', 'family', 'holders', 'claims', 'tickets'].includes(activeTab) && (
+        {activeTab === 'activity' && <ActivityView tickets={tickets} client={client} />}
+        {!['profile', 'overview', 'documents', 'family', 'holders', 'claims', 'tickets', 'activity'].includes(activeTab) && (
           <div style={{ textAlign: 'center', padding: '100px', color: '#94a3b8' }}>
             <Activity size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
             <div style={{ fontSize: '18px', fontWeight: 600 }}>{activeTab.toUpperCase()} View</div>
@@ -197,13 +199,7 @@ const ClientProfile = () => {
       </div>
 
       {/* 🏗️ UPLOAD MODAL */}
-      <DocumentUploadModal 
-        isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)} 
-        clientId={id}
-        linkedTo="client"
-        onUploadSuccess={fetchData}
-      />
+      {/* Upload Modal has been moved into DocumentsView.jsx so it has access to currentFolderId */}
 
       {/* 🎫 CREATE TICKET MODAL */}
       {isTicketModalOpen && (
@@ -424,44 +420,6 @@ const StatBox = ({ title, data, meta }) => (
     <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px', fontSize: '11px' }}>
        {meta.stage && <div><span style={{ color: '#94a3b8' }}>STATUS:</span> <b style={{ color: '#15803d' }}>{meta.stage}</b></div>}
        {meta.service && <div><span style={{ color: '#94a3b8' }}>SERVICE:</span> <b>{meta.service}</b></div>}
-    </div>
-  </div>
-);
-
-const DocumentsView = ({ documents, onRefresh, setIsUploadModalOpen }) => (
-  <div>
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900 }}>Client Documents</h3>
-      <button onClick={() => setIsUploadModalOpen(true)} style={{ padding: '10px 20px', background: '#2563eb', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 800, cursor: 'pointer', display: 'flex', gap: 6 }}><Upload size={16} /> Upload New</button>
-    </div>
-    
-    <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead style={{ background: '#f8fafc' }}>
-          <tr>
-            <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#64748b' }}>NAME</th>
-            <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#64748b' }}>CATEGORY</th>
-            <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#64748b' }}>DATE</th>
-            <th style={{ padding: '16px', textAlign: 'center', fontSize: '12px', color: '#64748b' }}>ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {documents.length > 0 ? documents.map(d => (
-            <tr key={d._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-              <td style={{ padding: '16px', fontWeight: 700 }}>{d.name}</td>
-              <td style={{ padding: '16px' }}><span style={{ fontSize: '10px', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px' }}>{d.doc_category || 'Primary'}</span></td>
-              <td style={{ padding: '16px', color: '#64748b' }}>{new Date(d.createdAt).toLocaleDateString()}</td>
-              <td style={{ padding: '16px' }}>
-                 <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                    <a href={`${api.defaults.baseURL}/documents/download/${d._id}`} target="_blank" rel="noreferrer" style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', borderRadius: '8px' }}><Download size={14} color="#2563eb" /></a>
-                 </div>
-              </td>
-            </tr>
-          )) : (
-            <tr><td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>No documents uploaded yet.</td></tr>
-          )}
-        </tbody>
-      </table>
     </div>
   </div>
 );
@@ -1245,5 +1203,140 @@ const EditClientModal = ({ client, section, onClose, onSave }) => {
 };
 
 
+
+const ActivityView = ({ tickets, client }) => {
+  const getStatusColor = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'active': return { bg: '#dcfce7', text: '#16a34a' };
+      case 'in_process': return { bg: '#ffedd5', text: '#ea580c' };
+      case 'completed': return { bg: '#dcfce7', text: '#16a34a' };
+      case 'closed': return { bg: '#f1f5f9', text: '#64748b' };
+      default: return { bg: '#f1f5f9', text: '#64748b' };
+    }
+  };
+
+  const generateTicketId = (t) => {
+    const prefix = t.hubType === 'Claim Hub' ? 'CLM' : 'SRV';
+    const year = new Date(t.createdAt).getFullYear() || new Date().getFullYear();
+    const shortId = t._id ? t._id.toString().slice(-4).toUpperCase() : '0000';
+    return `#${prefix}-${year}-${shortId}`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return { date: '—', time: '—' };
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return { date: '—', time: '—' };
+    return {
+      date: d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+    };
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '32px' }}>
+        <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>Activity Log</h3>
+        <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#64748b' }}>
+          All tickets and actions for {client?.name || 'Client'} (CLT-{client?._id ? client._id.toString().slice(-4).toUpperCase() : '0000'})
+        </p>
+      </div>
+
+      <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+              <tr>
+                <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>TICKET ID</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>STATUS</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>CATEGORY → SERVICE</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>DEPARTMENT ADMIN</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>CREATED BY</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>DATE</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tickets.length > 0 ? tickets.map(t => {
+                const statusColors = getStatusColor(t.status);
+                const dt = formatDate(t.createdAt);
+                return (
+                  <tr key={t._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '16px', fontSize: '13px', fontWeight: 800, color: '#2563eb' }}>
+                      {generateTicketId(t)}
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <span style={{ 
+                        background: statusColors.bg, 
+                        color: statusColors.text, 
+                        padding: '6px 12px', 
+                        borderRadius: '20px', 
+                        fontSize: '11px', 
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        textTransform: 'capitalize'
+                      }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColors.text }} />
+                        {t.status === 'in_process' ? 'In Process' : t.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Layers size={14} color="#64748b" /> {t.hubType || 'Service Hub'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                        {t.subject || 'General Request'} → {t.service}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+                        {t.assignedTo?.name || 'Unassigned'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                        {t.assignedTo?.department || 'Operations Dept'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                        {t.creatorRole === 'client' ? 'Client Self' : (t.creatorRole || 'System')}
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: '#2563eb', marginTop: '2px' }}>
+                        {t.createdBy?.name || client?.name || 'Unknown'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{dt.date}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{dt.time}</div>
+                    </td>
+                    <td style={{ padding: '16px', textAlign: 'center' }}>
+                      <button style={{ 
+                        padding: '8px', 
+                        background: '#f8fafc', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '8px', 
+                        cursor: 'pointer',
+                        color: '#64748b'
+                      }}>
+                        <Eye size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+                    <Activity size={32} style={{ opacity: 0.5, marginBottom: '12px' }} />
+                    <div>No activities or tickets found for this client.</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default ClientProfile;

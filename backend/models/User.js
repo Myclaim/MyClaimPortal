@@ -121,6 +121,7 @@ const userSchema = mongoose.Schema(
       aadharNo: { type: String },
       panNo: { type: String }
     }],
+    customFolders: [{ type: String }],
   },
   {
     timestamps: true,

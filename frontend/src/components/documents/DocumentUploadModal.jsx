@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Upload, FileText, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
 
-const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticketId, clientId }) => {
+const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticketId, clientId, folderId }) => {
   const [file, setFile] = useState(null);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,14 +46,26 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        setError('File size exceeds 5MB limit');
-        return;
-      }
       setFile(selectedFile);
       setName(selectedFile.name);
       setError('');
     }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+      setName(droppedFile.name);
+      setError('');
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleSubmit = async (e) => {
@@ -70,6 +82,11 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
     formData.append('name', name);
     formData.append('linked_to', selectedType);
     formData.append('doc_category', docCategory);
+    formData.append('folder', 'NestedFolder');
+    if (folderId) {
+      formData.append('folder_id', folderId);
+    }
+    
     if (selectedType === 'ticket') {
       formData.append('ticket_id', selectedId);
     } else {
@@ -123,20 +140,6 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label className="form-label">Category</label>
-                <select 
-                  className="form-select" 
-                  value={docCategory} 
-                  onChange={(e) => setDocCategory(e.target.value)}
-                >
-                  <option value="primary">1. Personal Docs (PAN, Aadhaar, Photo, Sign)</option>
-                  <option value="address">2. Proof of Address (Passport, Voter ID, bills...)</option>
-                  <option value="income">3. Income Proof (Bank Statement, Salary Slip...)</option>
-                  <option value="others">4. Other Documents (Nominee, Minor, etc.)</option>
-                </select>
-              </div>
-
               {!linkedTo && (
                 <div className="form-row cols-2" style={{ marginBottom: '16px' }}>
                   <div className="form-group">
@@ -181,7 +184,9 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
               <div 
                 className="upload-zone" 
                 onClick={() => document.getElementById('file-input').click()}
-                style={{ marginBottom: '16px', borderColor: file ? '#15803d' : '#cbd5e1' }}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                style={{ marginBottom: '16px', borderColor: file ? '#15803d' : '#cbd5e1', borderStyle: 'dashed', borderWidth: '2px', padding: '30px', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', backgroundColor: '#f8fafc' }}
               >
                 <input 
                   id="file-input" 
@@ -191,7 +196,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
                 />
                 <div className="upload-icon"><Upload size={32} color={file ? '#15803d' : '#94a3b8'} /></div>
                 <div className="upload-title">{file ? file.name : 'Select a file'}</div>
-                <div className="upload-sub">PDF, Word, or Images (Max 5MB)</div>
+                <div className="upload-sub">Any file type (No size limit)</div>
               </div>
 
               {error && <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '12px', fontWeight: 600 }}>{error}</div>}

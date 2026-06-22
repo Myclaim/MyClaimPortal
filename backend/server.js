@@ -28,6 +28,7 @@ app.use('/api/proposals', require('./routes/proposalRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/documents', require('./routes/documentRoutes'));
+app.use('/api/folders', require('./routes/folderRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));

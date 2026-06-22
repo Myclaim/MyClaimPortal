@@ -33,8 +33,17 @@ const documentSchema = mongoose.Schema(
     },
     doc_category: {
       type: String,
-      enum: ['primary', 'address', 'income', 'others'],
-      default: 'others',
+      enum: ['primary', 'secondary', 'internal'],
+      default: 'secondary',
+    },
+    folder: {
+      type: String,
+      default: 'General',
+    },
+    folder_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Folder',
+      default: null,
     },
     uploaded_by: {
 

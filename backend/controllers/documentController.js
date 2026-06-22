@@ -14,10 +14,9 @@ const uploadDocument = async (req, res) => {
       return res.status(400).json({ message: 'Please upload a file' });
     }
 
-    const { linked_to, ticket_id, client_id, name, doc_category } = req.body;
+    const { linked_to, ticket_id, client_id, name, doc_category, folder, folder_id } = req.body;
 
     if (!linked_to || !['ticket', 'client'].includes(linked_to)) {
-
       return res.status(400).json({ message: 'Invalid linked_to value' });
     }
 
@@ -32,9 +31,10 @@ const uploadDocument = async (req, res) => {
       file_type: path.extname(req.file.originalname).substring(1),
       file_size: req.file.size,
       linked_to,
-      doc_category: doc_category || 'others',
+      doc_category: doc_category || 'secondary',
+      folder: folder || 'General',
+      folder_id: folder_id || null,
       ticket_id: linked_to === 'ticket' ? ticket_id : undefined,
-
       client_id: linked_to === 'client' ? client_id : undefined,
       uploaded_by: req.user._id,
     });
@@ -192,10 +192,62 @@ const updateDocumentStatus = async (req, res) => {
   }
 };
 
+// @desc    Move document to a different folder
+// @route   PUT /api/documents/:id/move
+// @access  Private
+const moveDocument = async (req, res) => {
+  try {
+    const { folder, folder_id } = req.body;
+    const document = await Document.findById(req.params.id);
+    if (!document) return res.status(404).json({ message: 'Document not found' });
+    
+    document.folder = folder || 'General';
+    if (folder_id !== undefined) document.folder_id = folder_id;
+    await document.save();
+    res.json(document);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Copy document to a different folder
+// @route   POST /api/documents/:id/copy
+// @access  Private
+const copyDocument = async (req, res) => {
+  try {
+    const { folder, folder_id } = req.body;
+    const document = await Document.findById(req.params.id);
+    if (!document) return res.status(404).json({ message: 'Document not found' });
+    
+    // Duplicate the document record
+    const newDoc = new Document({
+      name: document.name + ' (Copy)',
+      file_url: document.file_url,
+      file_type: document.file_type,
+      file_size: document.file_size,
+      linked_to: document.linked_to,
+      ticket_id: document.ticket_id,
+      client_id: document.client_id,
+      doc_category: document.doc_category,
+      folder: folder || 'General',
+      folder_id: folder_id || null,
+      uploaded_by: req.user._id,
+      verification_status: 'pending' // reset verification for copied doc
+    });
+
+    await newDoc.save();
+    res.status(201).json(newDoc);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocuments,
   getDocumentById,
   deleteDocument,
   updateDocumentStatus,
+  moveDocument,
+  copyDocument,
 };

@@ -674,6 +674,110 @@ const addFamilyMember = async (req, res) => {
   }
 };
 
+// @desc    Add a custom folder for a client
+// @route   POST /api/users/:id/folders
+// @access  Private (Admin/Partner)
+const addClientFolder = async (req, res) => {
+  try {
+    const { folderName } = req.body;
+    if (!folderName) {
+      return res.status(400).json({ message: 'Folder name is required' });
+    }
+
+    // Find the user across all models (legacy architecture)
+    let client = await Admin.findById(req.params.id);
+    if (!client) client = await Partner.findById(req.params.id);
+    if (!client) client = await Client.findById(req.params.id);
+    if (!client) client = await Employee.findById(req.params.id);
+    if (!client) client = await User.findById(req.params.id);
+
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+
+    if (!client.customFolders) client.customFolders = [];
+    if (!client.customFolders.includes(folderName)) {
+      client.customFolders.push(folderName);
+      await client.save();
+    }
+
+    res.status(200).json({ message: 'Folder added successfully', customFolders: client.customFolders });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Rename a custom folder for a client
+// @route   PUT /api/users/:id/folders/rename
+// @access  Private (Admin/Partner)
+const renameClientFolder = async (req, res) => {
+  try {
+    const { oldName, newName } = req.body;
+    if (!oldName || !newName) return res.status(400).json({ message: 'Both old and new folder names are required' });
+
+    let client = await Admin.findById(req.params.id);
+    if (!client) client = await Partner.findById(req.params.id);
+    if (!client) client = await Client.findById(req.params.id);
+    if (!client) client = await Employee.findById(req.params.id);
+    if (!client) client = await User.findById(req.params.id);
+
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+
+    // Update in customFolders
+    if (client.customFolders) {
+      const index = client.customFolders.indexOf(oldName);
+      if (index !== -1) {
+        client.customFolders[index] = newName;
+        await client.save();
+      }
+    }
+
+    // Bulk update documents
+    const Document = require('../../models/Document');
+    await Document.updateMany(
+      { client_id: req.params.id, folder: oldName },
+      { $set: { folder: newName } }
+    );
+
+    res.status(200).json({ message: 'Folder renamed successfully', customFolders: client.customFolders });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete a custom folder for a client
+// @route   DELETE /api/users/:id/folders/:folderName
+// @access  Private (Admin/Partner)
+const deleteClientFolder = async (req, res) => {
+  try {
+    const { folderName } = req.params;
+
+    let client = await Admin.findById(req.params.id);
+    if (!client) client = await Partner.findById(req.params.id);
+    if (!client) client = await Client.findById(req.params.id);
+    if (!client) client = await Employee.findById(req.params.id);
+    if (!client) client = await User.findById(req.params.id);
+
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+
+    if (client.customFolders) {
+      client.customFolders = client.customFolders.filter(f => f !== folderName);
+      await client.save();
+    }
+
+    // Bulk delete or move documents? Usually delete the folder means documents go to General
+    const Document = require('../../models/Document');
+    await Document.updateMany(
+      { client_id: req.params.id, folder: folderName },
+      { $set: { folder: 'General' } }
+    );
+
+    res.status(200).json({ message: 'Folder deleted and documents moved to General', customFolders: client.customFolders });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
   createUser,
@@ -682,9 +786,12 @@ module.exports = {
   getUserById,
   deleteUser,
   uploadKycDocs,
-  updateEmployeeProfile,
   getEmployeeProfile,
-  updateClientProfile,
+  updateEmployeeProfile,
   getClientProfile,
+  updateClientProfile,
   addFamilyMember,
+  addClientFolder,
+  renameClientFolder,
+  deleteClientFolder,
 };
