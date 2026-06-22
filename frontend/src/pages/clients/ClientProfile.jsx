@@ -10,6 +10,7 @@ import {
 import api from '../../services/api';
 import DocumentUploadModal from '../../components/documents/DocumentUploadModal';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
+import AddFamilyMemberModal from '../../components/forms/AddFamilyMemberModal';
 
 const ClientProfile = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const ClientProfile = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
   const [editSection, setEditSection] = useState(null);
 
   useEffect(() => {
@@ -45,9 +47,11 @@ const ClientProfile = () => {
       setDocuments(docsRes.data);
       setClaims(claimsRes.data);
       setTickets(ticketsRes.data);
-      // Filter family members locally if the query param isn't supported by backend exactly
-      const members = familyRes.data.filter(u => u.parent_id === id || u.referredById === id);
-      setFamilyMembers(members);
+      
+      // Combine embedded family members with standalone ones (for backward compatibility)
+      const embedded = userRes.data.familyMembers || [];
+      const standalone = familyRes.data.filter(u => u.parent_id === id);
+      setFamilyMembers([...embedded, ...standalone]);
     } catch (err) {
       console.error('Error fetching client dashboard data', err);
     } finally {
@@ -179,8 +183,8 @@ const ClientProfile = () => {
         {activeTab === 'profile' && <ProfileView client={client} onEdit={(section) => { setEditSection(section); setIsEditModalOpen(true); }} />}
         {activeTab === 'overview' && <OverviewView client={client} claims={claims} tickets={tickets} documents={documents} />}
         {activeTab === 'documents' && <DocumentsView documents={documents} onRefresh={fetchData} setIsUploadModalOpen={setIsUploadModalOpen} />}
-        {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => navigate('/users/add?role=client')} />}
-        {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => navigate('/users/add?role=client')} />}
+        {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => setIsAddFamilyModalOpen(true)} />}
+        {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} />}
         {activeTab === 'tickets' && <TicketsView tickets={tickets} />}
         {!['profile', 'overview', 'documents', 'family', 'holders', 'claims', 'tickets'].includes(activeTab) && (
@@ -219,6 +223,14 @@ const ClientProfile = () => {
           onSave={fetchData} 
         />
       )}
+
+      {/* 👨‍👩‍👧 ADD FAMILY MEMBER MODAL */}
+      <AddFamilyMemberModal
+        isOpen={isAddFamilyModalOpen}
+        onClose={() => setIsAddFamilyModalOpen(false)}
+        clientId={id}
+        onSuccess={fetchData}
+      />
     </div>
   );
 };
@@ -454,44 +466,122 @@ const DocumentsView = ({ documents, onRefresh, setIsUploadModalOpen }) => (
   </div>
 );
 
-const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => (
-  <div style={{ textAlign: 'center', padding: '40px' }}>
-    <h3 style={{ fontSize: '20px', fontWeight: 900, marginBottom: '40px' }}>Family Tree & Hierarchy</h3>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', padding: '16px 32px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-        <div style={{ fontWeight: 900 }}>{client?.name}</div>
-        <div style={{ fontSize: '10px', color: '#dc2626', fontWeight: 800, marginTop: 4 }}>ORIGINAL HOLDER (PRIMARY)</div>
+const FamilyTreeNode = ({ name, role, isClient }) => (
+  <div style={{ 
+    background: isClient ? '#2563eb' : '#fff', 
+    border: `2px solid ${isClient ? '#1d4ed8' : '#e2e8f0'}`,
+    color: isClient ? '#fff' : '#0f172a',
+    padding: '12px 24px', 
+    borderRadius: '12px', 
+    minWidth: '120px',
+    textAlign: 'center',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    position: 'relative',
+    zIndex: 2
+  }}>
+    <div style={{ fontWeight: 800, fontSize: '14px' }}>{name}</div>
+    <div style={{ fontSize: '10px', color: isClient ? '#bfdbfe' : '#64748b', fontWeight: 800, marginTop: 4, textTransform: 'uppercase' }}>{role}</div>
+  </div>
+);
+
+const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
+  const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
+  const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
+  const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
+  const spouse = familyMembers.filter(m => ['Spouse'].includes(m.relationWithHolder));
+  const others = familyMembers.filter(m => !['Father', 'Mother', 'Grandfather', 'Grandmother', 'Brother', 'Sister', 'Son', 'Daughter', 'Spouse'].includes(m.relationWithHolder));
+
+  return (
+    <div style={{ textAlign: 'center', padding: '40px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0 }}>Family Tree & Hierarchy</h3>
+        <button 
+          onClick={onAddFamily}
+          style={{ padding: '8px 16px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          <Plus size={16} /> Add Member
+        </button>
       </div>
       
-      {familyMembers.length > 0 ? (
-        <>
-          <div style={{ height: '40px', width: '2px', background: '#e2e8f0' }} />
-          <div style={{ display: 'flex', gap: '40px' }}>
-            {familyMembers.map(m => (
-              <div key={m._id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ height: '20px', width: '2px', background: '#e2e8f0' }} />
-                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px 24px', borderRadius: '12px' }}>
-                  <div style={{ fontWeight: 800 }}>{m.name}</div>
-                  <div style={{ fontSize: '10px', color: '#16a34a', fontWeight: 800 }}>{m.relationWithHolder || 'LEGAL HEIR'}</div>
-                </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', padding: '20px 0' }}>
+        
+        {/* Ancestors Level */}
+        {ancestors.length > 0 && (
+          <div style={{ display: 'flex', gap: '30px', marginBottom: '40px', position: 'relative' }}>
+            {ancestors.map((m, i) => <FamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
+            {ancestors.length > 1 && (
+              <div style={{ position: 'absolute', bottom: '-20px', left: '10%', right: '10%', height: '2px', background: '#cbd5e1', zIndex: 1 }} />
+            )}
+          </div>
+        )}
+
+        {/* Client & Siblings Level */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '40px', position: 'relative', marginBottom: '40px', width: '100%' }}>
+          
+          {/* Siblings (Left) */}
+          <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-end' }}>
+            {siblings.map((m, i) => <FamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {siblings.length > 0 && (
+              <div style={{ position: 'absolute', top: '50%', right: '-40px', width: '40px', height: '2px', background: '#cbd5e1', zIndex: 1, transform: 'translateY(-50%)' }} />
+            )}
+          </div>
+
+          {/* Client Node (Center) */}
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center' }}>
+            <FamilyTreeNode name={client?.name} role="PRIMARY CLIENT" isClient={true} />
+            {children.length > 0 && (
+              <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
+            )}
+          </div>
+
+          {/* Spouse (Right) */}
+          <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-start' }}>
+            {spouse.length > 0 && (
+              <div style={{ position: 'absolute', top: '50%', left: '-40px', width: '40px', height: '2px', background: '#cbd5e1', zIndex: 1, transform: 'translateY(-50%)' }} />
+            )}
+            {spouse.map((m, i) => <FamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} />)}
+          </div>
+        </div>
+
+        {/* Children Level */}
+        {children.length > 0 && (
+          <div style={{ display: 'flex', gap: '30px', position: 'relative' }}>
+            {children.length > 1 && (
+              <div style={{ position: 'absolute', top: '-20px', left: '20%', right: '20%', height: '2px', background: '#cbd5e1', zIndex: 1 }} />
+            )}
+            {children.map((m, i) => (
+              <div key={`child-${i}`} style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-20px', left: '50%', width: '2px', height: '20px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
+                <FamilyTreeNode name={m.name} role={m.relationWithHolder} />
               </div>
             ))}
           </div>
-        </>
-      ) : (
-        <div style={{ marginTop: '24px', color: '#94a3b8' }}>
-           <p>No legal heirs or family members linked yet.</p>
-           <button 
-             onClick={onAddFamily}
-             style={{ padding: '8px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
-           >
-             + Add Family Member
-           </button>
-        </div>
-      )}
+        )}
+
+        {/* Other Relatives */}
+        {others.length > 0 && (
+          <div style={{ marginTop: '60px', width: '100%' }}>
+            <div style={{ height: '1px', background: '#e2e8f0', margin: '0 0 20px' }} />
+            <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#64748b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Other Relatives</h4>
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {others.map((m, i) => <FamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            </div>
+          </div>
+        )}
+
+        {familyMembers.length === 0 && (
+          <div style={{ color: '#94a3b8', padding: '40px', border: '2px dashed #e2e8f0', borderRadius: '16px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Users size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
+            <p style={{ margin: 0, fontWeight: 600 }}>No family members linked yet.</p>
+            <p style={{ margin: '4px 0 0', fontSize: '12px' }}>Click "Add Member" to start building the family tree.</p>
+          </div>
+        )}
+
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const mockHoldersData = [
   { pan: 'ABCPD1234F', aadhaar: 'XXXX-XXXX-1234', status: 'DECEASED', progress: 65, docs: [{name: 'PAN Card', done: true}, {name: 'Death Certificate', done: false}, {name: 'Aadhaar', done: true}, {name: 'Ration Card', done: false}] },

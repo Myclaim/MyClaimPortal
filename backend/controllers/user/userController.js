@@ -630,6 +630,50 @@ const getClientProfile = async (req, res) => {
   }
 };
 
+// @desc    Add a family member to client's profile
+// @route   POST /api/users/:id/family
+// @access  Private
+const addFamilyMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, relationWithHolder, phone, email, dob, aadharNo, panNo } = req.body;
+
+    let user = await Admin.findById(id);
+    if (!user) user = await Partner.findById(id);
+    if (!user) user = await Client.findById(id);
+    if (!user) user = await Employee.findById(id);
+    if (!user) user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.familyMembers) {
+      user.familyMembers = [];
+    }
+
+    const newMember = {
+      name,
+      relationWithHolder,
+      phone,
+      email,
+      dob,
+      aadharNo,
+      panNo
+    };
+
+    user.familyMembers.push(newMember);
+    await user.save();
+
+    bustCache();
+
+    res.status(201).json({ message: 'Family member added successfully', familyMembers: user.familyMembers });
+  } catch (error) {
+    console.error('Error adding family member:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   getUsers,
   createUser,
@@ -642,4 +686,5 @@ module.exports = {
   getEmployeeProfile,
   updateClientProfile,
   getClientProfile,
+  addFamilyMember,
 };

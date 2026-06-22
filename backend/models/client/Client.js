@@ -62,6 +62,16 @@ const clientSchema = mongoose.Schema({
   preference: { type: String },
   status: { type: String, default: 'new' },
 
+  familyMembers: [{
+    name: { type: String, required: true },
+    relationWithHolder: { type: String, required: true },
+    phone: { type: String },
+    email: { type: String },
+    dob: { type: String },
+    aadharNo: { type: String },
+    panNo: { type: String }
+  }],
+
   parent_id: { type: mongoose.Schema.Types.ObjectId, index: true },
   client_id_ref: { type: String, unique: true, sparse: true },
   is_active: { type: Boolean, default: true }

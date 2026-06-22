@@ -110,6 +110,17 @@ const userSchema = mongoose.Schema(
     preference: { type: String },
     permissions: { type: [String], default: [] },
     status: { type: String, default: 'new' },
+    
+    // Embedded Family Members for Client Profile
+    familyMembers: [{
+      name: { type: String, required: true },
+      relationWithHolder: { type: String, required: true },
+      phone: { type: String },
+      email: { type: String },
+      dob: { type: String },
+      aadharNo: { type: String },
+      panNo: { type: String }
+    }],
   },
   {
     timestamps: true,
