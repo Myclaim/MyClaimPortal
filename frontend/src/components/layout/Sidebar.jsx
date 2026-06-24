@@ -23,6 +23,10 @@ import {
   CalendarDays,
   ShoppingBag,
   Sparkles,
+  Layers,
+  Search,
+  TreeDeciduous,
+  Gift,
 } from 'lucide-react';
 
 
@@ -43,6 +47,7 @@ const SECTIONS = [
   { id: 'support', label: 'SUPPORT' },
   { id: 'automation', label: 'AUTOMATION' },
   { id: 'client-main', label: 'CLIENT PORTAL' },
+  { id: 'client-tools', label: 'CLIENT TOOLS' },
   { id: 'client-account', label: 'ACCOUNT & SUPPORT' },
 ];
 
@@ -405,7 +410,7 @@ const ITEMS = [
     id: 'client-dashboard',
     section: 'client-main',
     label: 'Dashboard',
-    path: '/?tab=overview',
+    path: '/client',
     icon: Home,
   },
   {
@@ -428,6 +433,7 @@ const ITEMS = [
     label: 'Documents',
     path: '/?tab=documents',
     icon: FileText,
+    badgeSource: 'documents'
   },
   {
     id: 'client-track-progress',
@@ -445,20 +451,57 @@ const ITEMS = [
     supportsBadge: true,
   },
   {
-    id: 'client-profile',
-    section: 'client-account',
-    label: 'Profile',
-    path: '/?tab=profile',
-    icon: UserCircle,
+    id: 'client-service-hub',
+    section: 'client-main',
+    label: 'Service Hub',
+    path: '/?tab=service-hub',
+    icon: Activity,
   },
   {
-    id: 'client-support',
-    section: 'client-account',
-    label: 'Support',
-    path: '/?tab=support',
-    icon: Shield,
+    id: 'client-my-claims',
+    section: 'client-main',
+    label: 'My Claims',
+    path: '/?tab=claims',
+    icon: Layers,
+    badgeSource: 'claims'
+  },
+  {
+    id: 'client-investment-store',
+    section: 'client-main',
+    label: 'Investment Store',
+    path: '/?tab=investment-store',
+    icon: ShoppingBag,
+  },
+  {
+    id: 'client-family-tree',
+    section: 'client-tools',
+    label: 'Family Tree',
+    path: '/?tab=family-tree',
+    icon: TreeDeciduous,
+  },
+  {
+    id: 'client-iepf-search',
+    section: 'client-tools',
+    label: 'IEPF Search',
+    path: '/?tab=iepf-search',
+    icon: Search,
+  },
+  {
+    id: 'client-refer-earn',
+    section: 'client-tools',
+    label: 'Refer & Earn',
+    path: '/?tab=refer-earn',
+    icon: Gift,
+    badgeLabel: '₹500'
   },
 ];
+
+// Client-specific ordered menu (keeps IDs in ITEMS)
+const CLIENT_MENU_ORDER = {
+  main: ['client-dashboard', 'client-my-claims', 'client-my-services', 'client-service-hub', 'client-investment-store', 'client-documents'],
+  tools: ['client-family-tree', 'client-iepf-search', 'client-refer-earn'],
+  account: ['client-support', 'client-profile']
+};
 
 const Sidebar = ({ isOpen = false, onClose }) => {
   const { user, logout } = useAuth();
@@ -493,16 +536,27 @@ const Sidebar = ({ isOpen = false, onClose }) => {
   }, [user]);
 
   // Map path -> item id so only one item is active at a time
+  // Prefer full-path match (pathname+search) so ?tab= links highlight correctly
   const activeId = useMemo(() => {
     const fullPath = location.pathname + location.search;
-    const item = ITEMS.find(i => i.path === fullPath || i.path === location.pathname);
-    return item ? item.id : 'home';
+    // 1. Try exact full path match first (includes query string)
+    const exactMatch = ITEMS.find(i => i.path === fullPath);
+    if (exactMatch) return exactMatch.id;
+    // 2. Fall back to pathname-only match (ignore query string)
+    const pathMatch = ITEMS.find(i => i.path === location.pathname);
+    return pathMatch ? pathMatch.id : 'home';
   }, [location]);
+
+  // Track which item was just clicked for the blink animation
+  const [pressedId, setPressedId] = React.useState(null);
 
   // nav(pageId) -> navigate to configured path
   const nav = (pageId) => {
     const item = ITEMS.find((i) => i.id === pageId);
     if (!item) return;
+    // Trigger blink animation
+    setPressedId(pageId);
+    setTimeout(() => setPressedId(null), 400);
     navigate(item.path);
     // Close sidebar on mobile after navigation
     if (onClose) onClose();
@@ -527,41 +581,69 @@ const Sidebar = ({ isOpen = false, onClose }) => {
       if (item.id === 'activity-log-tickets') badge = sidebarStats.tickets?.total;
       if (item.id === 'task-board-main') badge = sidebarStats.tickets?.total;
     }
+    if (item.badgeSource && sidebarStats) {
+      if (item.badgeSource === 'claims') badge = sidebarStats.claims?.total;
+      if (item.badgeSource === 'documents') badge = sidebarStats.documents?.pending;
+    }
+    if (item.badgeLabel) {
+      badge = item.badgeLabel;
+    }
     if ((item.id === 'emp-notifications' || item.id === 'client-notifications') && unreadNotifications > 0) {
       badge = unreadNotifications;
     }
 
+    const isPressed = pressedId === item.id;
+
     return (
-      <button
-        type="button"
-        className={`sidebar-item ${isActive ? 'active' : ''}`}
-        onClick={() => nav(item.id)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '12px', width: 'calc(100% - 24px)',
-          margin: '4px 12px', padding: '10px 16px', borderRadius: '12px',
-          background: isActive ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
-          color: isActive ? 'var(--accent-green)' : 'var(--text-secondary)',
-          cursor: 'pointer', transition: 'all 0.3s ease', textAlign: 'left',
-          position: 'relative', overflow: 'hidden',
-          border: isActive ? '1px solid rgba(34, 197, 94, 0.15)' : '1px solid transparent',
-        }}
-      >
-        {isActive && <motion.div layoutId="active-indicator" style={{ position: 'absolute', left: 0, top: '25%', height: '50%', width: '3px', background: 'var(--accent-green)', borderRadius: '0 4px 4px 0' }} />}
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? 'var(--accent-green)' : 'var(--muted)', fontSize: typeof Icon === 'string' ? '16px' : 'inherit' }}>
-          {typeof Icon === 'string' ? Icon : <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />}
-        </span>
-        <span style={{ fontSize: '13.5px', fontWeight: isActive ? 700 : 500, letterSpacing: '0.01em' }}>{item.label}</span>
-        {badge && (
-          <span style={{ 
-            marginLeft: 'auto', fontSize: '10px', fontWeight: 800, 
-            background: isActive ? 'var(--accent-green)' : 'rgba(34, 197, 94, 0.1)', 
-            color: isActive ? '#000' : 'var(--accent-green)', 
-            padding: '2px 6px', borderRadius: '6px' 
-          }}>
-            {badge}
+      <>
+        <style>{`
+          @keyframes sidebarBlink {
+            0%   { background: rgba(16, 185, 129, 0.30); box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+            40%  { background: rgba(16, 185, 129, 0.15); box-shadow: 0 0 8px 4px rgba(16,185,129,0.15); }
+            100% { background: rgba(34, 197, 94, 0.08);  box-shadow: none; }
+          }
+          .sidebar-item-pressed {
+            animation: sidebarBlink 0.38s ease forwards !important;
+            transform: scale(0.97);
+          }
+          .sidebar-item:hover:not(.active) {
+            background: rgba(255,255,255,0.04) !important;
+            color: var(--text-primary) !important;
+          }
+        `}</style>
+        <button
+          type="button"
+          className={`sidebar-item ${isActive ? 'active' : ''} ${isPressed ? 'sidebar-item-pressed' : ''}`}
+          onClick={() => nav(item.id)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '12px', width: 'calc(100% - 24px)',
+            margin: '4px 12px', padding: '10px 16px', borderRadius: '12px',
+            background: isActive ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
+            color: isActive ? 'var(--accent-green)' : 'var(--text-secondary)',
+            cursor: 'pointer',
+            transition: isPressed ? 'none' : 'all 0.3s ease',
+            textAlign: 'left',
+            position: 'relative', overflow: 'hidden',
+            border: isActive ? '1px solid rgba(34, 197, 94, 0.15)' : '1px solid transparent',
+          }}
+        >
+          {isActive && <motion.div layoutId="active-indicator" style={{ position: 'absolute', left: 0, top: '25%', height: '50%', width: '3px', background: 'var(--accent-green)', borderRadius: '0 4px 4px 0' }} />}
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? 'var(--accent-green)' : 'var(--muted)', fontSize: typeof Icon === 'string' ? '16px' : 'inherit' }}>
+            {typeof Icon === 'string' ? Icon : <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />}
           </span>
-        )}
-      </button>
+          <span style={{ fontSize: '13.5px', fontWeight: isActive ? 700 : 500, letterSpacing: '0.01em' }}>{item.label}</span>
+          {badge && (
+            <span style={{ 
+              marginLeft: 'auto', fontSize: '10px', fontWeight: 800, 
+              background: isActive ? 'var(--accent-green)' : 'rgba(34, 197, 94, 0.1)', 
+              color: isActive ? '#000' : 'var(--accent-green)', 
+              padding: '2px 6px', borderRadius: '6px' 
+            }}>
+              {badge}
+            </span>
+          )}
+        </button>
+      </>
     );
   };
 
@@ -630,25 +712,77 @@ const Sidebar = ({ isOpen = false, onClose }) => {
           </div>
         </div>
         <div>
-          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em' }}>IEPF CLAIMS</div>
+          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em' }}>{user?.role === 'client' ? 'RM LEGAL' : 'IEPF CLAIMS'}</div>
           <div className="sidebar-logo-sub" style={{ color: 'var(--accent-green)', fontWeight: 800, fontSize: '9px', letterSpacing: '0.1em' }}>
-            {user?.role?.replace('_', ' ').toUpperCase()} PORTAL
+            {user?.role === 'client' ? 'CLIENT PORTAL' : `${user?.role?.replace('_', ' ').toUpperCase()} PORTAL`}
           </div>
         </div>
       </div>
 
-      {SECTIONS.map((section) => {
-        const sectionItems = itemsBySection[section.id] || [];
-        if (!sectionItems.length) return null;
-        return (
-          <div key={section.id} className="sidebar-section">
-            <div className="sidebar-section-label">{section.label}</div>
-            {sectionItems.map((item) => (
-              <SidebarItem key={item.id} item={item} />
-            ))}
+      {user?.role === 'client' && (
+        <div className="sidebar-profile-card">
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div className="sidebar-profile-avatar">{user?.name?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'RP'}</div>
+            <div style={{ minWidth: 0 }}>
+              <div className="sidebar-profile-name">{user?.name || 'Ramesh Patel'}</div>
+              <div className="sidebar-profile-email">{user?.email || 'ramesh.patel@gmail.com'}</div>
+            </div>
           </div>
-        );
-      })}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
+            <span className="sidebar-profile-pill">Active</span>
+            <span className="sidebar-profile-id">ID: {user?.client_id_ref || 'CRN-2891'}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Render a focused client navbar layout when role is client */}
+      {user?.role === 'client' ? (
+        <>
+          <div className="sidebar-section" style={{ marginTop: 8 }}>
+            <div className="sidebar-section-label">MAIN</div>
+            {CLIENT_MENU_ORDER.main.map((id) => {
+              const it = ITEMS.find(i => i.id === id);
+              if (!it) return null;
+              return <SidebarItem key={it.id} item={it} />;
+            })}
+          </div>
+
+          <div style={{ height: 10 }} />
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">TOOLS</div>
+            {CLIENT_MENU_ORDER.tools.map((id) => {
+              const it = ITEMS.find(i => i.id === id);
+              if (!it) return null;
+              return <SidebarItem key={it.id} item={it} />;
+            })}
+          </div>
+
+          <div style={{ height: 10 }} />
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">ACCOUNT</div>
+            {CLIENT_MENU_ORDER.account.map((id) => {
+              const it = ITEMS.find(i => i.id === id);
+              if (!it) return null;
+              return <SidebarItem key={it.id} item={it} />;
+            })}
+          </div>
+        </>
+      ) : (
+        SECTIONS.map((section) => {
+          const sectionItems = itemsBySection[section.id] || [];
+          if (!sectionItems.length) return null;
+          return (
+            <div key={section.id} className="sidebar-section">
+              <div className="sidebar-section-label">{section.label}</div>
+              {sectionItems.map((item) => (
+                <SidebarItem key={item.id} item={item} />
+              ))}
+            </div>
+          );
+        })
+      )}
 
       <div className="sidebar-footer">
         <div className="sidebar-user" onClick={handleLogout}>

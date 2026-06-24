@@ -92,30 +92,48 @@ const HubPage = ({ title, vertical, subtitle }) => {
   
   const [availableServices, setAvailableServices] = useState([]);
   
+  // Load services, now fetching real-time data for Service Hub
   useEffect(() => {
-    const loadServices = () => {
+    const loadServices = async () => {
+      if (vertical === 'service') {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch('https://myclaimportal.onrender.com/api/services', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setAvailableServices(data);
+            return;
+          }
+          console.error('Failed to fetch services, falling back to local storage');
+        } catch (err) {
+          console.error('Error fetching services:', err);
+        }
+      }
+      // Fallback to local storage for other verticals or on error
       let storageKey = 'claimServices';
       if (vertical === 'service') storageKey = 'serviceServices';
       if (vertical === 'store') storageKey = 'storeServices';
-      
       if (vertical !== 'support') {
         const raw = JSON.parse(localStorage.getItem(storageKey)) || [];
         setAvailableServices(raw.filter(s => s.status));
       }
     };
-
     loadServices();
-
+  
     const handleStorageChange = (e) => {
       const keys = ['claimServices', 'serviceServices', 'storeServices'];
       if (keys.includes(e.key)) {
         loadServices();
       }
     };
-
+  
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [vertical]);
+  
+// Services table JSX moved to proper location
 
   const fetchTickets = async () => {
     try {

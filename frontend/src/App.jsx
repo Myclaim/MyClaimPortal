@@ -4,7 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Layout from './components/layout/Layout';
 
-// Pages
+import ClientDashboard from './pages/dashboards/client/ClientDashboard';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/home/Dashboard';
 import Claims from './pages/claims/Claims';
@@ -70,7 +70,9 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }>
+
             <Route index element={<Dashboard />} />
+            <Route path="client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
             <Route path="home" element={<Dashboard />} />
             <Route path="claims" element={<Claims />} />
             <Route path="claims/:id" element={<ClaimDetail />} />
