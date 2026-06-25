@@ -1,131 +1,1128 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
-  Bell, 
-  Shield, 
-  CheckCircle2, 
-  FileText, 
-  ArrowRight, 
-  Upload, 
-  MessageSquare, 
-  Folder, 
-  Clock, 
-  Info, 
-  UserCircle,
-  AlertTriangle,
-  CreditCard,
-  RefreshCw,
-  ShoppingBag
+import {
+  Bell, Upload, MessageSquare, Folder, Clock,
+  AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
+  Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
+  ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
+import '../../super-admin/Overview.css';
 
 const CL = {
-  bg: '#000000',               // Pure black background
-  card: 'rgba(11, 17, 32, 0.65)', // Glassmorphism sidebar card background
-  cardSoft: 'rgba(15, 23, 42, 0.8)',
-  border: 'rgba(255, 255, 255, 0.08)', // Glass border from sidebar
-  text: '#F8FAFC',              // Light primary text
-  textMuted: '#94A3B8',         // Muted secondary text
-  accent: '#10B981',            // Green accent from sidebar
+  bg: 'var(--dashboard-bg)',
+  bgImage: 'var(--dashboard-bg-image)',
+  card: 'var(--dashboard-card)',
+  cardBgImage: 'var(--dashboard-card-image)',
+  cardSoft: 'var(--dashboard-card-soft)',
+  border: 'var(--dashboard-border)',
+  text: 'var(--dashboard-text)',
+  textMuted: 'var(--dashboard-text-muted)',
+  accent: 'var(--dashboard-accent)',
   accentSoft: 'rgba(16, 185, 129, 0.15)',
-  green: '#10B981',
+  green: 'var(--dashboard-accent)',
   greenSoft: 'rgba(16, 185, 129, 0.08)'
 };
 
-const CircularProgress = ({ percent = 72, size = 110, stroke = 10 }) => {
-  const angle = Math.min(100, Math.max(0, percent)) * 3.6;
-  const wrapper = {
-    width: size,
-    height: size,
-    borderRadius: '50%',
-    display: 'grid',
-    placeItems: 'center',
-    position: 'relative',
-  };
-  const ring = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '50%',
-    background: `conic-gradient(${CL.accent} ${angle}deg, rgba(255,255,255,0.05) ${angle}deg)`,
-    display: 'grid',
-    placeItems: 'center'
-  };
-  const inner = {
-    width: `calc(100% - ${stroke}px)`,
-    height: `calc(100% - ${stroke}px)`,
-    borderRadius: '50%',
-    background: '#0B1120', // Dark card inner bg
-    display: 'grid',
-    placeItems: 'center'
-  };
+/* ── helpers ── */
+const getStatusBadgeStyle = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'active':
+      return { color: '#10B981', bg: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', dot: '#10B981' };
+    case 'in progress': case 'in_progress':
+      return { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', dot: '#F59E0B' };
+    case 'docs pending': case 'docs_pending': case 'pending':
+      return { color: '#818CF8', bg: 'rgba(129,140,248,0.12)', border: '1px solid rgba(129,140,248,0.25)', dot: '#818CF8' };
+    default:
+      return { color: '#94a3b8', bg: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)', dot: '#94a3b8' };
+  }
+};
+
+const getProgressColor = (status) => {
+  if (status?.toLowerCase() === 'active') return 'linear-gradient(90deg,#10B981,#059669)';
+  if (status?.toLowerCase().includes('progress')) return 'linear-gradient(90deg,#F59E0B,#D97706)';
+  return 'linear-gradient(90deg,#F59E0B,#EF4444)';
+};
+
+const getProgressLabel = (status, progress) => {
+  if (status?.toLowerCase() === 'active') return `${progress}% — Authority Review`;
+  if (status?.toLowerCase().includes('progress')) return `${progress}% — Verification`;
+  return `${progress}% — Docs Collection`;
+};
+
+const getNSE = (name) => {
+  const map = { 'TATA STEEL': 'TATASTEEL', 'L&T LIMITED': 'LT', 'WIPRO LTD': 'WIPRO' };
+  const key = Object.keys(map).find(k => name?.toUpperCase().includes(k.split(' ')[0]));
+  return key ? `NSE: ${map[key]}` : 'NSE: ---';
+};
+
+/* ── Animated Counter ── */
+const useCountUp = (end, duration = 1200) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = null;
+    const num = parseFloat(String(end).replace(/[^0-9.]/g, '')) || 0;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setCount(Math.floor(ease * num));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [end, duration]);
+  return count;
+};
+
+/* ── CLAIM CSS (full animated) ── */
+const CLAIM_CSS = `
+  /* ── Keyframes ── */
+  @keyframes fadeSlideUp   { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeSlideIn   { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes scaleIn       { from{opacity:0;transform:scale(0.88)} to{opacity:1;transform:scale(1)} }
+  @keyframes pulseDot      { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+  @keyframes floatBadge    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+  @keyframes glowPulse     { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.45)} 50%{box-shadow:0 0 0 10px rgba(16,185,129,0)} }
+  @keyframes warnPulse     { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)} 50%{box-shadow:0 0 0 8px rgba(245,158,11,0)} }
+  @keyframes borderGlow    { 0%,100%{border-color:rgba(16,185,129,0.2)} 50%{border-color:rgba(16,185,129,0.6)} }
+  @keyframes statPop       { 0%{opacity:0;transform:scale(0.6) translateY(16px)} 65%{transform:scale(1.06) translateY(-3px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+  @keyframes barGrow       { from{width:0} to{width:100%} }
+  @keyframes shimmerSweep  { 0%{left:-100%} 100%{left:200%} }
+  @keyframes particleFloat { 0%{transform:translateY(0) rotate(0deg);opacity:0.6} 50%{opacity:0.2} 100%{transform:translateY(-80px) rotate(180deg);opacity:0} }
+  @keyframes spinSlow      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes countUp       { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes tabIndicator  { from{width:0;opacity:0} to{opacity:1} }
+  @keyframes cardRise      { from{opacity:0;transform:translateY(40px) scale(0.94)} to{opacity:1;transform:translateY(0) scale(1)} }
+  @keyframes emptyBounce   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  @keyframes sparkle       { 0%,100%{opacity:0;transform:scale(0)} 50%{opacity:1;transform:scale(1)} }
+  @keyframes ribbonShine   { 0%{transform:translateX(-100%) skew(-20deg)} 100%{transform:translateX(300%) skew(-20deg)} }
+  @keyframes tiltLeft      { to{transform:rotateY(-8deg) rotateX(3deg) translateZ(10px)} }
+  @keyframes progressFill  { from{width:0%} to{width:var(--progress-w)} }
+
+  /* ── Particles ── */
+  .claims-page-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFloat linear infinite;
+    z-index: 0;
+  }
+
+  /* ── Stat chip ── */
+  .stat-chip {
+    position: relative; overflow: hidden;
+    flex: 1 1 140px;
+    border-radius: 18px;
+    padding: 20px 22px;
+    display: flex; flex-direction: column; align-items: flex-start;
+    cursor: default;
+    transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), box-shadow 0.28s ease;
+    animation: statPop 0.65s cubic-bezier(.34,1.56,.64,1) var(--chip-delay,0ms) both;
+  }
+  .stat-chip:hover { transform: translateY(-6px) scale(1.03); }
+  .stat-chip:hover .chip-shimmer { animation: shimmerSweep 0.6s ease forwards; }
+  .chip-shimmer {
+    position: absolute; top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+    pointer-events: none; skew-x: -20deg;
+  }
+  .chip-bar-track {
+    width: 100%; height: 3px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); margin-top: 12px; overflow: hidden;
+  }
+  .chip-bar-fill {
+    height: 100%; border-radius: 999px;
+    animation: barGrow 1.4s cubic-bezier(.4,0,.2,1) var(--bar-delay,0ms) both;
+  }
+
+  /* ── Tab bar ── */
+  .claims-tab-row {
+    display: flex; align-items: flex-end; gap: 2px;
+    position: relative;
+  }
+  .claims-tab-btn {
+    background: none; border: none; cursor: pointer;
+    padding: 10px 16px; font-size: 13px; font-weight: 600;
+    border-radius: 10px 10px 0 0;
+    transition: color 0.2s ease, background 0.2s ease;
+    position: relative; z-index: 1;
+  }
+  .claims-tab-btn:hover { background: rgba(255,255,255,0.05); }
+  .claims-tab-btn.active { font-weight: 800; }
+  .tab-active-indicator {
+    position: absolute; bottom: 0; height: 2px;
+    background: linear-gradient(90deg,#10B981,#818CF8);
+    border-radius: 999px;
+    transition: left 0.35s cubic-bezier(.34,1.56,.64,1), width 0.35s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 0 10px rgba(16,185,129,0.6);
+  }
+
+  /* ── Claim card ── */
+  .claim-card {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-radius: 22px; padding: 22px;
+    display: flex; flex-direction: column; gap: 16px;
+    cursor: default; position: relative; overflow: hidden;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    transform-style: preserve-3d; perspective: 800px;
+  }
+  .claim-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 55%);
+    border-radius: 22px; pointer-events: none; z-index: 0;
+  }
+  .claim-card > * { position: relative; z-index: 1; }
+  .claim-card:hover {
+    transform: translateY(-8px) scale(1.015) rotateX(1deg);
+    box-shadow: 0 28px 56px -16px rgba(0,0,0,0.55);
+  }
+  .claim-card .card-ribbon {
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    border-radius: 22px 22px 0 0; overflow: hidden;
+  }
+  .claim-card .card-ribbon::after {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+    animation: ribbonShine 3s ease infinite;
+  }
+  .card-active  { border: 1px solid rgba(16,185,129,0.28); }
+  .card-active:hover  { border-color: rgba(16,185,129,0.55); box-shadow: 0 28px 56px -16px rgba(16,185,129,0.3); animation: borderGlow 2.5s ease infinite; }
+  .card-progress{ border: 1px solid rgba(245,158,11,0.28); }
+  .card-progress:hover{ border-color: rgba(245,158,11,0.55); box-shadow: 0 28px 56px -16px rgba(245,158,11,0.25); }
+  .card-pending { border: 1px solid rgba(129,140,248,0.4); animation: warnPulse 2.5s ease infinite; }
+  .card-pending:hover { border-color: rgba(129,140,248,0.7); box-shadow: 0 28px 56px -16px rgba(129,140,248,0.35); }
+
+  /* ── Avatar ── */
+  .claim-avatar {
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s ease;
+  }
+  .claim-card:hover .claim-avatar {
+    transform: scale(1.18) rotate(-6deg);
+    box-shadow: 0 10px 28px rgba(16,185,129,0.45);
+  }
+
+  /* ── Orb ── */
+  .card-orb {
+    position: absolute; border-radius: 50%;
+    pointer-events: none; transition: opacity 0.4s ease;
+  }
+
+  /* ── Buttons ── */
+  .claim-btn-primary {
+    border: none; color: #fff;
+    padding: 10px 18px; border-radius: 11px;
+    font-weight: 800; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease;
+    position: relative; overflow: hidden;
+  }
+  .claim-btn-primary::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: translateX(-100%); transition: transform 0.45s ease;
+  }
+  .claim-btn-primary:hover { transform: translateY(-2px) scale(1.05); }
+  .claim-btn-primary:hover::after { transform: translateX(100%); }
+  .claim-btn-primary:active { transform: scale(0.96); }
+  .claim-btn-sec {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+    padding: 10px 14px; border-radius: 11px;
+    font-weight: 700; font-size: 12px; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .claim-btn-sec:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; border-color: rgba(255,255,255,0.22); transform: translateY(-1px); }
+
+  /* ── Warn banner ── */
+  .warn-banner {
+    border-radius: 11px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; font-weight: 700;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.28);
+    color: #F59E0B; animation: warnPulse 2.5s ease infinite;
+  }
+
+  /* ── New Claim btn ── */
+  .new-claim-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg,#10B981,#059669);
+    border: none; color: #fff; padding: 9px 18px; border-radius: 12px;
+    font-weight: 800; font-size: 12px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease;
+    animation: glowPulse 2s ease infinite;
+    position: relative; overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .new-claim-btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%); transition: transform 0.4s ease;
+  }
+  .new-claim-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 30px rgba(16,185,129,0.5); }
+  .new-claim-btn:hover::after { transform: translateX(100%); }
+  .new-claim-btn:active { transform: scale(0.97); }
+
+  /* ── Progress bar ── */
+  .progress-bar-track {
+    width: 100%; height: 5px; background: rgba(255,255,255,0.06);
+    border-radius: 999px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 999px;
+    animation: progressFill 1.3s cubic-bezier(.4,0,.2,1) forwards;
+  }
+
+  /* ── Empty state ── */
+  .empty-emoji { animation: emptyBounce 2s ease infinite; display: inline-block; }
+  .sparkle {
+    display: inline-block; font-size: 14px;
+    animation: sparkle 2s ease infinite;
+  }
+`;
+
+/* ── Floating particle component ── */
+const PARTICLES = [
+  { size: 6, color: 'rgba(16,185,129,0.25)', x: '10%', delay: '0s', dur: '8s' },
+  { size: 4, color: 'rgba(129,140,248,0.2)', x: '25%', delay: '1.5s', dur: '10s' },
+  { size: 8, color: 'rgba(16,185,129,0.15)', x: '45%', delay: '3s', dur: '7s' },
+  { size: 5, color: 'rgba(245,158,11,0.2)', x: '65%', delay: '0.5s', dur: '9s' },
+  { size: 3, color: 'rgba(129,140,248,0.25)', x: '80%', delay: '2s', dur: '6s' },
+  { size: 7, color: 'rgba(16,185,129,0.2)', x: '90%', delay: '4s', dur: '11s' },
+];
+
+/* ── StatChip ── */
+const StatChip = ({ label, value, color, icon: Icon, delay = 0, barColor }) => {
+  const numericEnd = parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0;
+  const isNumeric = !isNaN(numericEnd) && numericEnd > 0;
+  const count = useCountUp(isNumeric ? numericEnd : 0, 1000);
+  const displayValue = isNumeric ? String(value).replace(/[0-9.]+/, count.toString()) : value;
+
   return (
-    <div style={wrapper}>
-      <div style={ring}>
-        <div style={inner}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 20, fontWeight: 900, color: CL.text }}>{percent}%</div>
-            <div style={{ fontSize: 8, color: CL.textMuted, marginTop: 1, fontWeight: 700, letterSpacing: '0.05em' }}>OVERALL</div>
+    <div
+      className="stat-chip"
+      style={{
+        '--chip-delay': `${delay}ms`,
+        background: `linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)`,
+        border: `1px solid ${color}25`,
+        boxShadow: `0 4px 24px ${color}12`,
+      }}
+    >
+      <div className="chip-shimmer" />
+      {Icon && (
+        <div style={{
+          width: 38, height: 38, borderRadius: 12,
+          background: `${color}18`, border: `1px solid ${color}35`,
+          display: 'grid', placeItems: 'center', color, marginBottom: 12,
+          boxShadow: `0 4px 16px ${color}20`
+        }}>
+          <Icon size={18} />
+        </div>
+      )}
+      <div style={{ fontSize: 30, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-1.2px', animation: 'countUp 0.4s ease both' }}>
+        {displayValue}
+      </div>
+      <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {label}
+      </div>
+      <div className="chip-bar-track" style={{ '--bar-delay': `${delay + 300}ms` }}>
+        <div className="chip-bar-fill" style={{ background: barColor || color, width: '100%' }} />
+      </div>
+    </div>
+  );
+};
+
+/* ── ClaimCard ── */
+const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
+  const badge = getStatusBadgeStyle(claim.status);
+  const progressColor = getProgressColor(claim.status);
+  const progressLabel = getProgressLabel(claim.status, claim.progress);
+  const initials = claim.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+  const nse = getNSE(claim.name);
+  const needsDocs = claim.status?.toLowerCase().includes('pending');
+  const isActive = claim.status?.toLowerCase() === 'active';
+
+  const [progressVisible, setProgressVisible] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setProgressVisible(true), animDelay + 500);
+    return () => clearTimeout(t);
+  }, [animDelay]);
+
+  const orbColor = needsDocs ? '#818CF8' : isActive ? '#10B981' : '#F59E0B';
+  const cardClass = needsDocs ? 'claim-card card-pending' : isActive ? 'claim-card card-active' : 'claim-card card-progress';
+  const ribbonColor = needsDocs ? 'linear-gradient(90deg,#818CF8,#6366F1)' : isActive ? 'linear-gradient(90deg,#10B981,#059669)' : 'linear-gradient(90deg,#F59E0B,#D97706)';
+
+  return (
+    <div
+      className={cardClass}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ animation: `cardRise 0.55s cubic-bezier(.34,1.56,.64,1) ${animDelay}ms both` }}
+    >
+      {/* ribbon top */}
+      <div className="card-ribbon" style={{ background: ribbonColor }} />
+
+      {/* floating glow orb */}
+      <div className="card-orb" style={{
+        width: 140, height: 140, top: -50, right: -40,
+        background: `radial-gradient(circle, ${orbColor}22 0%, transparent 70%)`,
+        opacity: hovered ? 1 : 0.5, transition: 'opacity 0.4s ease'
+      }} />
+      <div className="card-orb" style={{
+        width: 80, height: 80, bottom: 10, left: -20,
+        background: `radial-gradient(circle, ${orbColor}15 0%, transparent 70%)`,
+        opacity: hovered ? 0.8 : 0.3, transition: 'opacity 0.4s ease 0.1s'
+      }} />
+
+      {/* header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div className="claim-avatar" style={{
+            width: 46, height: 46, borderRadius: 14,
+            background: `linear-gradient(135deg, ${orbColor}30, ${orbColor}08)`,
+            border: `1.5px solid ${orbColor}40`,
+            color: orbColor, display: 'grid', placeItems: 'center',
+            fontWeight: 900, fontSize: 14, flexShrink: 0,
+            boxShadow: `0 6px 18px ${orbColor}25`
+          }}>{initials}</div>
+          <div>
+            <div style={{ fontWeight: 900, color: CL.text, fontSize: 15, letterSpacing: '-0.4px', lineHeight: 1.2 }}>{claim.name}</div>
+            <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 3, fontWeight: 600, letterSpacing: '0.02em' }}>
+              {claim.isin} · {nse}
+            </div>
           </div>
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 12px', borderRadius: 999,
+          background: badge.bg, color: badge.color, border: badge.border,
+          fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap',
+          animation: 'floatBadge 3.5s ease infinite'
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: badge.dot, display: 'inline-block', animation: 'pulseDot 1.6s ease infinite' }} />
+          {claim.status}
+        </div>
+      </div>
+
+      {/* warn banner */}
+      {needsDocs && (
+        <div className="warn-banner">
+          <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+          2 documents required — PAN Card &amp; Bank Cheque
+        </div>
+      )}
+
+      {/* metrics grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+        {[
+          { label: 'Shares', value: claim.shares },
+          { label: 'Folio No.', value: claim.folio },
+          { label: 'Est. Value', value: claim.estValue, color: '#10B981' }
+        ].map((m, mi) => (
+          <div key={m.label} style={{
+            background: 'rgba(255,255,255,0.03)', borderRadius: 11, padding: '10px 11px',
+            border: '1px solid rgba(255,255,255,0.06)',
+            animation: `fadeSlideUp 0.45s ease ${animDelay + 200 + mi * 60}ms both`
+          }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: m.color || CL.text, letterSpacing: '-0.3px' }}>{m.value}</div>
+            <div style={{ fontSize: 9, color: CL.textMuted, marginTop: 3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{m.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* progress */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 8 }}>
+          <span style={{ color: CL.textMuted, fontWeight: 600 }}>Claim Progress</span>
+          <span style={{ fontWeight: 800, color: needsDocs ? '#F59E0B' : '#10B981', fontSize: 11 }}>{progressLabel}</span>
+        </div>
+        <div className="progress-bar-track">
+          <div className="progress-bar-fill" style={{
+            '--progress-w': `${claim.progress}%`,
+            background: progressColor,
+            width: progressVisible ? `${claim.progress}%` : '0%',
+            transition: progressVisible ? `width 1.3s cubic-bezier(.4,0,.2,1) ${animDelay + 300}ms` : 'none'
+          }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+          {[0, 25, 50, 75, 100].map(v => (
+            <div key={v} style={{
+              width: 1, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 1
+            }} />
+          ))}
+        </div>
+      </div>
+
+      {/* buttons */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        {needsDocs ? (
+          <>
+            <button className="claim-btn-primary" style={{ background: 'linear-gradient(135deg,#F59E0B,#EF4444)', boxShadow: '0 4px 16px rgba(239,68,68,0.35)', flex: 1 }}>
+              <Upload size={13} /> Upload Docs
+            </button>
+            <button className="claim-btn-sec" onClick={() => onViewDetails && onViewDetails(claim)}>View</button>
+          </>
+        ) : (
+          <>
+            <button className="claim-btn-primary" onClick={() => onViewDetails && onViewDetails(claim)} style={{ background: 'linear-gradient(135deg,#10B981,#059669)', boxShadow: '0 4px 16px rgba(16,185,129,0.35)', flex: 1 }}>
+              <Eye size={13} /> View Details
+            </button>
+            <button className="claim-btn-sec">Docs</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════
+   CLAIM DETAIL VIEW
+═══════════════════════════════════════════════ */
+const CLAIM_DETAIL_CSS = `
+  @keyframes detailSlideIn { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes detailFadeUp  { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes stepPop       { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+  @keyframes lineGrow      { from{height:0} to{height:100%} }
+  @keyframes tagFloat      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+
+  .detail-wrap { animation: detailSlideIn 0.45s cubic-bezier(.34,1.56,.64,1) both; }
+  .detail-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px; padding: 22px;
+    backdrop-filter: blur(12px);
+    animation: detailFadeUp 0.4s ease var(--sec-delay,0s) both;
+  }
+  .detail-section:hover {
+    border-color: rgba(255,255,255,0.12);
+    transition: border-color 0.3s ease;
+  }
+  .step-dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: grid; place-items: center; flex-shrink: 0;
+    animation: stepPop 0.4s cubic-bezier(.34,1.56,.64,1) var(--dot-delay,0s) both;
+  }
+  .step-line {
+    width: 2px; flex-shrink: 0;
+    margin: 4px 0; border-radius: 999px;
+    animation: lineGrow 0.6s ease var(--line-delay,0s) both;
+    min-height: 28px;
+  }
+  .holder-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.2s ease;
+    animation: detailFadeUp 0.4s ease var(--holder-delay,0s) both;
+  }
+  .holder-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: translateX(4px); }
+  .action-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.2s ease;
+    animation: detailFadeUp 0.4s ease var(--action-delay,0s) both;
+  }
+  .action-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+  .update-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    animation: detailFadeUp 0.4s ease var(--upd-delay,0s) both;
+  }
+  .update-row:last-child { border-bottom: none; }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--dashboard-text-muted); cursor: pointer; font-size: 12px; font-weight: 700;
+    transition: all 0.2s ease;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--dashboard-text); transform: translateX(-3px); }
+  .stat-box {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 14px 20px; min-width: 110px;
+    animation: detailFadeUp 0.4s ease var(--sbox-delay,0s) both;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat-box:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .complete-badge {
+    padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 800;
+    background: linear-gradient(135deg,#10B981,#059669);
+    color: #fff; box-shadow: 0 4px 16px rgba(16,185,129,0.4);
+    animation: tagFloat 3s ease infinite;
+  }
+`;
+
+const ClaimDetailView = ({ claim, onBack }) => {
+  const badge = getStatusBadgeStyle(claim.status);
+  const initials = claim.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+  const orbColor = claim.status?.toLowerCase() === 'active' ? '#10B981'
+    : claim.status?.toLowerCase().includes('progress') ? '#F59E0B' : '#818CF8';
+
+  const steps = [
+    { label: 'Documents Collected', date: 'Mar 2, 2026', done: true },
+    { label: 'Verification', date: 'Mar 5, 2026', done: true },
+    { label: 'Application Filed', date: 'Mar 8, 2026', done: true },
+    { label: 'Authority Review', date: 'In Progress — Submitted to IEPF Authority', done: false, active: true },
+    { label: 'Claim Approved', date: '', done: false },
+    { label: 'Shares Credited', date: '', done: false },
+  ];
+
+  const adminUpdates = [
+    { icon: '🔵', text: 'Documents verified successfully by admin team', by: 'Admin · Mar 3, 9:15 PM' },
+    { icon: '🔵', text: 'IEPF-5 form submitted to authority portal', by: 'System · Mar 10, 11:00 AM' },
+    { icon: '🟢', text: 'Application acknowledged by IEPF Authority', by: 'Admin · Mar 12, 8:40 PM' },
+  ];
+
+  const holders = [
+    { name: 'Rajesh Patel', role: '1st Holder', status: 'Deceased', statusColor: '#EF4444' },
+    { name: 'Meena Patel', role: '2nd Holder', status: 'Alive', statusColor: '#10B981' },
+    { name: 'Ramesh Patel', role: '3rd Holder', status: 'Alive', statusColor: '#10B981' },
+  ];
+
+  const actions = [
+    { icon: '📈', label: 'Bonus 1:1', year: '2018' },
+    { icon: '✂️', label: 'Split ₹10→₹2', year: '2015' },
+    { icon: '💰', label: 'Dividend ₹3.50/share', year: '2022' },
+  ];
+
+  return (
+    <div className="detail-wrap" style={{ position: 'relative' }}>
+      <style>{CLAIM_DETAIL_CSS}</style>
+
+      {/* ── Breadcrumb ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+        <button className="back-btn" onClick={onBack}>
+          <ArrowLeft size={13} /> Back to Claims
+        </button>
+        <ChevronRight size={14} style={{ color: CL.textMuted, opacity: 0.5 }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: CL.textMuted }}>{claim.name}</span>
+      </div>
+
+      {/* ── Company Header ── */}
+      <div style={{
+        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 20, padding: '24px 28px', marginBottom: 20,
+        backdropFilter: 'blur(12px)', position: 'relative', overflow: 'hidden',
+        animation: 'detailFadeUp 0.4s ease both'
+      }}>
+        {/* bg orb */}
+        <div style={{
+          position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+          background: `radial-gradient(circle, ${orbColor}18 0%, transparent 70%)`,
+          top: -60, right: 40, pointerEvents: 'none'
+        }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 16,
+              background: `linear-gradient(135deg,${orbColor}35,${orbColor}10)`,
+              border: `2px solid ${orbColor}45`, color: orbColor,
+              display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 17,
+              boxShadow: `0 8px 24px ${orbColor}25`
+            }}>{initials}</div>
+            <div>
+              <div style={{ fontWeight: 900, fontSize: 22, color: CL.text, letterSpacing: '-0.5px', lineHeight: 1.1 }}>{claim.name}</div>
+              <div style={{ fontSize: 11, color: CL.textMuted, marginTop: 5, fontWeight: 600, letterSpacing: '0.03em' }}>{claim.isin}</div>
+            </div>
+          </div>
+          <div className="complete-badge">{claim.progress}% Complete</div>
+        </div>
+
+        {/* quick stats */}
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          {[
+            { label: 'SHARES', value: claim.shares, delay: '0.1s' },
+            { label: 'FOLIO NUMBER', value: claim.folio, delay: '0.18s' },
+            { label: 'EST. VALUE', value: claim.estValue, delay: '0.26s', color: '#10B981' },
+          ].map(s => (
+            <div key={s.label} className="stat-box" style={{ '--sbox-delay': s.delay }}>
+              <div style={{ fontSize: 9, color: CL.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: s.color || CL.text, letterSpacing: '-0.5px' }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Two-column layout ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 20, alignItems: 'start' }}>
+
+        {/* LEFT: Progress timeline */}
+        <div className="detail-section" style={{ '--sec-delay': '0.15s' }}>
+          <div style={{ fontWeight: 800, fontSize: 15, color: CL.text, marginBottom: 20 }}>Claim Progress</div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {steps.map((step, i) => (
+              <div key={i} style={{ display: 'flex', gap: 14 }}>
+                {/* dot + line column */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div className="step-dot" style={{
+                    '--dot-delay': `${0.15 + i * 0.07}s`,
+                    background: step.done ? 'linear-gradient(135deg,#10B981,#059669)'
+                      : step.active ? `linear-gradient(135deg,${orbColor}40,${orbColor}15)`
+                      : 'rgba(255,255,255,0.06)',
+                    border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid rgba(255,255,255,0.1)',
+                    boxShadow: step.done ? '0 4px 12px rgba(16,185,129,0.35)' : step.active ? `0 4px 12px ${orbColor}35` : 'none'
+                  }}>
+                    {step.done ? <CheckCircle2 size={16} color="#fff" /> :
+                      step.active ? <Activity size={14} color={orbColor} /> :
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />}
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div className="step-line" style={{
+                      '--line-delay': `${0.2 + i * 0.07}s`,
+                      background: step.done ? 'linear-gradient(180deg,#10B981,#059669)'
+                        : 'rgba(255,255,255,0.07)'
+                    }} />
+                  )}
+                </div>
+                {/* content */}
+                <div style={{ paddingBottom: i < steps.length - 1 ? 20 : 0, paddingTop: 5, flex: 1 }}>
+                  <div style={{
+                    fontWeight: step.active ? 800 : step.done ? 700 : 500,
+                    color: step.done ? CL.text : step.active ? orbColor : CL.textMuted,
+                    fontSize: 13, lineHeight: 1.3
+                  }}>{step.label}</div>
+                  {step.date && (
+                    <div style={{ fontSize: 10, color: step.active ? orbColor : CL.textMuted, marginTop: 3, fontWeight: 600 }}>
+                      {step.active && <span style={{
+                        display: 'inline-block', background: `${orbColor}20`, color: orbColor,
+                        border: `1px solid ${orbColor}40`, borderRadius: 999, padding: '1px 7px',
+                        fontSize: 9, fontWeight: 800, marginRight: 6, animation: 'tagFloat 2s ease infinite'
+                      }}>Active</span>}{step.date}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: stack of 3 sections */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Admin Updates */}
+          <div className="detail-section" style={{ '--sec-delay': '0.2s' }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: CL.text, marginBottom: 16 }}>Admin Updates</div>
+            <div>
+              {adminUpdates.map((u, i) => (
+                <div key={i} className="update-row" style={{ '--upd-delay': `${0.22 + i * 0.06}s` }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                    background: 'rgba(129,140,248,0.12)', border: '1px solid rgba(129,140,248,0.2)',
+                    display: 'grid', placeItems: 'center', fontSize: 14
+                  }}>
+                    {i === 2 ? '✅' : '🔵'}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: CL.text, lineHeight: 1.4 }}>{u.text}</div>
+                    <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 3, fontWeight: 600 }}>{u.by}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Holders */}
+          <div className="detail-section" style={{ '--sec-delay': '0.28s' }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: CL.text, marginBottom: 14 }}>Holders</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {holders.map((h, i) => (
+                <div key={i} className="holder-row" style={{ '--holder-delay': `${0.3 + i * 0.07}s` }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                    background: 'rgba(129,140,248,0.12)', border: '1px solid rgba(129,140,248,0.2)',
+                    display: 'grid', placeItems: 'center',
+                    fontWeight: 900, fontSize: 11, color: '#818CF8'
+                  }}>{i + 1}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: CL.text }}>{h.name}</div>
+                    <div style={{ fontSize: 10, color: CL.textMuted, fontWeight: 600, marginTop: 1 }}>{h.role}</div>
+                  </div>
+                  <span style={{
+                    fontSize: 10, fontWeight: 800, color: h.statusColor,
+                    background: `${h.statusColor}15`, border: `1px solid ${h.statusColor}30`,
+                    padding: '3px 10px', borderRadius: 999
+                  }}>{h.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Corporate Actions */}
+          <div className="detail-section" style={{ '--sec-delay': '0.36s' }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: CL.text, marginBottom: 14 }}>Corporate Actions</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {actions.map((a, i) => (
+                <div key={i} className="action-row" style={{ '--action-delay': `${0.38 + i * 0.07}s` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                      background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
+                      display: 'grid', placeItems: 'center', fontSize: 14
+                    }}>{a.icon}</div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: CL.text }}>{a.label}</span>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: CL.textMuted }}>{a.year}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ title, value, valueColor }) => (
-  <div style={{ 
-    flex: '1 1 150px', 
-    background: CL.card, 
-    border: `1px solid ${CL.border}`, 
-    borderRadius: 14, 
-    padding: '16px 14px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center'
-  }}>
-    <div style={{ fontSize: 24, fontWeight: 900, color: valueColor || CL.text }}>{value}</div>
-    <div style={{ color: CL.textMuted, fontSize: 10, marginTop: 6, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{title}</div>
-  </div>
-);
-
-const getStatusBadgeStyle = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'active':
-      return { color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)' };
-    case 'in progress':
-    case 'in_progress':
-      return { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.15)' };
-    case 'docs pending':
-    case 'docs_pending':
-    case 'pending':
-      return { color: '#A855F7', bg: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.15)' };
-    default:
-      return { color: '#94A3B8', bg: 'rgba(148, 163, 184, 0.08)', border: '1px solid rgba(148, 163, 184, 0.15)' };
-  }
+/* ── Sliding tab indicator helper ── */
+const useTabIndicator = (tabs, activeTab) => {
+  const refs = useRef({});
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  useEffect(() => {
+    const el = refs.current[activeTab];
+    if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [activeTab]);
+  return { refs, indicator };
 };
 
+const MyClaimsView = ({ claims, navigate }) => {
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [activeTab, setActiveTab] = useState('All Companies');
+  const [tabKey, setTabKey] = useState(0);
+
+  const tabs = ['All Companies', 'Active', 'In Progress', 'Pending', 'Service Hub'];
+  const { refs: tabRefs, indicator } = useTabIndicator(tabs, activeTab);
+
+  if (selectedClaim) return <ClaimDetailView claim={selectedClaim} onBack={() => setSelectedClaim(null)} />;
+
+
+
+  const totalCompanies = new Set(claims.map(c => c.name)).size;
+  const totalShares = claims.reduce((s, c) => s + (Number(c.shares) || 0), 0);
+  const pendingDocs = claims.filter(c => c.status?.toLowerCase().includes('pending')).length;
+
+  const filtered = claims.filter(c => {
+    if (activeTab === 'All Companies') return true;
+    if (activeTab === 'Active') return c.status?.toLowerCase() === 'active';
+    if (activeTab === 'In Progress') return c.status?.toLowerCase().includes('progress');
+    if (activeTab === 'Pending') return c.status?.toLowerCase().includes('pending');
+    return true;
+  });
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setTabKey(k => k + 1);
+    if (tab === 'Service Hub') setTimeout(() => navigate('/client?tab=service-hub'), 180);
+  };
+
+
+
+
+  return (
+    <div className="claims-page-wrap">
+      <style>{CLAIM_CSS}</style>
+
+      {/* ── Floating particles ── */}
+      {PARTICLES.map((p, i) => (
+        <div key={i} className="particle" style={{
+          width: p.size, height: p.size,
+          background: p.color, left: p.x, bottom: 0,
+          animationDuration: p.dur, animationDelay: p.delay
+        }} />
+      ))}
+
+      {/* ── Stats row ── */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 30, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+        <StatChip label="Total Companies" value={totalCompanies}   color="#3B82F6" barColor="#3B82F6" icon={FileText}     delay={0}   />
+        <StatChip label="Total Shares"    value={totalShares}      color="#818CF8"  barColor="#818CF8"              icon={TrendingUp}   delay={90}  />
+        <StatChip label="Recovery Value"  value="₹3.45L"           color="#10B981"  barColor="#10B981"              icon={CheckCircle2} delay={180} />
+        <StatChip label="Pending Docs"    value={pendingDocs}      color="#F59E0B"  barColor="#F59E0B"              icon={AlertTriangle} delay={270} />
+      </div>
+
+      {/* ── Tabs row ── */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+        marginBottom: 26, borderBottom: `1px solid ${CL.border}`, paddingBottom: 0,
+        position: 'relative', zIndex: 1, animation: 'fadeSlideUp 0.5s ease 0.15s both'
+      }}>
+        {/* sliding indicator */}
+        <div className="claims-tab-row" style={{ position: 'relative' }}>
+          {tabs.map(tab => {
+            const isActive = activeTab === tab;
+            const isServiceHub = tab === 'Service Hub';
+            return (
+              <button
+                key={tab}
+                ref={el => tabRefs.current[tab] = el}
+                className={`claims-tab-btn${isActive ? ' active' : ''}`}
+                onClick={() => handleTabChange(tab)}
+                style={{
+                  color: isActive ? (isServiceHub ? '#10B981' : CL.text) : CL.textMuted,
+                  marginBottom: -1,
+                }}
+              >
+                {tab}
+                {isServiceHub && (
+                  <span style={{
+                    display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                    background: '#10B981', marginLeft: 6, verticalAlign: 'middle',
+                    boxShadow: '0 0 8px #10B981', animation: 'pulseDot 1.5s ease infinite'
+                  }} />
+                )}
+                {tab === 'Pending' && pendingDocs > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: 'linear-gradient(135deg,#EF4444,#DC2626)',
+                    color: '#fff', fontSize: 9, fontWeight: 900, marginLeft: 6,
+                    boxShadow: '0 2px 8px rgba(239,68,68,0.5)',
+                    animation: 'pulseDot 2s ease infinite'
+                  }}>{pendingDocs}</span>
+                )}
+              </button>
+            );
+          })}
+          {/* sliding underline */}
+          <div className="tab-active-indicator" style={{ left: indicator.left, width: indicator.width }} />
+        </div>
+
+        <button className="new-claim-btn">
+          <Plus size={14} /> New Claim
+        </button>
+      </div>
+
+      {/* ── Cards grid ── */}
+      <div
+        key={tabKey}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(295px, 1fr))',
+          gap: 22, position: 'relative', zIndex: 1
+        }}
+      >
+        {filtered.length === 0 ? (
+          <div style={{
+            gridColumn: '1/-1', textAlign: 'center', padding: '70px 0',
+            color: CL.textMuted, animation: 'fadeSlideUp 0.4s ease both'
+          }}>
+            <div className="empty-emoji" style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
+            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>No claims for this filter</div>
+            <div style={{ fontSize: 13, opacity: 0.6 }}>Try switching to a different tab above</div>
+          </div>
+        ) : filtered.map((claim, i) => (
+          <ClaimCard
+            onViewDetails={(c) => setSelectedClaim(c)}
+            key={claim.name + i + tabKey}
+            claim={claim}
+            animDelay={i * 110}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════
+   DASHBOARD TAB VIEW (default, no ?tab or ?tab=dashboard)
+═══════════════════════════════════════════════ */
+const DashboardView = ({ overview, claims, navigate }) => {
+  const inProgress = claims.filter(c => !c.status?.toLowerCase().includes('active')).length;
+
+  return (
+    <>
+      {/* Overview stat cards */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
+        {[
+          { label: 'Total Claims', value: overview.totalClaims || claims.length, color: CL.text, icon: FileText },
+          { label: 'In Progress', value: overview.inProgress || inProgress, color: '#F59E0B', icon: TrendingUp },
+          { label: 'Completed', value: overview.completed || 1, color: '#10B981', icon: CheckCircle2 },
+          { label: 'Need Action', value: overview.needAction || 2, color: '#EF4444', icon: AlertTriangle },
+        ].map(s => (
+          <div key={s.label} style={{
+            flex: '1 1 140px',
+            backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
+            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            border: `1px solid ${CL.border}`, borderRadius: 14, padding: '16px 14px',
+            display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: s.color }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* My Claims preview — clicking navigates to the claims tab */}
+      <div style={{
+        backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        border: `1px solid ${CL.border}`, borderRadius: 16, padding: 20, marginBottom: 24
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, margin: 0 }}>My Claims</h2>
+          <button onClick={() => navigate('/client?tab=claims')} style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: 'none', border: 'none', color: CL.accent,
+            fontWeight: 700, fontSize: 12, cursor: 'pointer'
+          }}>View All <ArrowRight size={13} /></button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+          {claims.slice(0, 3).map((claim, i) => {
+            const badge = getStatusBadgeStyle(claim.status);
+            const initials = claim.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+            return (
+              <div key={i} style={{
+                backgroundColor: 'rgba(255,255,255,0.02)', border: `1px solid ${CL.border}`,
+                borderRadius: 12, padding: '14px 16px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 11 }}>{initials}</div>
+                    <div style={{ fontWeight: 800, color: CL.text, fontSize: 13 }}>{claim.name}</div>
+                  </div>
+                  <div style={{ padding: '3px 8px', borderRadius: 999, background: badge.bg, color: badge.color, border: badge.border, fontSize: 9, fontWeight: 800 }}>
+                    {claim.status}
+                  </div>
+                </div>
+                <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 999 }}>
+                  <div style={{ width: `${claim.progress}%`, height: '100%', background: getProgressColor(claim.status), borderRadius: 999 }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginTop: 6, color: CL.textMuted }}>
+                  <span>{claim.progress}%</span><span>{claim.folio}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Pending Actions */}
+      <div style={{
+        backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        border: `1px solid ${CL.border}`, borderRadius: 16, padding: 20, marginBottom: 24
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <AlertTriangle size={16} color={CL.accent} />
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, margin: 0 }}>Pending Actions</h2>
+          </div>
+          <div style={{ background: 'rgba(16,185,129,0.12)', color: CL.accent, fontWeight: 800, padding: '4px 10px', borderRadius: 999, fontSize: 10 }}>
+            2 Actions
+          </div>
+        </div>
+        <div style={{ display: 'grid', gap: 10 }}>
+          {[{ title: 'Upload Documents', subtitle: '2 documents pending' }, { title: 'Verify Identity', subtitle: 'Pending verification' }].map(item => (
+            <div key={item.title} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+              padding: '12px 16px', borderRadius: 12,
+              background: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.12)', flexWrap: 'wrap'
+            }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
+                  <CreditCard size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: CL.text }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: CL.textMuted, marginTop: 2 }}>{item.subtitle}</div>
+                </div>
+              </div>
+              <button style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>
+                Upload
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, marginBottom: 14 }}>Quick Actions</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+          {[
+            { label: 'Upload Document', icon: Upload },
+            { label: 'Support', icon: MessageSquare },
+            { label: 'Investment Store', icon: ShoppingBag },
+            { label: 'Document Hub', icon: Folder }
+          ].map(a => (
+            <div key={a.label} style={{
+              backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              border: `1px solid ${CL.border}`, borderRadius: 14, padding: '20px 14px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              justifyContent: 'center', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s'
+            }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', display: 'grid', placeItems: 'center', color: CL.accent, marginBottom: 12 }}>
+                <a.icon size={18} />
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: CL.text }}>{a.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Refer & Earn */}
+      <div style={{
+        backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(16,185,129,0.15)',
+        borderRadius: 14, padding: '18px 24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14
+      }}>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
+            <RefreshCw size={18} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, color: CL.text, fontSize: 14 }}>Refer a Friend &amp; Earn ₹5,000</div>
+            <div style={{ color: CL.textMuted, fontSize: 11, marginTop: 2 }}>For every friend who completes their claim recovery through RM Legal</div>
+          </div>
+        </div>
+        <button style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>
+          Refer Now
+        </button>
+      </div>
+    </>
+  );
+};
+
+/* ══════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════ */
 const ClientDashboard = ({ user }) => {
   const location = useLocation();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  // Derive service-hub visibility from URL query param (?tab=service-hub)
   const urlTab = new URLSearchParams(location.search).get('tab');
   const showServiceHub = urlTab === 'service-hub';
+  const showClaims = urlTab === 'claims';
 
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('All Companies');
+  const [notifHovered, setNotifHovered] = useState(false);
+  const [notifCount] = useState(3);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       if (!user?.token) { setLoading(false); return; }
       try {
         setLoading(true);
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/dashboard/client', { headers: { Authorization: `Bearer ${user.token}` } });
+        const { data } = await axios.get('https://myclaimportal.onrender.com/api/dashboard/client', {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
         setDashboard(data);
       } catch (err) {
         console.error(err);
@@ -135,529 +1132,206 @@ const ClientDashboard = ({ user }) => {
   }, [user]);
 
   const overview = dashboard?.overview || { totalClaims: 3, inProgress: 2, completed: 1, needAction: 2 };
-  
+
   const claims = (dashboard?.claims || [
-    { name: 'TATA STEEL', category: 'Mutual Fund Claim', status: 'Active', progress: 80, folio: 'TWD004589', shares: 120, isin: 'INE081A01020' },
-    { name: 'L&T LIMITED', category: 'Dividend Collection', status: 'In Progress', progress: 60, folio: 'LT098765', shares: 50, isin: 'INE018A01030' },
-    { name: 'WIPRO LTD', category: 'Recovery Support', status: 'Docs Pending', progress: 45, folio: 'WP234112', shares: 410, isin: 'INE075A01022' }
-  ]).map(c => {
-    if (c.name === 'TATA STEEL') return { ...c, shares: c.shares || 120, isin: c.isin || 'INE081A01020' };
-    if (c.name === 'L&T LIMITED') return { ...c, shares: c.shares || 50, isin: c.isin || 'INE018A01030' };
-    if (c.name === 'WIPRO LTD') return { ...c, shares: c.shares || 410, isin: c.isin || 'INE075A01022' };
-    return { ...c, shares: c.shares || 100, isin: c.isin || 'INE000A01000' };
-  });
-
-  const filteredClaims = claims.filter((claim) => {
-    if (activeTab === 'All Companies') return true;
-    if (activeTab === 'Active') return claim.status.toLowerCase() === 'active';
-    if (activeTab === 'Pending') return claim.status.toLowerCase().includes('pending');
-    return true;
-  });
-
-  const pending = [
-    { title: 'Upload Documents', subtitle: '2 documents pending' },
-    { title: 'Verify Identity', subtitle: 'Pending verification' }
-  ];
-
-  const userInitials = (user?.name || 'Ramesh Patel')
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+    { name: 'TATA STEEL', status: 'Active', progress: 80, folio: 'TWD004589', shares: 120, isin: 'INE081A01020', estValue: '₹1.88L' },
+    { name: 'L&T LIMITED', status: 'In Progress', progress: 60, folio: 'LT098765', shares: 50, isin: 'INE018A01030', estValue: '₹90K' },
+    { name: 'WIPRO LTD', status: 'Docs Pending', progress: 45, folio: 'WP234112', shares: 410, isin: 'INE075A01022', estValue: '₹1.87L' },
+  ]);
 
   if (loading) return (
-    <div style={{ minHeight: 420, display: 'flex', alignItems: 'center', justifyContent: 'center', color: CL.textMuted }}>
+    <div style={{ minHeight: 420, display: 'flex', alignItems: 'center', justifyContent: 'center', color: CL.textMuted, background: CL.bg }}>
       <Clock size={36} style={{ color: CL.accent }} />
     </div>
   );
 
-  if (showServiceHub) return <ClientServiceHub user={user} onBack={() => { navigate('/'); setActiveTab('All Companies'); }} />;
+  if (showServiceHub) return (
+    <ClientServiceHub user={user} onBack={() => navigate('/client')} />
+  );
+
+  const pageTitle = showClaims ? 'My Claims' : 'Dashboard';
+  const pageSubtitle = showClaims
+    ? 'All company claims linked to your account'
+    : "Here's your CLIENT command center.";
+
+  const firstName = user?.name?.split(' ')[0] || 'Kunal';
+
+  const HEADER_CSS = `
+    @keyframes wave        { 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(20deg); } 75%{ transform:rotate(-10deg); } }
+    @keyframes headerSlide { from{ opacity:0; transform:translateY(-20px); } to{ opacity:1; transform:translateY(0); } }
+    @keyframes badgeBounce { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.25); } }
+    @keyframes ringPulse   { 0%{ transform:scale(1); opacity:0.7; } 100%{ transform:scale(2.2); opacity:0; } }
+    @keyframes gradShift   { 0%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } 100%{ background-position:0% 50%; } }
+    @keyframes textShimmer { 0%{ background-position:-200% center; } 100%{ background-position:200% center; } }
+    @keyframes subtitleIn  { from{ opacity:0; transform:translateX(-12px); } to{ opacity:1; transform:translateX(0); } }
+    @keyframes bellShake   { 0%,100%{ transform:rotate(0); } 20%{ transform:rotate(-12deg); } 40%{ transform:rotate(12deg); } 60%{ transform:rotate(-8deg); } 80%{ transform:rotate(8deg); } }
+    @keyframes orb1        { 0%,100%{ transform:translate(0,0) scale(1); } 33%{ transform:translate(30px,-20px) scale(1.1); } 66%{ transform:translate(-15px,25px) scale(0.9); } }
+    @keyframes orb2        { 0%,100%{ transform:translate(0,0) scale(1); } 33%{ transform:translate(-25px,15px) scale(0.9); } 66%{ transform:translate(20px,-20px) scale(1.1); } }
+
+    .header-title-shimmer {
+      color: var(--dashboard-text);
+    }
+    .notif-btn {
+      position: relative; overflow: visible;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px; border-radius: 14px;
+      cursor: pointer; font-weight: 800; font-size: 13px;
+      border: 1px solid rgba(16,185,129,0.35);
+      background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(129,140,248,0.08));
+      color: var(--dashboard-text);
+      backdrop-filter: blur(12px);
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease, border-color 0.2s ease;
+      animation: headerSlide 0.6s ease 0.4s both;
+    }
+    .notif-btn:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 12px 32px rgba(16,185,129,0.25);
+      border-color: rgba(16,185,129,0.6);
+    }
+    .notif-btn:active { transform: scale(0.97); }
+    .notif-btn .bell-icon {
+      transition: transform 0.3s ease;
+    }
+    .notif-btn:hover .bell-icon {
+      animation: bellShake 0.5s ease;
+    }
+    .notif-ring {
+      position: absolute; inset: -4px;
+      border-radius: 18px;
+      border: 2px solid rgba(16,185,129,0.5);
+      animation: ringPulse 2s ease infinite;
+      pointer-events: none;
+    }
+    .notif-badge {
+      position: absolute; top: -6px; right: -6px;
+      min-width: 20px; height: 20px; border-radius: 999px;
+      background: linear-gradient(135deg,#EF4444,#DC2626);
+      color: #fff; font-size: 10px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 5px;
+      border: 2px solid var(--dashboard-bg);
+      animation: badgeBounce 2s ease 1s infinite;
+      box-shadow: 0 4px 12px rgba(239,68,68,0.5);
+    }
+    .header-wrap {
+      position: relative;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 36px;
+      padding: 28px 32px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(129,140,248,0.05) 50%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      animation: headerSlide 0.5s ease both;
+    }
+    .header-orb-1 {
+      position: absolute; width: 180px; height: 180px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+      top: -60px; right: 80px; pointer-events: none;
+      animation: orb1 8s ease-in-out infinite;
+    }
+    .header-orb-2 {
+      position: absolute; width: 140px; height: 140px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(129,140,248,0.12) 0%, transparent 70%);
+      bottom: -40px; left: 200px; pointer-events: none;
+      animation: orb2 10s ease-in-out infinite;
+    }
+    .header-orb-3 {
+      position: absolute; width: 80px; height: 80px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%);
+      top: 10px; left: 40%; pointer-events: none;
+      animation: orb1 6s ease-in-out 2s infinite;
+    }
+    .header-title-block {
+      animation: headerSlide 0.5s ease 0.1s both;
+      position: relative; z-index: 1;
+    }
+    .header-greeting {
+      font-size: 30px; font-weight: 900;
+      letter-spacing: -0.8px; margin: 0 0 8px 0;
+      line-height: 1.1;
+    }
+    .header-subtitle {
+      font-size: 14px; font-weight: 600;
+      color: var(--dashboard-text-muted);
+      animation: subtitleIn 0.5s ease 0.3s both;
+    }
+    .header-tag {
+      display: inline-block;
+      background: rgba(16,185,129,0.15); color: #10B981;
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 999px; padding: 2px 10px; font-size: 11px;
+      font-weight: 800; letter-spacing: 0.05em;
+      margin-right: 8px; vertical-align: middle;
+      animation: headerSlide 0.5s ease 0.5s both;
+    }
+  `;
 
   return (
-    <main style={{ minHeight: '100%', padding: '24px', background: CL.bg, color: CL.text }}>
-      
-      {/* 1. Header Area */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: CL.text, margin: 0, letterSpacing: '-0.5px' }}>Dashboard</h1>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button style={{ 
-            background: CL.cardSoft, 
-            border: `1px solid ${CL.border}`, 
-            padding: 10, 
-            borderRadius: '50%',
-            color: CL.text,
-            cursor: 'pointer',
-            position: 'relative',
-            display: 'grid',
-            placeItems: 'center'
-          }}>
-            <Bell size={16} />
-            <div style={{ 
-              position: 'absolute', 
-              top: 2, 
-              right: 2, 
-              width: 6, 
-              height: 6, 
-              background: CL.accent, 
-              borderRadius: '50%' 
-            }} />
-          </button>
-          <div style={{ 
-            width: 36, 
-            height: 36, 
-            borderRadius: 10, 
-            background: CL.accent, 
-            display: 'grid', 
-            placeItems: 'center', 
-            color: '#050B14', 
-            fontWeight: 800,
-            fontSize: 13
-          }}>
-            {userInitials}
-          </div>
-        </div>
-      </div>
+    <main style={{
+      flexGrow: 1, minHeight: 'max-content', minWidth: '100%',
+      padding: '32px', backgroundColor: CL.bg, backgroundImage: CL.bgImage,
+      color: CL.text, boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)'
+    }}>
+      <style>{HEADER_CSS}</style>
 
-      {/* 2. Welcome back card */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, rgba(11,17,32,0.85) 0%, rgba(5,11,20,0.95) 100%)', 
-        border: `1px solid ${CL.border}`, 
-        borderRadius: 16, 
-        padding: '24px', 
-        marginBottom: 24, 
-        boxShadow: '0 16px 40px rgba(0,0,0,0.3)' 
-      }}>
-        <div>
-          <div style={{ color: CL.textMuted, fontSize: 12 }}>Welcome back,</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: CL.text }}>
-              {user?.name || 'Ramesh Patel'} <span style={{ marginLeft: 2 }}>👋</span>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              gap: 5, 
-              alignItems: 'center',
-              background: 'rgba(16, 185, 129, 0.12)',
-              padding: '4px 10px',
-              borderRadius: 999
-            }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: CL.accent }} />
-              <span style={{ color: CL.accent, fontSize: 10, fontWeight: 800 }}>Active Client</span>
-            </div>
-          </div>
-          <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', color: CL.textMuted, fontSize: 11 }}>
-            <div>{user?.client_id_ref || 'CRN-2891'}</div>
-            <div style={{ width: 3, height: 3, borderRadius: '50%', background: CL.textMuted }} />
-            <div>Member since Jan 2026</div>
-          </div>
-        </div>
-        <div style={{ marginTop: 16, color: CL.textMuted, fontSize: 13, lineHeight: 1.5 }}>
-          Your claim recovery is in progress — 2 documents pending upload
-        </div>
-      </div>
+      {/* ── ANIMATED HEADER ── */}
+      <div className="header-wrap">
+        {/* background orbs */}
+        <div className="header-orb-1" />
+        <div className="header-orb-2" />
+        <div className="header-orb-3" />
 
-      {/* 3. Overview stats section */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, marginBottom: 14 }}>Overview</h2>
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
-          <StatCard title="Total Claims" value={overview.totalClaims} valueColor="#60A5FA" />
-          <StatCard title="In Progress" value={overview.inProgress} valueColor="#F8FAFC" />
-          <StatCard title="Completed" value={overview.completed} valueColor="#10B981" />
-          <StatCard title="Need Action" value={overview.needAction} valueColor="#F59E0B" />
-          <StatCard title="Total Services" value="₹3.45L" valueColor="#38BDF8" />
-        </section>
-      </div>
-
-      {/* 4. Overall Claim Progress timeline card */}
-      <div style={{ 
-        background: CL.card, 
-        border: `1px solid ${CL.border}`, 
-        borderRadius: 16, 
-        padding: '24px', 
-        marginBottom: 24 
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, margin: 0 }}>Overall Claim Progress</h2>
-          <div style={{ 
-            background: 'rgba(16, 185, 129, 0.12)', 
-            color: '#10B981', 
-            fontSize: 10, 
-            fontWeight: 800, 
-            padding: '4px 10px', 
-            borderRadius: 999 
-          }}>
-            3 Companies
+        {/* left: title block */}
+        <div className="header-title-block">
+          <div style={{ marginBottom: 6 }}>
+            <span className="header-tag">
+              {showClaims ? '📁 MY CLAIMS' : '🏠 DASHBOARD'}
+            </span>
+          </div>
+          <h1 className="header-greeting">
+            {showClaims ? (
+              <span className="header-title-shimmer">My Claims</span>
+            ) : (
+              <>
+                Welcome back,{' '}
+                <span className="header-title-shimmer">{firstName}</span>
+                {' '}
+                <span style={{ display: 'inline-block', animation: 'wave 2s ease infinite', fontSize: 26 }}>👋</span>
+              </>
+            )}
+          </h1>
+          <div className="header-subtitle">
+            {showClaims
+              ? <>Track &amp; manage all your <strong style={{ color: CL.accent }}>company claims</strong> in one place</>
+              : <>Here's your <strong style={{ color: CL.accent }}>CLIENT</strong> command center — stay on top of everything.</>
+            }
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap', marginTop: 20 }}>
-          {/* Left progress circle */}
-          <div style={{ display: 'flex', justifyContent: 'center', minWidth: 120 }}>
-            <CircularProgress percent={72} />
-          </div>
-          {/* Right vertical timeline */}
-          <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', gap: 16, paddingLeft: 6 }}>
-            <div style={{ 
-              position: 'absolute', 
-              left: 17, 
-              top: 12, 
-              bottom: 12, 
-              width: 2, 
-              background: 'rgba(255, 255, 255, 0.06)' 
-            }} />
-            {[
-              { label: 'Documents Collected', date: 'Mar 2, 2026', complete: true },
-              { label: 'Verification', date: 'Mar 5, 2026', complete: true },
-              { label: 'Application Filed', date: 'Mar 10, 2026', complete: true },
-              { label: 'Authority Review', date: 'Submitted to IEPF Authority', active: true },
-              { label: 'Claim Approved', date: '', pending: true },
-              { label: 'Shares Credited', date: '', pending: true }
-            ].map((step, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
-                <div style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  background: step.complete ? CL.accent : step.active ? '#0B1120' : 'transparent',
-                  border: step.complete ? 'none' : step.active ? `2px solid ${CL.accent}` : '2px solid rgba(255,255,255,0.06)',
-                  display: 'grid',
-                  placeItems: 'center',
-                  color: step.complete ? '#050B14' : step.active ? CL.accent : '#94A3B8',
-                  flexShrink: 0
-                }}>
-                  {step.complete ? <CheckCircle2 size={12} color="#050B14" /> : step.active ? <Clock size={12} /> : <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />}
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ fontWeight: 800, color: step.pending ? '#94A3B8' : '#F8FAFC', fontSize: 12 }}>{step.label}</div>
-                    {step.active && (
-                      <span style={{ 
-                        background: 'rgba(16, 185, 129, 0.12)', 
-                        color: CL.accent, 
-                        padding: '1px 6px', 
-                        borderRadius: 999, 
-                        fontSize: 9, 
-                        fontWeight: 800 
-                      }}>Active</span>
-                    )}
-                  </div>
-                  {step.date && <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 2 }}>{step.date}</div>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 5. My Claims Section */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, margin: 0 }}>My Claims</h2>
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            color: '#94A3B8', 
-            fontSize: 11, 
-            fontWeight: 700, 
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 3
-          }}>
-            View All <ArrowRight size={12} />
+        {/* right: animated notification bell */}
+        <div style={{ position: 'relative', zIndex: 1, animation: 'headerSlide 0.5s ease 0.4s both' }}>
+          <button
+            className="notif-btn"
+            onMouseEnter={() => setNotifHovered(true)}
+            onMouseLeave={() => setNotifHovered(false)}
+          >
+            {/* pulse ring */}
+            <div className="notif-ring" />
+            {/* badge */}
+            <div className="notif-badge">{notifCount}</div>
+            <span className="bell-icon"><Bell size={20} /></span>
           </button>
         </div>
-
-        {/* Custom Tab selector */}
-        <style>{`
-          @keyframes tabFlash {
-            0%   { background: rgba(16,185,129,0.18); }
-            60%  { background: rgba(16,185,129,0.08); }
-            100% { background: none; }
-          }
-          .claim-tab { position: relative; overflow: hidden; }
-          .claim-tab:active { transform: scale(0.95); }
-          .claim-tab.tab-pressed { animation: tabFlash 0.35s ease forwards; }
-        `}</style>
-        <div style={{ display: 'flex', gap: 20, borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 20, paddingBottom: 2 }}>
-  {['All Companies', 'Active', 'Pending', 'Service Hub'].map((tab) => {
-    const isActive = activeTab === tab;
-    const isServiceHub = tab === 'Service Hub';
-    const handleClick = () => {
-      setActiveTab(tab);
-      if (isServiceHub) {
-        // brief visual delay so user sees the green flash before navigating
-        setTimeout(() => navigate('/?tab=service-hub'), 220);
-      }
-    };
-    return (
-      <button
-        key={tab}
-        onClick={handleClick}
-        className={`claim-tab${isActive ? ' tab-pressed' : ''}`}
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: '10px 6px',
-          color: isActive
-            ? (isServiceHub ? '#10B981' : '#F8FAFC')
-            : '#94A3B8',
-          fontSize: 12,
-          fontWeight: 700,
-          cursor: 'pointer',
-          position: 'relative',
-          borderBottom: isActive
-            ? `2px solid ${isServiceHub ? '#10B981' : '#F8FAFC'}`
-            : '2px solid transparent',
-          borderRadius: '4px 4px 0 0',
-          transition: 'color 0.18s, border-color 0.18s, transform 0.12s',
-        }}
-      >
-        {tab}
-        {isServiceHub && (
-          <span style={{
-            display: 'inline-block',
-            width: 5, height: 5,
-            borderRadius: '50%',
-            background: '#10B981',
-            marginLeft: 5,
-            verticalAlign: 'middle',
-            boxShadow: '0 0 6px #10B981',
-            opacity: isActive ? 1 : 0.5,
-          }} />
-        )}
-      </button>
-    );
-  })}
-</div>
-
-        {/* Grid of Company Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-          {filteredClaims.map((claim) => {
-            const badgeStyle = getStatusBadgeStyle(claim.status);
-            return (
-              <div key={claim.name} style={{ background: CL.card, border: `1px solid ${CL.border}`, borderRadius: 16, padding: 18 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <div style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
-                      background: 'rgba(16, 185, 129, 0.08)',
-                      color: '#10B981',
-                      display: 'grid',
-                      placeItems: 'center',
-                      fontWeight: 800,
-                      fontSize: 12,
-                      flexShrink: 0
-                    }}>
-                      {claim.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 800, color: '#F8FAFC', fontSize: 13 }}>{claim.name}</div>
-                      <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>{claim.isin}</div>
-                    </div>
-                  </div>
-                  <div style={{
-                    padding: '4px 10px',
-                    borderRadius: 999,
-                    background: badgeStyle.bg,
-                    color: badgeStyle.color,
-                    border: badgeStyle.border,
-                    fontSize: 10,
-                    fontWeight: 800
-                  }}>
-                    {claim.status}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                  <div style={{ flex: 1, background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 14, fontWeight: 900, color: '#F8FAFC' }}>{claim.shares}</div>
-                    <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>Shares</div>
-                  </div>
-                  <div style={{ flex: 1, background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 900, color: '#F8FAFC' }}>{claim.folio}</div>
-                    <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>Folio No.</div>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 6 }}>
-                    <span style={{ color: '#94A3B8' }}>Progress</span>
-                    <span style={{ fontWeight: 800, color: '#10B981' }}>{claim.progress}%</span>
-                  </div>
-                  <div style={{ width: '100%', height: 5, background: 'rgba(255, 255, 255, 0.05)', borderRadius: 999, overflow: 'hidden' }}>
-                    <div style={{ width: `${claim.progress}%`, height: '100%', background: 'linear-gradient(90deg, #10B981, #059669)' }} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
-      {/* 6. Pending Actions Section */}
-      <div style={{ 
-        background: CL.card, 
-        border: `1px solid ${CL.border}`, 
-        borderRadius: 16, 
-        padding: 20, 
-        marginBottom: 24 
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <AlertTriangle size={16} color={CL.accent} />
-            <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, margin: 0 }}>Pending Actions</h2>
-          </div>
-          <div style={{ 
-            background: 'rgba(16, 185, 129, 0.12)', 
-            color: CL.accent, 
-            fontWeight: 800, 
-            padding: '4px 10px', 
-            borderRadius: 999, 
-            fontSize: 10 
-          }}>
-            2 Actions
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
-          {pending.map((item) => (
-            <div key={item.title} style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              gap: 12, 
-              padding: '12px 16px', 
-              borderRadius: 12, 
-              background: 'rgba(16, 185, 129, 0.02)', 
-              border: `1px solid rgba(16, 185, 129, 0.12)`,
-              flexWrap: 'wrap'
-            }}>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <div style={{ 
-                  width: 38, 
-                  height: 38, 
-                  borderRadius: 10, 
-                  background: 'rgba(16, 185, 129, 0.08)', 
-                  display: 'grid', 
-                  placeItems: 'center', 
-                  color: CL.accent,
-                  flexShrink: 0
-                }}>
-                  <CreditCard size={18} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#F8FAFC' }}>{item.title}</div>
-                  <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>{item.subtitle}</div>
-                </div>
-              </div>
-              <button style={{ 
-                background: CL.accent, 
-                border: 'none', 
-                color: '#050B14', 
-                padding: '8px 16px', 
-                borderRadius: 10, 
-                fontWeight: 800,
-                fontSize: 11,
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}>
-                Upload
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 7. Quick Actions Section */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, marginBottom: 14 }}>Quick Actions</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
-          {[
-            { label: 'Upload Document', icon: Upload },
-            { label: 'Support', icon: MessageSquare },
-            { label: 'Investment Store', icon: ShoppingBag },
-            { label: 'Document Hub', icon: Folder }
-          ].map((a) => (
-            <div key={a.label} style={{
-              background: CL.card,
-              border: `1px solid ${CL.border}`,
-              borderRadius: 14,
-              padding: '20px 14px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.3s'
-            }}>
-              <div style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                display: 'grid',
-                placeItems: 'center',
-                color: CL.accent,
-                marginBottom: 12
-              }}>
-                <a.icon size={18} />
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#F8FAFC' }}>{a.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 8. Refer and Earn Banner */}
-      <div style={{
-        background: 'linear-gradient(90deg, rgba(16,185,129,0.06), rgba(5,11,20,0.3))',
-        border: '1px solid rgba(16,185,129,0.15)',
-        borderRadius: 14,
-        padding: '18px 24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 14
-      }}>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-          <div style={{
-            width: 38,
-            height: 38,
-            borderRadius: '50%',
-            background: 'rgba(16, 185, 129, 0.1)',
-            display: 'grid',
-            placeItems: 'center',
-            color: CL.accent,
-            flexShrink: 0
-          }}>
-            <RefreshCw size={18} />
-          </div>
-          <div>
-            <div style={{ fontWeight: 800, color: '#F8FAFC', fontSize: 14 }}>Refer a Friend & Earn ₹5,000</div>
-            <div style={{ color: '#94A3B8', fontSize: 11, marginTop: 2 }}>For every friend who completes their claim recovery through RM Legal</div>
-          </div>
-        </div>
-        <button style={{
-          background: CL.accent,
-          border: 'none',
-          color: '#050B14',
-          padding: '10px 20px',
-          borderRadius: 10,
-          fontWeight: 800,
-          fontSize: 12,
-          cursor: 'pointer',
-          transition: 'all 0.2s'
-        }}>
-          Refer Now
-        </button>
-      </div>
+      {/* ── TAB CONTENT ── */}
+      {showClaims ? (
+        <MyClaimsView claims={claims} navigate={navigate} />
+      ) : (
+        <DashboardView overview={overview} claims={claims} navigate={navigate} />
+      )}
 
     </main>
   );

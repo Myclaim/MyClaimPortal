@@ -417,21 +417,21 @@ const ITEMS = [
     id: 'client-my-services',
     section: 'client-main',
     label: 'My Services',
-    path: '/?tab=services',
+    path: '/client?tab=services',
     icon: Box,
   },
   {
     id: 'client-my-tickets',
     section: 'client-main',
     label: 'My Tickets',
-    path: '/?tab=tickets',
+    path: '/client?tab=tickets',
     icon: Briefcase,
   },
   {
     id: 'client-documents',
     section: 'client-main',
     label: 'Documents',
-    path: '/?tab=documents',
+    path: '/client?tab=documents',
     icon: FileText,
     badgeSource: 'documents'
   },
@@ -439,14 +439,14 @@ const ITEMS = [
     id: 'client-track-progress',
     section: 'client-main',
     label: 'Track Progress',
-    path: '/?tab=track-progress',
+    path: '/client?tab=track-progress',
     icon: Activity,
   },
   {
     id: 'client-notifications',
     section: 'client-main',
     label: 'Notifications',
-    path: '/?tab=notifications',
+    path: '/client?tab=notifications',
     icon: Bell,
     supportsBadge: true,
   },
@@ -454,14 +454,14 @@ const ITEMS = [
     id: 'client-service-hub',
     section: 'client-main',
     label: 'Service Hub',
-    path: '/?tab=service-hub',
+    path: '/client?tab=service-hub',
     icon: Activity,
   },
   {
     id: 'client-my-claims',
     section: 'client-main',
     label: 'My Claims',
-    path: '/?tab=claims',
+    path: '/client?tab=claims',
     icon: Layers,
     badgeSource: 'claims'
   },
@@ -469,28 +469,28 @@ const ITEMS = [
     id: 'client-investment-store',
     section: 'client-main',
     label: 'Investment Store',
-    path: '/?tab=investment-store',
+    path: '/client?tab=investment-store',
     icon: ShoppingBag,
   },
   {
     id: 'client-family-tree',
     section: 'client-tools',
     label: 'Family Tree',
-    path: '/?tab=family-tree',
+    path: '/client?tab=family-tree',
     icon: TreeDeciduous,
   },
   {
     id: 'client-iepf-search',
     section: 'client-tools',
     label: 'IEPF Search',
-    path: '/?tab=iepf-search',
+    path: '/client?tab=iepf-search',
     icon: Search,
   },
   {
     id: 'client-refer-earn',
     section: 'client-tools',
     label: 'Refer & Earn',
-    path: '/?tab=refer-earn',
+    path: '/client?tab=refer-earn',
     icon: Gift,
     badgeLabel: '₹500'
   },
@@ -719,21 +719,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         </div>
       </div>
 
-      {user?.role === 'client' && (
-        <div className="sidebar-profile-card">
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <div className="sidebar-profile-avatar">{user?.name?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'RP'}</div>
-            <div style={{ minWidth: 0 }}>
-              <div className="sidebar-profile-name">{user?.name || 'Ramesh Patel'}</div>
-              <div className="sidebar-profile-email">{user?.email || 'ramesh.patel@gmail.com'}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
-            <span className="sidebar-profile-pill">Active</span>
-            <span className="sidebar-profile-id">ID: {user?.client_id_ref || 'CRN-2891'}</span>
-          </div>
-        </div>
-      )}
+
 
       {/* Render a focused client navbar layout when role is client */}
       {user?.role === 'client' ? (
@@ -784,16 +770,36 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         })
       )}
 
-      <div className="sidebar-footer">
-        <div className="sidebar-user" onClick={handleLogout}>
-          <div className="sidebar-avatar">
+      <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px' }}>
+        <div 
+          onClick={handleLogout}
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: '12px', 
+            background: 'rgba(34, 197, 94, 0.05)', padding: '10px 16px', 
+            borderRadius: '14px', border: '1px solid rgba(34, 197, 94, 0.1)',
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
+            e.currentTarget.querySelector('.logout-icon').style.color = '#ef4444';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)';
+            e.currentTarget.querySelector('.logout-icon').style.color = 'var(--accent-green)';
+          }}
+        >
+          <div style={{ width: 36, height: 36, background: 'var(--accent-green)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 700, fontSize: '14px', flexShrink: 0 }}>
             {user?.name ? user.name.substring(0, 2).toUpperCase() : 'AV'}
           </div>
-          <div>
-            <div className="sidebar-user-name">{user?.role === 'super_admin' ? 'Super Admin' : user?.name || 'Akash Verma'}</div>
-            <div className="sidebar-user-role capitalize">{user?.role?.replace('_', ' ') || 'User'}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user?.role === 'super_admin' ? 'Super Admin' : user?.name || 'Akash Verma'}
+            </span>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase' }}>
+              {user?.role?.replace('_', ' ') || 'User'}
+            </span>
           </div>
-          <span className="sidebar-logout">
+          <span className="logout-icon" style={{ color: 'var(--accent-green)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}>
             <LogOut size={16} />
           </span>
         </div>

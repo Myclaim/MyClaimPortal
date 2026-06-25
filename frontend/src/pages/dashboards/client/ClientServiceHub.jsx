@@ -21,15 +21,17 @@ import {
 
 /* ─── Design Tokens (Black & Green) ──────────────────────────── */
 const C = {
-  bg:          '#09090B',
-  bgCard:      '#111113',
-  bgCard2:     '#18181B',
-  border:      'rgba(255,255,255,0.07)',
+  bg:          'var(--dashboard-bg)',
+  bgImage:     'var(--dashboard-bg-image)',
+  bgCard:      'var(--dashboard-card)',
+  bgCardImage: 'var(--dashboard-card-image)',
+  bgCard2:     'var(--dashboard-card-soft)',
+  border:      'var(--dashboard-border)',
   borderGreen: 'rgba(16,185,129,0.25)',
-  text:        '#F4F4F5',
-  textMuted:   '#71717A',
-  textSub:     '#A1A1AA',
-  green:       '#10B981',
+  text:        'var(--dashboard-text)',
+  textMuted:   'var(--dashboard-text-muted)',
+  textSub:     'var(--dashboard-text-muted)',
+  green:       'var(--dashboard-accent)',
   greenSoft:   'rgba(16,185,129,0.10)',
   greenGlow:   'rgba(16,185,129,0.18)',
   greenDark:   '#059669',
@@ -80,7 +82,7 @@ const ServiceCard = ({ service, onSelect }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? C.bgCard2 : C.bgCard,
+        backgroundColor: hovered ? C.bgCard2 : C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         border: `1px solid ${hovered ? C.borderGreen : C.border}`,
         borderRadius: 16,
         padding: 20,
@@ -183,7 +185,7 @@ const DetailPanel = ({ service, onClose }) => {
       <div style={{
         position: 'fixed', top: 0, right: 0,
         width: 420, maxWidth: '95vw', height: '100vh',
-        background: C.bgCard,
+        backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         borderLeft: `1px solid ${C.border}`,
         boxShadow: '-16px 0 60px rgba(0,0,0,0.5)',
         zIndex: 1001,
@@ -203,7 +205,7 @@ const DetailPanel = ({ service, onClose }) => {
               Service Hub › Details
             </div>
             <button onClick={onClose} style={{
-              background: 'rgba(255,255,255,0.05)', border: `1px solid ${C.border}`,
+              background: 'var(--border)', border: `1px solid ${C.border}`,
               borderRadius: 8, width: 32, height: 32, display: 'grid', placeItems: 'center',
               color: C.textMuted, cursor: 'pointer',
             }}>
@@ -247,7 +249,7 @@ const DetailPanel = ({ service, onClose }) => {
 
           {/* Details grid */}
           <div style={{
-            background: C.bgCard2, border: `1px solid ${C.border}`,
+            backgroundColor: C.bgCard2, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
             borderRadius: 12, padding: 16, marginBottom: 24,
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16,
           }}>
@@ -305,7 +307,7 @@ const DetailPanel = ({ service, onClose }) => {
             width: '100%', padding: '13px',
             background: `linear-gradient(135deg, ${C.greenDark}, ${C.green})`,
             border: 'none', borderRadius: 12,
-            color: '#fff', fontWeight: 800, fontSize: 14,
+            color: 'C.bg', fontWeight: 800, fontSize: 14,
             cursor: 'pointer', boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
             transition: 'all 0.2s',
           }}>
@@ -362,14 +364,14 @@ const ClientServiceHub = ({ user, onBack }) => {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, padding: '24px' }}>
+    <div style={{ flexGrow: 1, minHeight: 'max-content', backgroundColor: C.bg, backgroundImage: C.bgImage, color: C.text, padding: '24px' }}>
 
       {/* ── Top bar ────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
         <button
           onClick={onBack}
           style={{
-            background: C.bgCard, border: `1px solid ${C.border}`,
+            backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
             borderRadius: 10, width: 38, height: 38,
             display: 'grid', placeItems: 'center',
             color: C.textMuted, cursor: 'pointer',
@@ -390,7 +392,7 @@ const ClientServiceHub = ({ user, onBack }) => {
             onClick={() => fetchServices(true)}
             disabled={refreshing}
             style={{
-              background: C.bgCard, border: `1px solid ${C.border}`,
+              backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
               borderRadius: 10, width: 38, height: 38,
               display: 'grid', placeItems: 'center',
               color: C.textMuted, cursor: 'pointer',
@@ -414,7 +416,7 @@ const ClientServiceHub = ({ user, onBack }) => {
           { label: 'Completed',       value: services.filter(s => s.status === 'Completed').length,  color: '#22C55E' },
         ].map(({ label, value, color }) => (
           <div key={label} style={{
-            background: C.bgCard, border: `1px solid ${C.border}`,
+            backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
             borderRadius: 14, padding: '14px 16px',
           }}>
             <div style={{ fontSize: 22, fontWeight: 900, color, marginBottom: 4 }}>{value}</div>
@@ -428,7 +430,7 @@ const ClientServiceHub = ({ user, onBack }) => {
         {/* Search input */}
         <div style={{
           flex: 1, minWidth: 200,
-          background: C.bgCard, border: `1px solid ${C.border}`,
+          backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
           borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10,
           padding: '10px 14px',
         }}>
@@ -459,7 +461,7 @@ const ClientServiceHub = ({ user, onBack }) => {
                 padding: '8px 14px', borderRadius: 999,
                 background: filter === cat ? C.green : C.bgCard,
                 border: `1px solid ${filter === cat ? C.green : C.border}`,
-                color: filter === cat ? '#fff' : C.textSub,
+                color: filter === cat ? 'C.bg' : C.textSub,
                 fontSize: 11, fontWeight: 700, cursor: 'pointer',
                 transition: 'all 0.18s',
               }}
@@ -475,7 +477,7 @@ const ClientServiceHub = ({ user, onBack }) => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
           {[...Array(6)].map((_, i) => (
             <div key={i} style={{
-              background: C.bgCard, border: `1px solid ${C.border}`,
+              backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
               borderRadius: 16, padding: 20, height: 160,
               animation: 'pulse 1.5s ease-in-out infinite',
             }} />
@@ -484,7 +486,7 @@ const ClientServiceHub = ({ user, onBack }) => {
       ) : filtered.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '60px 20px',
-          background: C.bgCard, border: `1px solid ${C.border}`,
+          backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
           borderRadius: 16,
         }}>
           <Globe size={40} color={C.textMuted} style={{ marginBottom: 14, opacity: 0.5 }} />

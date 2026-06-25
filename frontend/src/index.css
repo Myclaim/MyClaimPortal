@@ -6,6 +6,16 @@
 
 @layer base {
   :root {
+  --dashboard-bg: #F8FAFC;
+  --dashboard-bg-image: radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 60%), radial-gradient(circle at 90% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+  --dashboard-card: rgba(255, 255, 255, 0.7);
+  --dashboard-card-image: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
+  --dashboard-card-soft: rgba(255, 255, 255, 0.5);
+  --dashboard-border: rgba(0, 0, 0, 0.06);
+  --dashboard-text: #0f172a;
+  --dashboard-text-muted: #64748b;
+  --dashboard-accent: #10B981;
+
     /* ☀️ Light Mode - Premium Green Gradient Palette */
     --bg: #f8fafc;
     --sidebar: #ffffff;
@@ -33,6 +43,16 @@
   }
 
   .dark {
+  --dashboard-bg: #030712;
+  --dashboard-bg-image: radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 60%), radial-gradient(circle at 90% 100%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
+  --dashboard-card: rgba(255, 255, 255, 0.02);
+  --dashboard-card-image: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 40%);
+  --dashboard-card-soft: rgba(255, 255, 255, 0.01);
+  --dashboard-border: rgba(255, 255, 255, 0.04);
+  --dashboard-text: #f8fafc;
+  --dashboard-text-muted: #94a3b8;
+  --dashboard-accent: #10B981;
+
     /* 🌑 Dark Mode - Premium Glassmorphism Theme */
     --bg-primary: #000000;
     --bg-secondary: #050B14;
