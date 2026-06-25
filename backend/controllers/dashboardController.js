@@ -235,7 +235,8 @@ const getClientDashboardStats = async (req, res) => {
       pendingDocuments,
       recentTickets,
       recentActivity,
-      recentNotifications
+      recentNotifications,
+      claimTickets
     ] = await Promise.all([
       Ticket.countDocuments({ client: _id, hubType: 'Service Hub', status: { $in: ['active', 'in_process'] } }),
       Ticket.countDocuments({ client: _id, hubType: 'Claim Hub', status: { $in: ['active', 'in_process'] } }),
@@ -243,10 +244,32 @@ const getClientDashboardStats = async (req, res) => {
       Document.countDocuments({ uploaded_by: _id, verification_status: { $ne: 'verified' } }),
       Ticket.find({ client: _id }).sort({ createdAt: -1 }).limit(5).lean(),
       Activity.find({ user: _id }).sort({ createdAt: -1 }).limit(5).lean(),
-      Notification.find({ user: _id }).sort({ createdAt: -1 }).limit(5).lean()
+      Notification.find({ user: _id }).sort({ createdAt: -1 }).limit(5).lean(),
+      Ticket.find({ client: _id, hubType: 'Claim Hub' }).sort({ createdAt: -1 }).lean()
     ]);
 
+    const claims = claimTickets.map(t => ({
+      _id: t._id,
+      name: t.companyName || t.subject || t.service,
+      status: t.status === 'in_process' ? 'In Progress' : t.status === 'active' ? 'Active' : t.status === 'completed' ? 'Completed' : t.status === 'closed' ? 'Closed' : t.status,
+      progress: t.progress || 0,
+      folio: t.folio || 'N/A',
+      shares: t.shares || 0,
+      isin: t.isin || 'N/A',
+      estValue: t.estValue || 'N/A',
+      comments: t.comments || [],
+    }));
+
+    const overview = {
+      totalClaims: claimTickets.length,
+      inProgress: claimTickets.filter(t => t.status === 'in_process').length,
+      completed: claimTickets.filter(t => t.status === 'completed' || t.status === 'closed').length,
+      needAction: claimTickets.filter(t => t.status === 'active').length
+    };
+
     res.json({
+      overview,
+      claims,
       activeServices,
       activeTickets,
       completedServices,

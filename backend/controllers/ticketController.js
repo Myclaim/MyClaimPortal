@@ -83,7 +83,7 @@ const getTicketById = async (req, res) => {
 };
 
 const createTicket = async (req, res) => {
-  const { clientId, hubType, subject, companyName, service, priority, assignedTo, notes, mappedStore } = req.body;
+  const { clientId, hubType, subject, companyName, service, priority, assignedTo, notes, mappedStore, shares, folio, isin, estValue } = req.body;
   if (!clientId || !service) {
     return res.status(400).json({ message: 'clientId and service are required' });
   }
@@ -133,6 +133,10 @@ const createTicket = async (req, res) => {
     notes: notes || '',
     dueDate: calculatedDueDate,
     mappedStore: mappedStore || 'All Stores',
+    shares: shares || 0,
+    folio: folio || 'N/A',
+    isin: isin || 'N/A',
+    estValue: estValue || 'N/A',
   });
 
   await ticket.populate({ path: 'client', select: 'name email phone companyName role', model: 'Client' });

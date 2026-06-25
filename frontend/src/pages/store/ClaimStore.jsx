@@ -19,7 +19,7 @@ const ClaimStore = () => {
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [ticketDetails, setTicketDetails] = useState({ companyName: '', quantity: '' });
+  const [ticketDetails, setTicketDetails] = useState({ companyName: '', quantity: '', folio: '', isin: '', estValue: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiClients, setApiClients] = useState([]);
   const navigate = useNavigate();
@@ -118,7 +118,11 @@ const ClaimStore = () => {
         service: selectedService.title,
         mappedStore: selectedService.mappedStore || 'All Stores',
         priority: 'high',
-        notes: `Quantity: ${ticketDetails.quantity || 'N/A'}`
+        notes: `Quantity: ${ticketDetails.quantity || 'N/A'}`,
+        shares: Number(ticketDetails.quantity) || 0,
+        folio: ticketDetails.folio || 'N/A',
+        isin: ticketDetails.isin || 'N/A',
+        estValue: ticketDetails.estValue || 'N/A'
       };
       await api.post('/tickets', payload);
       navigate('/task-board-main');
@@ -272,7 +276,7 @@ const ClaimStore = () => {
               <div style={{ background: 'var(--card)', borderRadius: '12px', padding: '32px', border: '1px solid var(--border)', maxWidth: '600px' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '24px' }}>Confirm & Create Ticket</h2>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>COMPANY NAME</label>
                     <input 
@@ -290,6 +294,36 @@ const ClaimStore = () => {
                       placeholder="e.g. 500" 
                       value={ticketDetails.quantity}
                       onChange={e => setTicketDetails({...ticketDetails, quantity: e.target.value})}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>FOLIO NUMBER</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. E0189423" 
+                      value={ticketDetails.folio}
+                      onChange={e => setTicketDetails({...ticketDetails, folio: e.target.value})}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>ISIN</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. INE018A01030" 
+                      value={ticketDetails.isin}
+                      onChange={e => setTicketDetails({...ticketDetails, isin: e.target.value})}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>ESTIMATED VALUE</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. ₹1.5L" 
+                      value={ticketDetails.estValue}
+                      onChange={e => setTicketDetails({...ticketDetails, estValue: e.target.value})}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
                     />
                   </div>
