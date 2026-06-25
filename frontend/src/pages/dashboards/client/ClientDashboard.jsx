@@ -6,7 +6,7 @@ import {
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
-  GitBranch, TreeDeciduous, X
+  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
 import DocumentsView from '../../../components/documents/DocumentsView';
@@ -1451,6 +1451,208 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
   );
 };
 
+const getNotifTypeStyles = (type) => {
+  switch (type) {
+    case 'ticket_assigned':
+    case 'ticket_reassigned': return { icon: Ticket, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' };
+    case 'comment_added': return { icon: MessageSquare, color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' };
+    case 'doc_approved': return { icon: FileText, color: '#10b981', bg: 'rgba(16,185,129,0.1)' };
+    case 'doc_rejected': return { icon: AlertTriangle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' };
+    case 'task_overdue': return { icon: AlertCircle, color: '#dc2626', bg: 'rgba(220,38,38,0.1)' };
+    case 'due_approaching': return { icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' };
+    case 'task_completed': return { icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.1)' };
+    default: return { icon: Bell, color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)' };
+  }
+};
+
+const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
+  const navigate = useNavigate();
+
+  const markAsRead = async (id) => {
+    try {
+      await axios.patch(`https://myclaimportal.onrender.com/api/notifications/${id}/read`, {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      onRefresh();
+    } catch (err) {
+      console.error('Error marking as read:', err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await axios.patch('https://myclaimportal.onrender.com/api/notifications/read-all', {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      onRefresh();
+    } catch (err) {
+      console.error('Error marking all as read:', err);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  return (
+    <div style={{
+      background: CL.card, 
+      backgroundImage: CL.cardBgImage,
+      borderRadius: '20px', 
+      border: `1px solid ${CL.border}`,
+      boxShadow: '0 15px 35px rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(12px)',
+      padding: '32px',
+      position: 'relative'
+    }}>
+      <style>{`
+        .client-notif-item {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 16px 20px;
+          display: flex;
+          gap: 16px;
+          margin-bottom: 14px;
+          transition: all 0.25s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .client-notif-item:hover {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: rgba(16, 185, 129, 0.3);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .client-notif-item.unread {
+          background: rgba(16, 185, 129, 0.02);
+          border-color: rgba(16, 185, 129, 0.25);
+        }
+        .client-notif-item.unread::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: #10B981;
+          box-shadow: 0 0 10px #10B981;
+        }
+      `}</style>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: 14 }}>
+        <div>
+          <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text, display: 'flex', alignItems: 'center', gap: 10 }}>
+            Notifications
+            {unreadCount > 0 && (
+              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#fff', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
+                {unreadCount} New
+              </span>
+            )}
+          </h3>
+          <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted, fontWeight: 600 }}>Stay updated on your claims and file uploads</p>
+        </div>
+        <button 
+          onClick={markAllAsRead} 
+          disabled={unreadCount === 0}
+          style={{ 
+            padding: '10px 20px', 
+            background: 'rgba(255,255,255,0.05)', 
+            color: CL.text, 
+            border: '1px solid rgba(255,255,255,0.1)', 
+            borderRadius: '12px', 
+            cursor: unreadCount === 0 ? 'not-allowed' : 'pointer', 
+            fontSize: '12px', 
+            fontWeight: 800, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            opacity: unreadCount === 0 ? 0.5 : 1,
+            transition: 'all 0.2s'
+          }}
+        >
+          <CheckCircle2 size={15} /> Mark all as read
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {notifications.length === 0 ? (
+          <div style={{ 
+            color: CL.textMuted, 
+            padding: '60px 40px', 
+            border: `2px dashed ${CL.border}`, 
+            borderRadius: '16px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            background: 'rgba(255,255,255,0.01)',
+            textAlign: 'center'
+          }}>
+            <Bell size={40} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
+            <h4 style={{ margin: 0, fontWeight: 800, color: CL.text, fontSize: '15px' }}>All caught up!</h4>
+            <p style={{ margin: '6px 0 0', fontSize: '12px', color: CL.textMuted }}>You do not have any notifications at the moment.</p>
+          </div>
+        ) : (
+          notifications.map(n => {
+            const { icon: Icon, color, bg } = getNotifTypeStyles(n.type);
+            return (
+              <div key={n._id} className={`client-notif-item ${!n.isRead ? 'unread' : ''}`}>
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyItems: 'center',
+                  background: bg || 'rgba(255,255,255,0.03)', color: color || CL.textMuted,
+                  justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                  <Icon size={18} strokeWidth={2.5} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#fff' }}>{n.title}</h4>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '10px', color: CL.textMuted, fontWeight: 700 }}>
+                      <Clock size={11} />
+                      {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <p style={{ margin: '6px 0 12px 0', fontSize: '13px', color: CL.textMuted, lineHeight: 1.4, fontWeight: 500 }}>{n.message}</p>
+                  
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    {!n.isRead && (
+                      <button 
+                        onClick={() => markAsRead(n._id)}
+                        style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                      >
+                        Mark as read
+                      </button>
+                    )}
+                    {n.link && (
+                      <button 
+                        onClick={async () => {
+                          if (!n.isRead) {
+                            await markAsRead(n._id);
+                          }
+                          let tab = n.link.split('?tab=')[1] || '';
+                          if (tab === 'docs') tab = 'documents';
+                          if (tab) navigate(`/client?tab=${tab}`);
+                          else navigate('/client');
+                        }}
+                        style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10B981', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16,185,129,0.15)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(16,185,129,0.1)'}
+                      >
+                        View Details <Play size={8} fill="#10B981" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
+
 const DashboardView = ({ overview, claims, navigate }) => {
   const inProgress = claims.filter(c => !c.status?.toLowerCase().includes('active')).length;
 
@@ -1635,6 +1837,7 @@ const ClientDashboard = ({ user: propUser }) => {
   const showClaims = urlTab === 'claims';
   const showFamilyTree = urlTab === 'family-tree';
   const showDocuments = urlTab === 'documents';
+  const showNotifications = urlTab === 'notifications';
 
   const [dashboard, setDashboard] = useState(null);
   const [clientProfile, setClientProfile] = useState(null);
@@ -1643,7 +1846,21 @@ const ClientDashboard = ({ user: propUser }) => {
   const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notifHovered, setNotifHovered] = useState(false);
-  const [notifCount] = useState(3);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  const fetchClientNotifications = async () => {
+    if (!user?.token) return;
+    try {
+      const headers = { Authorization: `Bearer ${user.token}` };
+      const { data } = await axios.get('https://myclaimportal.onrender.com/api/notifications', { headers });
+      setNotifications(data.notifications || []);
+      setUnreadNotifCount(data.unreadCount || 0);
+      window.dispatchEvent(new CustomEvent('notificationCountUpdate', { detail: data.unreadCount || 0 }));
+    } catch (err) {
+      console.error("Error fetching client notifications:", err);
+    }
+  };
 
   const fetchFamilyData = async () => {
     if (!user?.token) return;
@@ -1689,7 +1906,8 @@ const ClientDashboard = ({ user: propUser }) => {
         const [dashRes] = await Promise.all([
           axios.get('https://myclaimportal.onrender.com/api/dashboard/client', { headers }),
           fetchFamilyData(),
-          fetchDocuments()
+          fetchDocuments(),
+          fetchClientNotifications()
         ]);
         setDashboard(dashRes.data);
       } catch (err) {
@@ -1855,7 +2073,7 @@ const ClientDashboard = ({ user: propUser }) => {
         <div className="header-title-block">
           <div style={{ marginBottom: 6 }}>
             <span className="header-tag">
-              {showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : '🏠 DASHBOARD'}
+              {showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : showNotifications ? '🔔 NOTIFICATIONS' : '🏠 DASHBOARD'}
             </span>
           </div>
           <h1 className="header-greeting">
@@ -1865,6 +2083,8 @@ const ClientDashboard = ({ user: propUser }) => {
               <span className="header-title-shimmer">Family Tree</span>
             ) : showDocuments ? (
               <span className="header-title-shimmer">Documents Hub</span>
+            ) : showNotifications ? (
+              <span className="header-title-shimmer">Notifications</span>
             ) : (
               <>
                 Welcome back,{' '}
@@ -1881,6 +2101,8 @@ const ClientDashboard = ({ user: propUser }) => {
               <>View and manage your <strong style={{ color: CL.accent }}>family hierarchy</strong> and relations</>
             ) : showDocuments ? (
               <>View, upload, and sync your <strong style={{ color: CL.accent }}>identity &amp; financial documents</strong></>
+            ) : showNotifications ? (
+              <>Stay updated on your <strong style={{ color: CL.accent }}>claim statuses and updates</strong></>
             ) : (
               <>Here's your <strong style={{ color: CL.accent }}>CLIENT</strong> command center — stay on top of everything.</>
             )}
@@ -1893,11 +2115,12 @@ const ClientDashboard = ({ user: propUser }) => {
             className="notif-btn"
             onMouseEnter={() => setNotifHovered(true)}
             onMouseLeave={() => setNotifHovered(false)}
+            onClick={() => navigate('/client?tab=notifications')}
           >
             {/* pulse ring */}
             <div className="notif-ring" />
             {/* badge */}
-            <div className="notif-badge">{notifCount}</div>
+            {unreadNotifCount > 0 && <div className="notif-badge">{unreadNotifCount}</div>}
             <span className="bell-icon"><Bell size={20} /></span>
           </button>
         </div>
@@ -1910,6 +2133,8 @@ const ClientDashboard = ({ user: propUser }) => {
         <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddFamily={() => setIsAddFamilyModalOpen(true)} />
       ) : showDocuments ? (
         <ClientDocumentsHub documents={documents} clientProfile={clientProfile} user={user} onRefresh={fetchDocuments} />
+      ) : showNotifications ? (
+        <ClientNotificationsView notifications={notifications} onRefresh={fetchClientNotifications} user={user} />
       ) : (
         <DashboardView overview={overview} claims={claims} navigate={navigate} />
       )}

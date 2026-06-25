@@ -36,29 +36,6 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       setVerifyLoading(false);
     }
   };
-
-  const isUploadedByClient = (d) => {
-    if (!d) return false;
-    const uploader = d.uploaded_by;
-    if (!uploader) return false;
-
-    // Resolve client ID from the client prop
-    const clientId = client?._id || client?.id;
-    if (!clientId) return false;
-    
-    // Check if it's a populated object
-    if (typeof uploader === 'object') {
-      if (uploader.role === 'client') return true;
-      const uploaderId = uploader._id || uploader.id;
-      if (uploaderId && String(uploaderId) === String(clientId)) return true;
-    }
-    
-    // Check if it's a string
-    if (typeof uploader === 'string' && String(uploader) === String(clientId)) return true;
-    
-    return false;
-  };
-
   const [folderPath, setFolderPath] = useState([{ _id: null, name: 'Client Documents' }]);
   
   const [dbFolders, setDbFolders] = useState([]);
@@ -614,7 +591,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
             <div className="modal-header" style={{ padding: '16px 24px', borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0', background: theme === 'dark' ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <h3 className="modal-title" style={{ margin: 0, color: theme === 'dark' ? '#fff' : 'inherit' }}>{previewDoc.name}</h3>
-                {previewDoc.verification_status && (previewDoc.verification_status !== 'pending' || isUploadedByClient(previewDoc)) && (
+                {previewDoc.verification_status && (
                   <span style={{ 
                     fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px',
                     background: previewDoc.verification_status === 'verified' ? 'rgba(34,197,94,0.1)' : previewDoc.verification_status === 'rejected' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)',
@@ -742,7 +719,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                       forceDownload(e, `${api.defaults.baseURL.replace('/api', '')}${d.file_url}`, d.name);
                     }}
                   ><Download size={14} /> Download</a>
-                  {['admin', 'super_admin'].includes(currentUser?.role) && isUploadedByClient(d) && (
+                  {['admin', 'super_admin'].includes(currentUser?.role) && (
                     <div 
                       style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, color: '#10b981', borderTop: '1px solid #f1f5f9' }}
                       onClick={(e) => { 
@@ -792,7 +769,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                 <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   {d.file_type ? d.file_type.substring(0,4) : (d.name.split('.').pop() || 'FILE')}
                 </div>
-                {d.verification_status && (d.verification_status !== 'pending' || isUploadedByClient(d)) && (
+                {d.verification_status && (
                   <div style={{ 
                     position: 'absolute', top: -4, right: -4, 
                     width: 20, height: 20, borderRadius: '50%', 
