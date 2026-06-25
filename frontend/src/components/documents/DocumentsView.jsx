@@ -609,7 +609,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
             <div className="modal-header" style={{ padding: '16px 24px', borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0', background: theme === 'dark' ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <h3 className="modal-title" style={{ margin: 0, color: theme === 'dark' ? '#fff' : 'inherit' }}>{previewDoc.name}</h3>
-                {previewDoc.verification_status && (
+                {previewDoc.verification_status && (previewDoc.verification_status !== 'pending' || isUploadedByClient(previewDoc)) && (
                   <span style={{ 
                     fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px',
                     background: previewDoc.verification_status === 'verified' ? 'rgba(34,197,94,0.1)' : previewDoc.verification_status === 'rejected' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)',
@@ -787,7 +787,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                 <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   {d.file_type ? d.file_type.substring(0,4) : (d.name.split('.').pop() || 'FILE')}
                 </div>
-                {d.verification_status && (
+                {d.verification_status && (d.verification_status !== 'pending' || isUploadedByClient(d)) && (
                   <div style={{ 
                     position: 'absolute', top: -4, right: -4, 
                     width: 20, height: 20, borderRadius: '50%', 
