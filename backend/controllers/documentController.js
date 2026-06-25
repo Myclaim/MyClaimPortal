@@ -20,6 +20,11 @@ const uploadDocument = async (req, res) => {
       return res.status(400).json({ message: 'Invalid linked_to value' });
     }
 
+    let targetClientId = client_id;
+    if (req.user.role === 'client') {
+      targetClientId = req.user._id;
+    }
+
     // Calculate file_url based on where multer actually saved it
     const fullPath = req.file.path;
     const uploadsIndex = fullPath.indexOf('uploads');
@@ -35,7 +40,7 @@ const uploadDocument = async (req, res) => {
       folder: folder || 'General',
       folder_id: folder_id || null,
       ticket_id: linked_to === 'ticket' ? ticket_id : undefined,
-      client_id: linked_to === 'client' ? client_id : undefined,
+      client_id: linked_to === 'client' ? targetClientId : undefined,
       uploaded_by: req.user._id,
     });
 

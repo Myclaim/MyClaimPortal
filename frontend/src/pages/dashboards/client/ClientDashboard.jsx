@@ -6,7 +6,7 @@ import {
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
-  GitBranch, TreeDeciduous
+  GitBranch, TreeDeciduous, X
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
@@ -1122,6 +1122,363 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
   );
 };
 
+/* ── DOCUMENTS HUB COMPONENT ── */
+const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
+  const [activeSubTab, setActiveSubTab] = useState('My Documents');
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [previewDoc, setPreviewDoc] = useState(null);
+
+  const getDocDetails = (docName) => {
+    // Exact check first
+    let doc = documents.find(d => d.name.toLowerCase() === docName.toLowerCase());
+    // Partial check fallback
+    if (!doc) {
+      doc = documents.find(d => d.name.toLowerCase().includes(docName.toLowerCase().replace(' card', '').trim()));
+    }
+    
+    if (doc) {
+      return {
+        uploaded: true,
+        status: doc.verification_status || 'pending',
+        url: doc.file_url,
+        name: doc.name,
+        docRecord: doc
+      };
+    }
+    
+    // Check clientProfile fallback for PAN/Aadhaar
+    if (clientProfile?.kyc_data) {
+      if (docName === 'PAN Card' && clientProfile.kyc_data.panCardFile) {
+        return { uploaded: true, status: 'verified', url: clientProfile.kyc_data.panCardFile, name: 'PAN Card' };
+      }
+      if (docName === 'Aadhaar Card' && clientProfile.kyc_data.aadharCardFile) {
+        return { uploaded: true, status: 'verified', url: clientProfile.kyc_data.aadharCardFile, name: 'Aadhaar Card' };
+      }
+    }
+    
+    return { uploaded: false, status: 'Not uploaded' };
+  };
+
+  const handleFileUpload = async (file, docName) => {
+    setUploading(true);
+    setError('');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', docName);
+    formData.append('linked_to', 'client');
+    formData.append('doc_category', 'primary');
+    formData.append('folder', 'General');
+    formData.append('client_id', clientProfile?._id || clientProfile?.id || user?._id || user?.id);
+
+    try {
+      await axios.post('https://myclaimportal.onrender.com/api/documents/upload', formData, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      await onRefresh();
+    } catch (err) {
+      console.error("Error uploading file:", err);
+      setError(err.response?.data?.message || "Failed to upload document");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerDirectUpload = (docName) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.jpg,.jpeg,.png';
+    input.onchange = async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        await handleFileUpload(file, docName);
+      }
+    };
+    input.click();
+  };
+
+  const triggerGeneralUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.jpg,.jpeg,.png';
+    input.onchange = async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const docName = prompt("Enter a name/tag for this document:", file.name);
+        if (docName) {
+          await handleFileUpload(file, docName);
+        }
+      }
+    };
+    input.click();
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const docName = prompt("Enter a name/tag for this document:", file.name);
+      if (docName) {
+        await handleFileUpload(file, docName);
+      }
+    }
+  };
+
+  const cardItems = [
+    { name: 'PAN Card', type: 'pan' },
+    { name: 'Aadhaar Card', type: 'aadhaar' },
+    { name: 'Bank Cancelled Cheque', type: 'cheque' },
+    { name: 'Death Certificate', type: 'death' },
+  ];
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {/* Document Preview Modal */}
+      {previewDoc && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }} onClick={() => setPreviewDoc(null)}>
+          <div style={{ background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', borderRadius: '20px', width: '90%', maxWidth: '1000px', height: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#fff' }}>{previewDoc.name}</h3>
+                <a 
+                  href={`https://myclaimportal.onrender.com${previewDoc.url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+                ><Download size={14} /> View Original</a>
+              </div>
+              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
+            </div>
+            <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {(() => {
+                const fullUrl = `https://myclaimportal.onrender.com${previewDoc.url}`;
+                const ext = previewDoc.url.split('.').pop().toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+                
+                if (isImage) {
+                  return <img src={fullUrl} alt={previewDoc.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />;
+                } else {
+                  return <iframe src={fullUrl} title={previewDoc.name} style={{ width: '100%', height: '100%', border: 'none' }} />;
+                }
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 24 }}>
+        {['My Documents', 'Company Documents'].map(tab => (
+          <div 
+            key={tab}
+            style={{
+              padding: '12px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+              color: activeSubTab === tab ? '#fff' : 'rgba(255,255,255,0.4)',
+              borderBottom: activeSubTab === tab ? '2.5px solid #10B981' : '2.5px solid transparent',
+              transition: 'all 0.2s',
+              position: 'relative',
+              top: '1px'
+            }}
+            onClick={() => setActiveSubTab(tab)}
+          >
+            {tab}
+          </div>
+        ))}
+      </div>
+
+      {activeSubTab === 'My Documents' ? (
+        <div>
+          <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', marginBottom: 20, fontWeight: 500 }}>
+            Your identity and financial documents
+          </div>
+
+          {error && (
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', marginBottom: 20, fontWeight: 600 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Cards Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, marginBottom: 24 }}>
+            {cardItems.map(item => {
+              const details = getDocDetails(item.name);
+              const isUploaded = details.uploaded;
+              
+              let borderStyle = '1px solid rgba(255,255,255,0.08)';
+              let bgStyle = 'rgba(255,255,255,0.02)';
+              let iconColor = 'rgba(255,255,255,0.4)';
+              let statusText = 'Not uploaded';
+              let statusColor = 'rgba(255,255,255,0.4)';
+              let cardGlow = 'none';
+
+              if (!isUploaded) {
+                borderStyle = '1px solid rgba(245,158,11,0.2)';
+                bgStyle = 'rgba(245,158,11,0.02)';
+                iconColor = '#F59E0B';
+                statusColor = '#F59E0B';
+                cardGlow = '0 8px 24px rgba(245,158,11,0.06)';
+              } else if (details.status === 'verified') {
+                borderStyle = '1px solid rgba(16,185,129,0.25)';
+                bgStyle = 'rgba(16,185,129,0.02)';
+                iconColor = '#10B981';
+                statusText = 'Verified';
+                statusColor = '#10B981';
+                cardGlow = '0 8px 24px rgba(16,185,129,0.08)';
+              } else {
+                borderStyle = '1px solid rgba(129,140,248,0.25)';
+                bgStyle = 'rgba(129,140,248,0.02)';
+                iconColor = '#818CF8';
+                statusText = details.status.charAt(0).toUpperCase() + details.status.slice(1);
+                statusColor = '#818CF8';
+                cardGlow = '0 8px 24px rgba(129,140,248,0.08)';
+              }
+
+              return (
+                <div 
+                  key={item.name} 
+                  style={{
+                    background: bgStyle,
+                    border: borderStyle,
+                    borderRadius: '16px',
+                    padding: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: cardGlow,
+                    backdropFilter: 'blur(8px)',
+                    transition: 'transform 0.2s ease, border-color 0.2s ease'
+                  }}
+                  className="family-node-hover"
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.03)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: iconColor, border: '1px solid rgba(255,255,255,0.06)'
+                    }}>
+                      <FileText size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: 4 }}>{item.name}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: statusColor, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {isUploaded && details.status === 'verified' && <span>✓</span>}
+                        {isUploaded && details.status !== 'verified' && <span>⌛</span>}
+                        {!isUploaded && <span>⚠</span>}
+                        {statusText}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    {isUploaded ? (
+                      <button 
+                        onClick={() => setPreviewDoc({ name: item.name, url: details.url })}
+                        style={{
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                      >
+                        <Eye size={16} />
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => triggerDirectUpload(item.name)}
+                        style={{
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#F59E0B', cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245,158,11,0.25)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'}
+                      >
+                        <Upload size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Drag & Drop Upload Zone */}
+          <div 
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={triggerGeneralUpload}
+            style={{
+              padding: '48px 24px',
+              textAlign: 'center',
+              borderRadius: '20px',
+              border: isDragging ? '2px dashed #10B981' : '2px dashed rgba(255,255,255,0.12)',
+              background: isDragging ? 'rgba(16,185,129,0.02)' : 'rgba(255,255,255,0.01)',
+              cursor: 'pointer',
+              transition: 'all 0.25s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: isDragging ? '0 10px 30px rgba(16,185,129,0.05)' : 'none'
+            }}
+          >
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.03)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: isDragging ? '#10B981' : 'rgba(255,255,255,0.4)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              marginBottom: 16
+            }}>
+              <Upload size={24} className={uploading ? 'animate-bounce' : ''} />
+            </div>
+            {uploading ? (
+              <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Uploading your document...</div>
+            ) : (
+              <>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: 6 }}>
+                  Drop files here or <span style={{ color: '#3B82F6', textDecoration: 'underline' }}>browse to upload</span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--dashboard-text-muted)', fontWeight: 600 }}>
+                  PDF, JPG, PNG up to 10MB
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Company Documents View */
+        <div style={{
+          textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)',
+          background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)'
+        }}>
+          <Folder size={48} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
+          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>No company documents shared yet</div>
+          <div style={{ fontSize: '12px', marginTop: '6px' }}>Shared files from My Claim team will be visible here.</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DashboardView = ({ overview, claims, navigate }) => {
   const inProgress = claims.filter(c => !c.status?.toLowerCase().includes('active')).length;
 
@@ -1223,7 +1580,10 @@ const DashboardView = ({ overview, claims, navigate }) => {
                   <div style={{ fontSize: 11, color: CL.textMuted, marginTop: 2 }}>{item.subtitle}</div>
                 </div>
               </div>
-              <button style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>
+              <button 
+                onClick={() => navigate('/client?tab=documents')}
+                style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+              >
                 Upload
               </button>
             </div>
@@ -1241,13 +1601,20 @@ const DashboardView = ({ overview, claims, navigate }) => {
             { label: 'Investment Store', icon: ShoppingBag },
             { label: 'Document Hub', icon: Folder }
           ].map(a => (
-            <div key={a.label} style={{
-              backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-              border: `1px solid ${CL.border}`, borderRadius: 14, padding: '20px 14px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s'
-            }}>
+            <div key={a.label} 
+              onClick={() => {
+                if (a.label === 'Document Hub' || a.label === 'Upload Document') navigate('/client?tab=documents');
+                else if (a.label === 'Support') navigate('/client?tab=service-hub');
+                else if (a.label === 'Investment Store') navigate('/client?tab=investment-store');
+              }}
+              style={{
+                backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
+                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                border: `1px solid ${CL.border}`, borderRadius: 14, padding: '20px 14px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s'
+              }}
+            >
               <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', display: 'grid', placeItems: 'center', color: CL.accent, marginBottom: 12 }}>
                 <a.icon size={18} />
               </div>
@@ -1295,10 +1662,12 @@ const ClientDashboard = ({ user: propUser }) => {
   const showServiceHub = urlTab === 'service-hub';
   const showClaims = urlTab === 'claims';
   const showFamilyTree = urlTab === 'family-tree';
+  const showDocuments = urlTab === 'documents';
 
   const [dashboard, setDashboard] = useState(null);
   const [clientProfile, setClientProfile] = useState(null);
   const [familyMembers, setFamilyMembers] = useState([]);
+  const [documents, setDocuments] = useState([]);
   const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notifHovered, setNotifHovered] = useState(false);
@@ -1328,6 +1697,17 @@ const ClientDashboard = ({ user: propUser }) => {
     }
   };
 
+  const fetchDocuments = async () => {
+    if (!user?.token) return;
+    try {
+      const headers = { Authorization: `Bearer ${user.token}` };
+      const { data } = await axios.get('https://myclaimportal.onrender.com/api/documents', { headers });
+      setDocuments(data);
+    } catch (err) {
+      console.error("Error fetching client documents:", err);
+    }
+  };
+
   useEffect(() => {
     const initData = async () => {
       if (!user?.token) { setLoading(false); return; }
@@ -1336,7 +1716,8 @@ const ClientDashboard = ({ user: propUser }) => {
         const headers = { Authorization: `Bearer ${user.token}` };
         const [dashRes] = await Promise.all([
           axios.get('https://myclaimportal.onrender.com/api/dashboard/client', { headers }),
-          fetchFamilyData()
+          fetchFamilyData(),
+          fetchDocuments()
         ]);
         setDashboard(dashRes.data);
       } catch (err) {
@@ -1502,7 +1883,7 @@ const ClientDashboard = ({ user: propUser }) => {
         <div className="header-title-block">
           <div style={{ marginBottom: 6 }}>
             <span className="header-tag">
-              {showClaims ? '📁 MY CLAIMS' : (showFamilyTree ? '🌳 FAMILY TREE' : '🏠 DASHBOARD')}
+              {showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : '🏠 DASHBOARD'}
             </span>
           </div>
           <h1 className="header-greeting">
@@ -1510,6 +1891,8 @@ const ClientDashboard = ({ user: propUser }) => {
               <span className="header-title-shimmer">My Claims</span>
             ) : showFamilyTree ? (
               <span className="header-title-shimmer">Family Tree</span>
+            ) : showDocuments ? (
+              <span className="header-title-shimmer">Documents Hub</span>
             ) : (
               <>
                 Welcome back,{' '}
@@ -1524,6 +1907,8 @@ const ClientDashboard = ({ user: propUser }) => {
               <>Track &amp; manage all your <strong style={{ color: CL.accent }}>company claims</strong> in one place</>
             ) : showFamilyTree ? (
               <>View and manage your <strong style={{ color: CL.accent }}>family hierarchy</strong> and relations</>
+            ) : showDocuments ? (
+              <>View, upload, and sync your <strong style={{ color: CL.accent }}>identity &amp; financial documents</strong></>
             ) : (
               <>Here's your <strong style={{ color: CL.accent }}>CLIENT</strong> command center — stay on top of everything.</>
             )}
@@ -1551,6 +1936,8 @@ const ClientDashboard = ({ user: propUser }) => {
         <MyClaimsView claims={claims} navigate={navigate} />
       ) : showFamilyTree ? (
         <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddFamily={() => setIsAddFamilyModalOpen(true)} />
+      ) : showDocuments ? (
+        <ClientDocumentsHub documents={documents} clientProfile={clientProfile} user={user} onRefresh={fetchDocuments} />
       ) : (
         <DashboardView overview={overview} claims={claims} navigate={navigate} />
       )}
