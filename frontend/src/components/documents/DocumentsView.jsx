@@ -36,6 +36,24 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       setVerifyLoading(false);
     }
   };
+
+  const isUploadedByClient = (d) => {
+    if (!d) return false;
+    const uploader = d.uploaded_by;
+    if (!uploader) return false;
+    
+    // Check if it's a populated object and role is client
+    if (typeof uploader === 'object') {
+      if (uploader.role === 'client') return true;
+      if (uploader._id && uploader._id === client?._id) return true;
+    }
+    
+    // Fallback: check if it's a string matching client._id
+    if (typeof uploader === 'string' && uploader === client?._id) return true;
+    
+    return false;
+  };
+
   const [folderPath, setFolderPath] = useState([{ _id: null, name: 'Client Documents' }]);
   
   const [dbFolders, setDbFolders] = useState([]);
@@ -719,7 +737,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                       forceDownload(e, `${api.defaults.baseURL.replace('/api', '')}${d.file_url}`, d.name);
                     }}
                   ><Download size={14} /> Download</a>
-                  {['admin', 'super_admin'].includes(currentUser?.role) && (
+                  {['admin', 'super_admin'].includes(currentUser?.role) && isUploadedByClient(d) && (
                     <div 
                       style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, color: '#10b981', borderTop: '1px solid #f1f5f9' }}
                       onClick={(e) => { 
