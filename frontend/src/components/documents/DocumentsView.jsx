@@ -2,14 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { 
   Folder, Upload, ChevronRight, Download, MoreVertical, 
   Trash2, Edit2, Copy, CornerUpRight, X, File, FolderInput,
-  FolderOpen
+  FolderOpen, CheckCircle, XCircle
 } from 'lucide-react';
 import api from '../../services/api';
+import useAuth from '../../hooks/useAuth';
 import DocumentUploadModal from './DocumentUploadModal';
 
 const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false, theme = 'light' }) => {
+  const { user: currentUser } = useAuth();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [currentFolderId, setCurrentFolderId] = useState(null);
+  
+  // Verification states
+  const [verifyDoc, setVerifyDoc] = useState(null);
+  const [verifyNotes, setVerifyNotes] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
+  const submitVerification = async (status) => {
+    if (!verifyDoc) return;
+    setVerifyLoading(true);
+    try {
+      await api.patch(`/documents/${verifyDoc._id}/verify`, {
+        status,
+        notes: verifyNotes
+      });
+      setVerifyDoc(null);
+      setVerifyNotes('');
+      if (onRefresh) onRefresh();
+      fetchFolders();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update document status');
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
   const [folderPath, setFolderPath] = useState([{ _id: null, name: 'Client Documents' }]);
   
   const [dbFolders, setDbFolders] = useState([]);
@@ -565,6 +591,15 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
             <div className="modal-header" style={{ padding: '16px 24px', borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0', background: theme === 'dark' ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <h3 className="modal-title" style={{ margin: 0, color: theme === 'dark' ? '#fff' : 'inherit' }}>{previewDoc.name}</h3>
+                {previewDoc.verification_status && (
+                  <span style={{ 
+                    fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px',
+                    background: previewDoc.verification_status === 'verified' ? 'rgba(34,197,94,0.1)' : previewDoc.verification_status === 'rejected' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)',
+                    color: previewDoc.verification_status === 'verified' ? '#22c55e' : previewDoc.verification_status === 'rejected' ? '#ef4444' : '#f59e0b'
+                  }}>
+                    {previewDoc.verification_status.toUpperCase()}
+                  </span>
+                )}
                 <a 
                   href={`${api.defaults.baseURL.replace('/api', '')}${previewDoc.file_url}`}
                   onClick={(e) => forceDownload(e, `${api.defaults.baseURL.replace('/api', '')}${previewDoc.file_url}`, previewDoc.name)}
@@ -684,10 +719,21 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                       forceDownload(e, `${api.defaults.baseURL.replace('/api', '')}${d.file_url}`, d.name);
                     }}
                   ><Download size={14} /> Download</a>
+                  {['admin', 'super_admin'].includes(currentUser?.role) && (
+                    <div 
+                      style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, color: '#10b981', borderTop: '1px solid #f1f5f9' }}
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setVerifyDoc(d); 
+                        setVerifyNotes(d.verification_notes || '');
+                        setActiveDocMenu(null); 
+                      }}
+                    ><CheckCircle size={14} /> Verify/Reject</div>
+                  )}
                   {!readOnlyStructure && (
                     <>
                       <div 
-                        style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}
+                        style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, borderTop: '1px solid #f1f5f9' }}
                         onClick={async (e) => { 
                           e.stopPropagation(); 
                           setDocToMove(d); 
@@ -723,6 +769,19 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                 <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   {d.file_type ? d.file_type.substring(0,4) : (d.name.split('.').pop() || 'FILE')}
                 </div>
+                {d.verification_status && (
+                  <div style={{ 
+                    position: 'absolute', top: -4, right: -4, 
+                    width: 20, height: 20, borderRadius: '50%', 
+                    display: 'grid', placeItems: 'center',
+                    background: d.verification_status === 'verified' ? '#10B981' : d.verification_status === 'rejected' ? '#EF4444' : '#F59E0B',
+                    color: '#fff', fontSize: '10px', fontWeight: 'bold',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                    zIndex: 2
+                  }}>
+                    {d.verification_status === 'verified' ? '✓' : d.verification_status === 'rejected' ? '✗' : '⌛'}
+                  </div>
+                )}
               </div>
               <div style={{ fontWeight: 500, fontSize: '12px', color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#334155', marginTop: '12px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 }}>
                 {d.name.length > 35 ? d.name.substring(0, 32) + '...' : d.name}
@@ -751,6 +810,50 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         folderId={currentFolderId}
         theme={theme}
       />
+
+      {/* Document Verification Modal (Admin only) */}
+      {verifyDoc && (
+        <div className="modal-overlay open" style={{ zIndex: 1200, background: theme === 'dark' ? 'rgba(15,23,42,0.85)' : 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setVerifyDoc(null)}>
+          <div className="modal" style={{ maxWidth: '450px', background: theme === 'dark' ? 'var(--dashboard-card)' : '#fff', border: theme === 'dark' ? '1px solid var(--dashboard-border)' : '1px solid #e2e8f0', color: theme === 'dark' ? '#fff' : '#0f172a' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0' }}>
+              <h3 className="modal-title" style={{ color: theme === 'dark' ? '#fff' : '#0f172a' }}>Verify Document</h3>
+              <button className="modal-close" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'inherit', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setVerifyDoc(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: '16px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Document Name</span>
+                <span style={{ fontSize: '14px', fontWeight: 600 }}>{verifyDoc.name}</span>
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Verification Notes</span>
+                <textarea 
+                  style={{ width: '100%', height: '100px', background: theme === 'dark' ? 'rgba(0,0,0,0.2)' : '#f8fafc', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', color: theme === 'dark' ? '#fff' : 'inherit', outline: 'none', resize: 'none', fontSize: '14px', fontFamily: 'inherit' }}
+                  placeholder="Explain why this document is verified or rejected (optional)..."
+                  value={verifyNotes}
+                  onChange={(e) => setVerifyNotes(e.target.value)}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button 
+                  disabled={verifyLoading}
+                  onClick={() => submitVerification('rejected')}
+                  style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                >
+                  Reject
+                </button>
+                <button 
+                  disabled={verifyLoading}
+                  onClick={() => submitVerification('verified')}
+                  style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 12px rgba(16,185,129,0.2)' }}
+                >
+                  Verify
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
