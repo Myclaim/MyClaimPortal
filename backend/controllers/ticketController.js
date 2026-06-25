@@ -440,6 +440,39 @@ const addTicketAttachment = async (req, res) => {
   res.json(ticket);
 };
 
+const updateTicketStages = async (req, res) => {
+  const { stages, progress, status } = req.body;
+  const ticket = await Ticket.findById(req.params.id);
+  
+  if (!ticket) {
+    return res.status(404).json({ message: 'Ticket not found' });
+  }
+
+  if (stages !== undefined) ticket.stages = stages;
+  if (progress !== undefined) ticket.progress = progress;
+  if (status !== undefined) ticket.status = status;
+
+  const updated = await ticket.save();
+
+  const Client = require('../models/client/Client');
+  const User = require('../models/User');
+  let clientUser = await Client.findById(ticket.client).lean();
+  if (!clientUser) clientUser = await User.findById(ticket.client).lean();
+  const clientName = clientUser ? clientUser.name : 'Unknown';
+
+  await Activity.create({
+    action: `Claim stages updated for ticket ${ticket.service} (${clientName}) by ${req.user.name || 'System'}`,
+    user: req.user._id,
+    ticket: updated._id,
+  });
+
+  const io = req.app.get('io');
+  if (io) io.emit('ticket_updated', updated);
+
+  res.json(updated);
+};
+
+
 module.exports = {
   getTickets,
   getTicketById,
@@ -451,4 +484,5 @@ module.exports = {
   bulkUpdateTickets,
   escalateTicket,
   addTicketAttachment,
+  updateTicketStages,
 };

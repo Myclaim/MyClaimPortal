@@ -733,7 +733,7 @@ const ClaimsView = ({ claims, tickets = [] }) => {
 
     const displayClaims = claimTickets.length > 0 ? claimTickets.map((t, i) => {
       const mockRef = demoClaims[i % demoClaims.length];
-      const stages = JSON.parse(JSON.stringify(mockRef.stages));
+      const stages = (t.stages && t.stages.length > 0) ? t.stages : JSON.parse(JSON.stringify(mockRef.stages));
       const { progress, status } = calculateProgressAndStatus(stages);
       
       let compName = t.companyName || t.subject || mockRef.companyName;
@@ -799,6 +799,22 @@ const ClaimsView = ({ claims, tickets = [] }) => {
       }
       return c;
     }));
+  };
+
+  const handleSaveStages = async () => {
+    if (editingStages) {
+      try {
+        const claim = localClaims.find(c => c._id === selectedClaimId);
+        await api.patch(`/tickets/${selectedClaimId}/stages`, { 
+          stages: claim.stages,
+          progress: claim.progress,
+          status: claim.status
+        });
+      } catch (err) {
+        console.error('Failed to save claim stages', err);
+      }
+    }
+    setEditingStages(!editingStages);
   };
 
   return (
@@ -889,7 +905,7 @@ const ClaimsView = ({ claims, tickets = [] }) => {
             <h5 style={{ margin: '0 0 20px', fontSize: '12px', fontWeight: 800, color: '#94a3b8', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               CLAIM STAGES
               <button 
-                onClick={() => setEditingStages(!editingStages)} 
+                onClick={handleSaveStages} 
                 style={{ background: 'none', border: 'none', color: editingStages ? '#10b981' : '#2563eb', cursor: 'pointer', fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 {editingStages ? <><Save size={12} /> Save</> : <><Edit2 size={12} /> Edit</>}

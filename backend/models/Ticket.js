@@ -22,6 +22,13 @@ const ticketSchema = mongoose.Schema(
     folio: { type: String, default: 'N/A' },
     isin: { type: String, default: 'N/A' },
     estValue: { type: String, default: 'N/A' },
+    stages: [
+      {
+        name: { type: String },
+        status: { type: String, enum: ['completed', 'in-progress', 'pending'], default: 'pending' },
+        date: { type: String }
+      }
+    ],
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     creatorRole: { type: String },
