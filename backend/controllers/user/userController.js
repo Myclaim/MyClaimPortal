@@ -93,6 +93,19 @@ setTimeout(() => {
 const getUsers = async (req, res) => {
   const { _id, role } = req.user;
   try {
+    // ── RBAC: clients can only query their own family members (parent_id matches their _id) ──
+    if (role === 'client') {
+      const parentIdQuery = req.query.parent_id;
+      if (parentIdQuery && parentIdQuery.toString() === _id.toString()) {
+        const [clients, users] = await Promise.all([
+          Client.find({ parent_id: _id }, CACHE_FIELDS).lean(),
+          User.find({ parent_id: _id }, CACHE_FIELDS).lean()
+        ]);
+        return res.json([...clients, ...users]);
+      }
+      return res.status(403).json({ message: 'Not authorized to query other users' });
+    }
+
     // ── RBAC: plain admin only sees employees (their own department's) or clients ──────
     if (role === 'admin') {
       if (req.query.role === 'client') {
@@ -630,13 +643,15 @@ const getClientProfile = async (req, res) => {
   }
 };
 
-// @desc    Add a family member to client's profile
-// @route   POST /api/users/:id/family
-// @access  Private
 const addFamilyMember = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, relationWithHolder, phone, email, dob, aadharNo, panNo } = req.body;
+
+    // Security check: Clients can only modify their own family members
+    if (req.user.role === 'client' && req.user._id.toString() !== id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to modify another user\'s family tree' });
+    }
 
     let user = await Admin.findById(id);
     if (!user) user = await Partner.findById(id);

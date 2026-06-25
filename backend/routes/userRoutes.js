@@ -4,7 +4,7 @@ const { getUsers, createUser, enrolClient, updateUser, getUserById, deleteUser, 
 const { protect, admin, adminOrSuperPartner } = require('../middleware/authMiddleware');
 const uploadDocs = require('../middleware/docsUploadMiddleware');
 
-router.route('/').get(protect, adminOrSuperPartner, getUsers).post(protect, adminOrSuperPartner, createUser);
+router.route('/').get(protect, getUsers).post(protect, adminOrSuperPartner, createUser);
 router.route('/enrol').post(protect, admin, enrolClient);
 router.post('/kyc-upload', protect, admin, uploadDocs.array('files', 8), uploadKycDocs);
 
@@ -21,7 +21,7 @@ router.route('/:id')
   .patch(protect, admin, updateUser)
   .delete(protect, admin, deleteUser);
 
-router.post('/:id/family', protect, adminOrSuperPartner, addFamilyMember);
+router.post('/:id/family', protect, addFamilyMember);
 router.post('/:id/folders', protect, adminOrSuperPartner, addClientFolder);
 router.put('/:id/folders/rename', protect, adminOrSuperPartner, renameClientFolder);
 router.delete('/:id/folders/:folderName', protect, adminOrSuperPartner, deleteClientFolder);

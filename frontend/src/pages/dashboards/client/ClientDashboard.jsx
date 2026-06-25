@@ -5,9 +5,12 @@ import {
   Bell, Upload, MessageSquare, Folder, Clock,
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
-  ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight
+  ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
+  GitBranch, TreeDeciduous
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
+import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
+import useAuth from '../../../hooks/useAuth';
 import '../../super-admin/Overview.css';
 
 const CL = {
@@ -939,6 +942,186 @@ const MyClaimsView = ({ claims, navigate }) => {
 /* ══════════════════════════════════════════════
    DASHBOARD TAB VIEW (default, no ?tab or ?tab=dashboard)
 ═══════════════════════════════════════════════ */
+/* ── FAMILY TREE COMPONENT ── */
+const ClientFamilyTreeNode = ({ name, role, isClient }) => (
+  <div style={{ 
+    background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(30, 41, 59, 0.45)', 
+    border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
+    color: '#fff',
+    padding: '14px 28px', 
+    borderRadius: '16px', 
+    minWidth: '140px',
+    textAlign: 'center',
+    boxShadow: isClient 
+      ? '0 10px 25px -5px rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15)' 
+      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
+    position: 'relative',
+    zIndex: 2,
+    backdropFilter: 'blur(8px)',
+    transition: 'transform 0.2s ease, border-color 0.2s ease',
+  }}
+  className="family-node-hover"
+  >
+    <div style={{ fontWeight: 800, fontSize: '14px', letterSpacing: '-0.3px' }}>{name}</div>
+    <div style={{ fontSize: '10px', color: isClient ? '#A7F3D0' : 'rgba(255, 255, 255, 0.5)', fontWeight: 800, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{role}</div>
+  </div>
+);
+
+const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
+  const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
+  const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
+  const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
+  const spouse = familyMembers.filter(m => ['Spouse'].includes(m.relationWithHolder));
+  const others = familyMembers.filter(m => !['Father', 'Mother', 'Grandfather', 'Grandmother', 'Brother', 'Sister', 'Son', 'Daughter', 'Spouse'].includes(m.relationWithHolder));
+
+  const lineBg = 'rgba(255, 255, 255, 0.15)';
+
+  return (
+    <div style={{ 
+      textAlign: 'center', 
+      padding: '40px', 
+      background: CL.card, 
+      backgroundImage: CL.cardBgImage,
+      borderRadius: '20px', 
+      border: `1px solid ${CL.border}`,
+      boxShadow: '0 15px 35px rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(12px)',
+      position: 'relative'
+    }}>
+      <style>{`
+        .family-node-hover {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .family-node-hover:hover {
+          transform: translateY(-5px);
+          border-color: #10B981 !important;
+          box-shadow: 0 10px 25px -5px rgba(16,185,129,0.3), 0 0 15px rgba(16,185,129,0.1) !important;
+        }
+      `}</style>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text }}>Family Tree &amp; Hierarchy</h3>
+        <button 
+          onClick={onAddFamily}
+          style={{ 
+            padding: '10px 20px', 
+            background: 'linear-gradient(135deg, #10B981, #059669)', 
+            color: '#fff', 
+            border: 'none', 
+            borderRadius: '12px', 
+            cursor: 'pointer', 
+            fontSize: '13px', 
+            fontWeight: 800, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            boxShadow: '0 8px 20px rgba(16,185,129,0.35)',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 12px 24px rgba(16,185,129,0.45)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = '0 8px 20px rgba(16,185,129,0.35)';
+          }}
+        >
+          <Plus size={16} /> Add Member
+        </button>
+      </div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', padding: '20px 0' }}>
+        
+        {/* Ancestors Level */}
+        {ancestors.length > 0 && (
+          <div style={{ display: 'flex', gap: '30px', marginBottom: '40px', position: 'relative' }}>
+            {ancestors.map((m, i) => <ClientFamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
+            {ancestors.length > 1 && (
+              <div style={{ position: 'absolute', bottom: '-20px', left: '10%', right: '10%', height: '2px', background: lineBg, zIndex: 1 }} />
+            )}
+          </div>
+        )}
+
+        {/* Client & Siblings Level */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '40px', position: 'relative', marginBottom: '40px', width: '100%' }}>
+          
+          {/* Siblings (Left) */}
+          <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-end' }}>
+            {siblings.map((m, i) => <ClientFamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {siblings.length > 0 && (
+              <div style={{ position: 'absolute', top: '50%', right: '-40px', width: '40px', height: '2px', background: lineBg, zIndex: 1, transform: 'translateY(-50%)' }} />
+            )}
+          </div>
+
+          {/* Client Node (Center) */}
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center' }}>
+            <ClientFamilyTreeNode name={client?.name} role="PRIMARY CLIENT" isClient={true} />
+            {children.length > 0 && (
+              <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
+            )}
+          </div>
+
+          {/* Spouse (Right) */}
+          <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-start' }}>
+            {spouse.length > 0 && (
+              <div style={{ position: 'absolute', top: '50%', left: '-40px', width: '40px', height: '2px', background: lineBg, zIndex: 1, transform: 'translateY(-50%)' }} />
+            )}
+            {spouse.map((m, i) => <ClientFamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} />)}
+          </div>
+        </div>
+
+        {/* Children Level */}
+        {children.length > 0 && (
+          <div style={{ display: 'flex', gap: '30px', position: 'relative' }}>
+            {children.length > 1 && (
+              <div style={{ position: 'absolute', top: '-20px', left: '20%', right: '20%', height: '2px', background: lineBg, zIndex: 1 }} />
+            )}
+            {children.map((m, i) => (
+              <div key={`child-${i}`} style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-20px', left: '50%', width: '2px', height: '20px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
+                <ClientFamilyTreeNode name={m.name} role={m.relationWithHolder} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Other Relatives */}
+        {others.length > 0 && (
+          <div style={{ marginTop: '60px', width: '100%' }}>
+            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.08)', margin: '0 0 20px' }} />
+            <h4 style={{ fontSize: '13px', fontWeight: 800, color: CL.textMuted, marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Other Relatives</h4>
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {others.map((m, i) => <ClientFamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            </div>
+          </div>
+        )}
+
+        {familyMembers.length === 0 && (
+          <div style={{ 
+            color: CL.textMuted, 
+            padding: '40px', 
+            border: `2px dashed ${CL.border}`, 
+            borderRadius: '16px', 
+            width: '100%', 
+            maxWidth: '400px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            background: 'rgba(255,255,255,0.01)'
+          }}>
+            <GitBranch size={32} style={{ marginBottom: '12px', opacity: 0.5, color: CL.accent }} />
+            <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Click "Add Member" to start building your family tree.</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
 const DashboardView = ({ overview, claims, navigate }) => {
   const inProgress = claims.filter(c => !c.status?.toLowerCase().includes('active')).length;
 
@@ -1102,33 +1285,65 @@ const DashboardView = ({ overview, claims, navigate }) => {
 /* ══════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════ */
-const ClientDashboard = ({ user }) => {
+const ClientDashboard = ({ user: propUser }) => {
+  const { user: authUser } = useAuth();
+  const user = propUser || authUser;
   const location = useLocation();
   const navigate = useNavigate();
 
   const urlTab = new URLSearchParams(location.search).get('tab');
   const showServiceHub = urlTab === 'service-hub';
   const showClaims = urlTab === 'claims';
+  const showFamilyTree = urlTab === 'family-tree';
 
   const [dashboard, setDashboard] = useState(null);
+  const [clientProfile, setClientProfile] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notifHovered, setNotifHovered] = useState(false);
   const [notifCount] = useState(3);
 
+  const fetchFamilyData = async () => {
+    if (!user?.token) return;
+    try {
+      const headers = { Authorization: `Bearer ${user.token}` };
+      const [profileRes, familyRes] = await Promise.all([
+        axios.get('https://myclaimportal.onrender.com/api/users/client/profile', { headers }),
+        axios.get(`https://myclaimportal.onrender.com/api/users?parent_id=${user._id || user.id}`, { headers }).catch(() => ({ data: [] }))
+      ]);
+      setClientProfile(profileRes.data);
+      const embedded = profileRes.data.familyMembers || [];
+      const standalone = familyRes.data || [];
+      
+      const combined = [...embedded];
+      standalone.forEach(s => {
+        if (!combined.some(c => c._id === s._id || c.name === s.name)) {
+          combined.push(s);
+        }
+      });
+      setFamilyMembers(combined);
+    } catch (err) {
+      console.error("Error fetching client family tree data:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const initData = async () => {
       if (!user?.token) { setLoading(false); return; }
       try {
         setLoading(true);
-        const { data } = await axios.get('https://myclaimportal.onrender.com/api/dashboard/client', {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
-        setDashboard(data);
+        const headers = { Authorization: `Bearer ${user.token}` };
+        const [dashRes] = await Promise.all([
+          axios.get('https://myclaimportal.onrender.com/api/dashboard/client', { headers }),
+          fetchFamilyData()
+        ]);
+        setDashboard(dashRes.data);
       } catch (err) {
         console.error(err);
       } finally { setLoading(false); }
     };
-    fetchDashboard();
+    initData();
   }, [user]);
 
   const overview = dashboard?.overview || { totalClaims: 3, inProgress: 2, completed: 1, needAction: 2 };
@@ -1287,12 +1502,14 @@ const ClientDashboard = ({ user }) => {
         <div className="header-title-block">
           <div style={{ marginBottom: 6 }}>
             <span className="header-tag">
-              {showClaims ? '📁 MY CLAIMS' : '🏠 DASHBOARD'}
+              {showClaims ? '📁 MY CLAIMS' : (showFamilyTree ? '🌳 FAMILY TREE' : '🏠 DASHBOARD')}
             </span>
           </div>
           <h1 className="header-greeting">
             {showClaims ? (
               <span className="header-title-shimmer">My Claims</span>
+            ) : showFamilyTree ? (
+              <span className="header-title-shimmer">Family Tree</span>
             ) : (
               <>
                 Welcome back,{' '}
@@ -1303,10 +1520,13 @@ const ClientDashboard = ({ user }) => {
             )}
           </h1>
           <div className="header-subtitle">
-            {showClaims
-              ? <>Track &amp; manage all your <strong style={{ color: CL.accent }}>company claims</strong> in one place</>
-              : <>Here's your <strong style={{ color: CL.accent }}>CLIENT</strong> command center — stay on top of everything.</>
-            }
+            {showClaims ? (
+              <>Track &amp; manage all your <strong style={{ color: CL.accent }}>company claims</strong> in one place</>
+            ) : showFamilyTree ? (
+              <>View and manage your <strong style={{ color: CL.accent }}>family hierarchy</strong> and relations</>
+            ) : (
+              <>Here's your <strong style={{ color: CL.accent }}>CLIENT</strong> command center — stay on top of everything.</>
+            )}
           </div>
         </div>
 
@@ -1329,8 +1549,20 @@ const ClientDashboard = ({ user }) => {
       {/* ── TAB CONTENT ── */}
       {showClaims ? (
         <MyClaimsView claims={claims} navigate={navigate} />
+      ) : showFamilyTree ? (
+        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddFamily={() => setIsAddFamilyModalOpen(true)} />
       ) : (
         <DashboardView overview={overview} claims={claims} navigate={navigate} />
+      )}
+
+      {/* 👨‍👩‍👧 ADD FAMILY MEMBER MODAL */}
+      {isAddFamilyModalOpen && (
+        <AddFamilyMemberModal
+          isOpen={isAddFamilyModalOpen}
+          onClose={() => setIsAddFamilyModalOpen(false)}
+          clientId={user?._id || user?.id}
+          onSuccess={fetchFamilyData}
+        />
       )}
 
     </main>
