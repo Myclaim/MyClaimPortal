@@ -802,12 +802,19 @@ const ClaimsView = ({ claims, tickets = [] }) => {
   };
 
   const handleSaveStages = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     console.log("Toggling Save Stages. Current editing mode:", editingStages);
-    if (editingStages) {
+    
+    // Toggle UI instantly for a responsive feel
+    const wasEditing = editingStages;
+    setEditingStages(!editingStages);
+
+    if (wasEditing) {
       try {
         const claim = localClaims.find(c => c._id === selectedClaimId);
-        console.log("Sending PATCH request for claim:", claim._id);
+        console.log("Sending PATCH request for claim:", claim?._id);
+        if (!claim) return;
+        
         const res = await api.patch(`/tickets/${selectedClaimId}/stages`, { 
           stages: claim.stages,
           progress: claim.progress,
@@ -817,9 +824,9 @@ const ClaimsView = ({ claims, tickets = [] }) => {
       } catch (err) {
         console.error('Failed to save claim stages:', err.response?.data || err.message);
         alert('Failed to save: ' + (err.response?.data?.message || err.message));
+        setEditingStages(true); // Revert to edit mode on failure
       }
     }
-    setEditingStages(!editingStages);
   };
 
   return (
