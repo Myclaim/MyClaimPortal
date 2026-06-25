@@ -27,24 +27,21 @@ const ClaimStore = () => {
   const [storeServices, setStoreServices] = useState([]);
   
   useEffect(() => {
-    const loadServices = () => {
-      let rawServices = JSON.parse(localStorage.getItem('claimServices'));
-      if (!rawServices || rawServices.length === 0) {
-        rawServices = DEFAULT_CLAIM_SERVICES;
+    const loadServices = async () => {
+      try {
+        const res = await api.get('/department-services?type=claim');
+        let rawServices = res.data;
+        if (!rawServices || rawServices.length === 0) {
+          rawServices = DEFAULT_CLAIM_SERVICES;
+        }
+        setStoreServices(rawServices.filter(s => s.status !== false));
+      } catch (err) {
+        console.error(err);
+        setStoreServices(DEFAULT_CLAIM_SERVICES.filter(s => s.status !== false));
       }
-      setStoreServices(rawServices.filter(s => s.status));
     };
 
     loadServices();
-
-    const handleStorageChange = (e) => {
-      if (e.key === 'claimServices') {
-        loadServices();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Group services by category

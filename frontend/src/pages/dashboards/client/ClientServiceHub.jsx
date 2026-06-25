@@ -18,6 +18,7 @@ import {
   Filter,
   X
 } from 'lucide-react';
+import api from '../../../services/api';
 
 /* ─── Design Tokens (Black & Green) ──────────────────────────── */
 const C = {
@@ -144,18 +145,14 @@ const ServiceCard = ({ service, onSelect }) => {
       {/* Meta row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {service.price != null && (
-            <div style={{ fontSize: 13, fontWeight: 900, color: C.green }}>
-              {service.price === 0 ? 'Free' : `₹${Number(service.price).toLocaleString('en-IN')}`}
-            </div>
-          )}
+          
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 4,
           fontSize: 11, fontWeight: 700, color: C.green,
           opacity: hovered ? 1 : 0.6, transition: 'opacity 0.2s',
         }}>
-          View details <ChevronRight size={14} />
+          Get Started <ChevronRight size={14} />
         </div>
       </div>
     </div>
@@ -253,14 +250,6 @@ const DetailPanel = ({ service, onClose }) => {
             borderRadius: 12, padding: 16, marginBottom: 24,
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16,
           }}>
-            {service.price != null && (
-              <div>
-                <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Price</div>
-                <div style={{ fontSize: 16, fontWeight: 900, color: C.green }}>
-                  {service.price === 0 ? 'Free' : `₹${Number(service.price).toLocaleString('en-IN')}`}
-                </div>
-              </div>
-            )}
             {service.category && (
               <div>
                 <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Category</div>
@@ -328,23 +317,41 @@ const ClientServiceHub = ({ user, onBack }) => {
   const [selected, setSelected]       = useState(null);
   const [refreshing, setRefreshing]   = useState(false);
 
-  /* Fetch services from the API */
+  /* Fetch claim store services from backend */
   const fetchServices = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
     else setLoading(true);
     try {
-      const token = localStorage.getItem('token') || user?.token;
-      const res = await fetch('https://myclaimportal.onrender.com/api/services', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setServices(Array.isArray(data) ? data : data.services || []);
-      } else {
-        setServices(FALLBACK_SERVICES);
+      const res = await api.get('/department-services?type=claim');
+      let rawServices = res.data;
+      if (!rawServices || rawServices.length === 0) {
+        rawServices = FALLBACK_SERVICES;
       }
-    } catch {
-      setServices(FALLBACK_SERVICES);
+      const mappedClaims = rawServices.filter(s => s.status !== false).map(s => ({
+        _id: s._id || s.id,
+        name: s.name,
+        title: s.name,
+        description: s.description,
+        status: 'Active',
+        category: s.category,
+        price: s.price,
+        originalItem: s
+      }));
+      setServices(mappedClaims);
+    } catch (err) {
+      console.error(err);
+      // Fallback if API fails completely
+      const mappedClaims = FALLBACK_SERVICES.filter(s => s.status !== false).map(s => ({
+        _id: s.id,
+        name: s.name,
+        title: s.name,
+        description: s.description,
+        status: 'Active',
+        category: s.category,
+        price: s.price,
+        originalItem: s
+      }));
+      setServices(mappedClaims);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -381,10 +388,10 @@ const ClientServiceHub = ({ user, onBack }) => {
         </button>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 900, margin: 0, color: C.text, letterSpacing: '-0.3px' }}>
-            Service Hub
+            Claim Hub
           </h1>
           <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>
-            Browse and request expert services
+            View your generated claims
           </div>
         </div>
         <div style={{ marginLeft: 'auto' }}>
@@ -410,10 +417,10 @@ const ClientServiceHub = ({ user, onBack }) => {
         gap: 12, marginBottom: 24,
       }}>
         {[
-          { label: 'Total Services',  value: services.length, color: C.text    },
-          { label: 'Active',          value: services.filter(s => (s.status || 'Active') === 'Active').length, color: C.green },
-          { label: 'In Progress',     value: services.filter(s => s.status === 'In Progress').length, color: '#F59E0B' },
-          { label: 'Completed',       value: services.filter(s => s.status === 'Completed').length,  color: '#22C55E' },
+          { label: 'Total Claims Available',  value: services.length, color: C.text    },
+          { label: 'Physical Shares', value: services.filter(s => s.category === 'Physical Shares').length, color: C.green },
+          { label: 'Dividends',       value: services.filter(s => s.category === 'Dividends').length, color: '#F59E0B' },
+          { label: 'Other',           value: services.filter(s => s.category !== 'Physical Shares' && s.category !== 'Dividends').length,  color: '#22C55E' },
         ].map(({ label, value, color }) => (
           <div key={label} style={{
             backgroundColor: C.bgCard, backgroundImage: C.bgCardImage, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${C.border}`,
@@ -438,7 +445,7 @@ const ClientServiceHub = ({ user, onBack }) => {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search services…"
+            placeholder="Search claims…"
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
               color: C.text, fontSize: 13, fontFamily: 'inherit',
@@ -490,9 +497,9 @@ const ClientServiceHub = ({ user, onBack }) => {
           borderRadius: 16,
         }}>
           <Globe size={40} color={C.textMuted} style={{ marginBottom: 14, opacity: 0.5 }} />
-          <div style={{ fontWeight: 800, color: C.text, fontSize: 16, marginBottom: 8 }}>No services found</div>
+          <div style={{ fontWeight: 800, color: C.text, fontSize: 16, marginBottom: 8 }}>No claims found</div>
           <div style={{ color: C.textMuted, fontSize: 13 }}>
-            {search ? `No results for "${search}"` : 'No services available right now.'}
+            {search ? `No results for "${search}"` : 'No claims available right now.'}
           </div>
         </div>
       ) : (
@@ -516,14 +523,14 @@ const ClientServiceHub = ({ user, onBack }) => {
 
 /* ─── Fallback data when API is unavailable ───────────────────── */
 const FALLBACK_SERVICES = [
-  { _id: '1', name: 'IEPF Claim Recovery',          status: 'Active',      category: 'Legal',      price: 2999,  description: 'Complete end-to-end recovery of unclaimed shares, dividends and deposits from IEPF Authority.'       },
-  { _id: '2', name: 'Mutual Fund Recovery',          status: 'Active',      category: 'Investment', price: 1999,  description: 'Recover unclaimed mutual fund units and proceeds on behalf of nominees or legal heirs.'           },
-  { _id: '3', name: 'Dividend Recovery',             status: 'Active',      category: 'Investment', price: 1499,  description: 'Recover all unclaimed dividend amounts from companies and reinvest on your behalf.'               },
-  { _id: '4', name: 'Share Transfer Services',       status: 'In Progress', category: 'Legal',      price: 2499,  description: 'Legally transfer equity shares in favour of legal heirs or nominees with minimal paperwork.'      },
-  { _id: '5', name: 'Document Retrieval',            status: 'Active',      category: 'Support',    price: 0,     description: 'Retrieve original share certificates, folio statements and documents from issuer companies.'        },
-  { _id: '6', name: 'Family Tree Documentation',     status: 'Active',      category: 'Legal',      price: 999,   description: 'Prepare legally verified family tree for succession and claim filing purposes.'                   },
-  { _id: '7', name: 'Nomination Updation',           status: 'Active',      category: 'Support',    price: 799,   description: 'Update nominee details in share registrar records and mutual fund folios.'                       },
-  { _id: '8', name: 'Legal Heir Certificate',        status: 'Active',      category: 'Legal',      price: 1299,  description: 'Obtain legal heir certificate from the appropriate government authority for estate claims.'        },
+  { id: 'c1', code: 'CLM-IEPF-001', name: 'IEPF Claim Recovery', category: 'Physical Shares', subCategory: 'IEPF Authority', price: 2499, stages: 6, status: true, mappedStore: 'All Stores', description: 'Recover shares & dividends from IEPF', tracking: ['Docs Collected', 'Verification', 'IEPF-5 Filed', 'Authority Review', 'Claim Approved', 'Shares Credited'] },
+  { id: 'c2', code: 'CLM-SHR-002', name: 'Share Recovery', category: 'Physical Shares', subCategory: 'Registrar', price: 1999, stages: 5, status: true, mappedStore: 'All Stores', description: 'Recover physical shares', tracking: ['Docs Collected', 'Verification', 'Filed', 'Processing', 'Shares Credited'] },
+  { id: 'c3', code: 'CLM-DEM-003', name: 'Dematerialisation', category: 'Physical Shares', subCategory: 'Depository', price: 1499, stages: 5, status: true, mappedStore: 'All Stores', description: 'Convert physical to demat', tracking: ['Docs Collected', 'Verification', 'Filed', 'Processing', 'Shares Credited'] },
+  { id: 'c4', code: 'CLM-DUP-004', name: 'Duplicate Certificate', category: 'Physical Shares', subCategory: 'Registrar', price: 1299, stages: 4, status: true, mappedStore: 'All Stores', description: 'Apply for duplicate certificate', tracking: ['Docs Collected', 'Verification', 'Filed', 'Issued'] },
+  { id: 'c5', code: 'CLM-TRN-005', name: 'Transmission', category: 'Physical Shares', subCategory: 'Legal Heir', price: 2999, stages: 5, status: true, mappedStore: 'All Stores', description: 'Transmission of shares to legal heir', tracking: ['Docs Collected', 'Verification', 'Filed', 'Processing', 'Transmitted'] },
+  { id: 'c6', code: 'CLM-NAM-006', name: 'Name Correction', category: 'Physical Shares', subCategory: 'Registrar', price: 999, stages: 4, status: true, mappedStore: 'All Stores', description: 'Correct name on shares', tracking: ['Docs Collected', 'Verification', 'Filed', 'Corrected'] },
+  { id: 'c7', code: 'CLM-DIV-007', name: 'Unclaimed Dividend', category: 'Dividends', subCategory: 'IEPF', price: 1499, stages: 4, status: true, mappedStore: 'All Stores', description: 'Claim unpaid dividend', tracking: ['Docs Collected', 'Verification', 'Filed', 'Credited'] },
+  { id: 'c8', code: 'CLM-INS-008', name: 'Insurance Claim', category: 'Insurance', subCategory: 'Life Insurance', price: 3499, stages: 4, status: false, mappedStore: 'All Stores', description: 'Process life insurance claim', tracking: ['Docs Collected', 'Verification', 'Filed', 'Settled'] },
 ];
 
 export default ClientServiceHub;

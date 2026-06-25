@@ -12,6 +12,7 @@ import ClientServiceHub from './ClientServiceHub';
 import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../../hooks/useAuth';
+import api from '../../../services/api';
 import '../../super-admin/Overview.css';
 
 const CL = {
@@ -576,7 +577,12 @@ const ClaimDetailView = ({ claim, onBack }) => {
   const orbColor = claim.status?.toLowerCase() === 'active' ? '#10B981'
     : claim.status?.toLowerCase().includes('progress') ? '#F59E0B' : '#818CF8';
 
-  const steps = [
+  const steps = claim.stages && claim.stages.length > 0 ? claim.stages.map(stage => ({
+    label: stage.name,
+    date: stage.date,
+    done: stage.status === 'completed',
+    active: stage.status === 'in-progress',
+  })) : [
     { label: 'Documents Collected', date: 'Mar 2, 2026', done: true },
     { label: 'Verification', date: 'Mar 5, 2026', done: true },
     { label: 'Application Filed', date: 'Mar 8, 2026', done: true },
@@ -585,7 +591,10 @@ const ClaimDetailView = ({ claim, onBack }) => {
     { label: 'Shares Credited', date: '', done: false },
   ];
 
-  const adminUpdates = [
+  const adminUpdates = claim.comments && claim.comments.length > 0 ? claim.comments.slice().reverse().map(c => {
+    const dateStr = new Date(c.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return { icon: '🔵', text: c.text, by: `Admin · ${dateStr}` };
+  }) : [
     { icon: '🔵', text: 'Documents verified successfully by admin team', by: 'Admin · Mar 3, 9:15 PM' },
     { icon: '🔵', text: 'IEPF-5 form submitted to authority portal', by: 'System · Mar 10, 11:00 AM' },
     { icon: '🟢', text: 'Application acknowledged by IEPF Authority', by: 'Admin · Mar 12, 8:40 PM' },
@@ -808,7 +817,7 @@ const MyClaimsView = ({ claims, navigate }) => {
   const [activeTab, setActiveTab] = useState('All Companies');
   const [tabKey, setTabKey] = useState(0);
 
-  const tabs = ['All Companies', 'Active', 'In Progress', 'Pending', 'Service Hub'];
+  const tabs = ['All Companies', 'Active', 'In Progress', 'Pending', 'Claim Hub'];
   const { refs: tabRefs, indicator } = useTabIndicator(tabs, activeTab);
 
   if (selectedClaim) return <ClaimDetailView claim={selectedClaim} onBack={() => setSelectedClaim(null)} />;
@@ -830,7 +839,7 @@ const MyClaimsView = ({ claims, navigate }) => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setTabKey(k => k + 1);
-    if (tab === 'Service Hub') setTimeout(() => navigate('/client?tab=service-hub'), 180);
+    if (tab === 'Claim Hub') setTimeout(() => navigate('/client?tab=service-hub'), 180);
   };
 
 
@@ -867,7 +876,7 @@ const MyClaimsView = ({ claims, navigate }) => {
         <div className="claims-tab-row" style={{ position: 'relative' }}>
           {tabs.map(tab => {
             const isActive = activeTab === tab;
-            const isServiceHub = tab === 'Service Hub';
+            const isServiceHub = tab === 'Claim Hub';
             return (
               <button
                 key={tab}
@@ -1836,6 +1845,8 @@ const ClientDashboard = ({ user: propUser }) => {
   const showFamilyTree = urlTab === 'family-tree';
   const showDocuments = urlTab === 'documents';
   const showNotifications = urlTab === 'notifications';
+  const showServices = urlTab === 'services';
+  const showIEPFSearch = urlTab === 'iepf-search';
 
   const [dashboard, setDashboard] = useState(null);
   const [clientProfile, setClientProfile] = useState(null);
@@ -1850,8 +1861,7 @@ const ClientDashboard = ({ user: propUser }) => {
   const fetchClientNotifications = async () => {
     if (!user?.token) return;
     try {
-      const headers = { Authorization: `Bearer ${user.token}` };
-      const { data } = await axios.get('https://myclaimportal.onrender.com/api/notifications', { headers });
+      const { data } = await api.get('/notifications');
       setNotifications(data.notifications || []);
       setUnreadNotifCount(data.unreadCount || 0);
       window.dispatchEvent(new CustomEvent('notificationCountUpdate', { detail: data.unreadCount || 0 }));
@@ -1863,10 +1873,9 @@ const ClientDashboard = ({ user: propUser }) => {
   const fetchFamilyData = async () => {
     if (!user?.token) return;
     try {
-      const headers = { Authorization: `Bearer ${user.token}` };
       const [profileRes, familyRes] = await Promise.all([
-        axios.get('https://myclaimportal.onrender.com/api/users/client/profile', { headers }),
-        axios.get(`https://myclaimportal.onrender.com/api/users?parent_id=${user._id || user.id}`, { headers }).catch(() => ({ data: [] }))
+        api.get('/users/client/profile'),
+        api.get(`/users?parent_id=${user._id || user.id}`).catch(() => ({ data: [] }))
       ]);
       setClientProfile(profileRes.data);
       const embedded = profileRes.data.familyMembers || [];
@@ -1887,8 +1896,7 @@ const ClientDashboard = ({ user: propUser }) => {
   const fetchDocuments = async () => {
     if (!user?.token) return;
     try {
-      const headers = { Authorization: `Bearer ${user.token}` };
-      const { data } = await axios.get('https://myclaimportal.onrender.com/api/documents', { headers });
+      const { data } = await api.get('/documents');
       setDocuments(data);
     } catch (err) {
       console.error("Error fetching client documents:", err);
@@ -1900,9 +1908,8 @@ const ClientDashboard = ({ user: propUser }) => {
       if (!user?.token) { setLoading(false); return; }
       try {
         setLoading(true);
-        const headers = { Authorization: `Bearer ${user.token}` };
         const [dashRes] = await Promise.all([
-          axios.get('https://myclaimportal.onrender.com/api/dashboard/client', { headers }),
+          api.get('/dashboard/client'),
           fetchFamilyData(),
           fetchDocuments(),
           fetchClientNotifications()
@@ -2133,6 +2140,32 @@ const ClientDashboard = ({ user: propUser }) => {
         <ClientDocumentsHub documents={documents} clientProfile={clientProfile} user={user} onRefresh={fetchDocuments} />
       ) : showNotifications ? (
         <ClientNotificationsView notifications={notifications} onRefresh={fetchClientNotifications} user={user} />
+      ) : showServices ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🚀</div>
+          <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>My Services</h2>
+          <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
+            We are working hard to bring you this feature. Stay tuned for exciting updates!
+          </p>
+          <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.2s' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.4s' }} />
+          </div>
+        </div>
+      ) : showIEPFSearch ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🔍</div>
+          <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>IEPF Search</h2>
+          <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
+            The advanced IEPF search engine is coming soon. Get ready to uncover unclaimed wealth easily!
+          </p>
+          <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.2s' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.4s' }} />
+          </div>
+        </div>
       ) : (
         <DashboardView overview={overview} claims={claims} navigate={navigate} />
       )}

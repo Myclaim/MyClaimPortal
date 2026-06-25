@@ -659,10 +659,13 @@ const HoldersView = ({ members, onAddHolder }) => {
     </div>
   );
 };
+
 const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
   const [localClaims, setLocalClaims] = useState([]);
   const [selectedClaimId, setSelectedClaimId] = useState(null);
   const [editingStages, setEditingStages] = useState(false);
+  const [newUpdate, setNewUpdate] = useState('');
+  const [addingUpdate, setAddingUpdate] = useState(false);
 
   useEffect(() => {
     const calculateProgressAndStatus = (stages) => {
@@ -757,6 +760,7 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
         clientName: mockRef.clientName,
         contact: mockRef.contact,
         updates: [{ date: new Date(t.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), msg: `Claim Ticket "${t.subject || t.service}" created.` }],
+        comments: t.comments || [],
         stages: stages,
       };
     }) : [];
@@ -815,10 +819,14 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
         console.log("Sending PATCH request for claim:", claim?._id);
         if (!claim) return;
         
+        let ticketStatus = 'active';
+        if (claim.progress === 100) ticketStatus = 'completed';
+        else if (claim.progress > 0) ticketStatus = 'in_process';
+        
         const res = await api.patch(`/tickets/${selectedClaimId}/stages`, { 
           stages: claim.stages,
           progress: claim.progress,
-          status: claim.status
+          status: ticketStatus
         });
         console.log("Successfully saved stages:", res.data);
         if (onRefresh) {
@@ -829,6 +837,21 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
         alert('Failed to save: ' + (err.response?.data?.message || err.message));
         setEditingStages(true); // Revert to edit mode on failure
       }
+    }
+  };
+
+  const handleAddUpdate = async () => {
+    if(!newUpdate.trim()) return;
+    try {
+      await api.post(`/tickets/${selectedClaimId}/comments`, { text: newUpdate });
+      if (onRefresh) {
+        await onRefresh();
+      }
+      setNewUpdate('');
+      setAddingUpdate(false);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add update');
     }
   };
 
@@ -952,12 +975,12 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
                           <input 
                             value={stage.name} 
                             onChange={(e) => handleStageChange(idx, 'name', e.target.value)} 
-                            style={{ flex: 1, padding: '4px 8px', fontSize: '13px', border: '1px solid #e2e8f0', borderRadius: '6px', fontWeight: 700 }}
+                            style={{ flex: 1, padding: '4px 8px', fontSize: '13px', border: '1px solid #e2e8f0', borderRadius: '6px', fontWeight: 700, color: '#0f172a' }}
                           />
                           <select 
                             value={stage.status} 
                             onChange={(e) => handleStageChange(idx, 'status', e.target.value)}
-                            style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #e2e8f0', borderRadius: '6px', outline: 'none' }}
+                            style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #e2e8f0', borderRadius: '6px', outline: 'none', color: '#0f172a' }}
                           >
                             <option value="completed" disabled={!isPrevCompleted}>Completed</option>
                             <option value="in-progress" disabled={!isPrevCompleted}>In Progress</option>
@@ -969,7 +992,7 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
                           placeholder="Date or description..."
                           value={stage.date} 
                           onChange={(e) => handleStageChange(idx, 'date', e.target.value)} 
-                          style={{ width: '100%', padding: '4px 8px', fontSize: '11px', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#64748b' }}
+                          style={{ width: '100%', padding: '4px 8px', fontSize: '11px', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#0f172a' }}
                         />
                       </div>
                     ) : (
@@ -1009,17 +1032,43 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
             </div>
 
             <div>
-              <h5 style={{ margin: '0 0 16px', fontSize: '12px', fontWeight: 800, color: '#94a3b8', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between' }}>
+              <h5 style={{ margin: '0 0 16px', fontSize: '12px', fontWeight: 800, color: '#94a3b8', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 TRACK PROGRESS
-                <span style={{ color: '#2563eb', cursor: 'pointer', textTransform: 'none' }}>+ Add Update</span>
+                <span onClick={() => setAddingUpdate(!addingUpdate)} style={{ color: '#2563eb', cursor: 'pointer', textTransform: 'none' }}>
+                  {addingUpdate ? 'Cancel' : '+ Add Update'}
+                </span>
               </h5>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                {(selectedClaim.updates || []).map((update, idx) => (
-                  <div key={idx} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#fff' }}>
-                    <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, marginBottom: '6px' }}>{update.date}</div>
-                    <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.4' }}>{update.msg}</div>
+              
+              {addingUpdate && (
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                  <input 
+                    type="text" 
+                    value={newUpdate}
+                    onChange={e => setNewUpdate(e.target.value)}
+                    placeholder="Enter update description..."
+                    style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', outline: 'none' }}
+                  />
+                  <button onClick={handleAddUpdate} style={{ padding: '8px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+                    Post
+                  </button>
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                {(selectedClaim.comments || []).slice().reverse().map((comment, idx) => {
+                  const dateStr = new Date(comment.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={idx} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#fff' }}>
+                      <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 800, marginBottom: '6px' }}>{dateStr}</div>
+                      <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.4' }}>{comment.text}</div>
+                    </div>
+                  )
+                })}
+                {(!selectedClaim.comments || selectedClaim.comments.length === 0) && (
+                  <div style={{ padding: '16px', border: '1px dashed #e2e8f0', borderRadius: '12px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
+                    No updates posted yet.
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

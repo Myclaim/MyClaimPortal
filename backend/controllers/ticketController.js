@@ -465,12 +465,12 @@ const updateTicketStages = async (req, res) => {
   const clientName = clientUser ? clientUser.name : 'Unknown';
 
   if (updated.assignedTo) {
-    await addNotification(
-      updated.assignedTo,
-      `Ticket "${updated.service}" stages updated`,
-      `Client ${clientName}'s ticket stages were updated. Progress: ${updated.progress}%`,
-      'ticket'
-    );
+    await Notification.create({
+      user: updated.assignedTo,
+      title: `Ticket "${updated.service}" stages updated`,
+      message: `Client ${clientName}'s ticket stages were updated. Progress: ${updated.progress}%`,
+      type: 'ticket'
+    });
   }
 
   await Activity.create({

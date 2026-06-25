@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Eye, Edit2, Trash2, ArrowLeft, X, Check, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 const DEFAULT_CLAIM_SERVICES = [
   { id: 'c1', code: 'CLM-IEPF-001', name: 'IEPF Claim Recovery', category: 'Physical Shares', subCategory: 'IEPF Authority', price: 2499, stages: 6, status: true, mappedStore: 'All Stores', description: 'Recover shares & dividends from IEPF', tracking: ['Docs Collected', 'Verification', 'IEPF-5 Filed', 'Authority Review', 'Claim Approved', 'Shares Credited'] },
@@ -39,16 +40,41 @@ const STORE_CATEGORIES = ['All Categories', 'Pre-IPO Equity'];
 const DepartmentBoard = ({ initialTab = 'claim' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   
-  const [claimServices, setClaimServices] = useState(() => JSON.parse(localStorage.getItem('claimServices')) || DEFAULT_CLAIM_SERVICES);
-  const [serviceServices, setServiceServices] = useState(() => JSON.parse(localStorage.getItem('serviceServices')) || DEFAULT_SERVICE_SERVICES);
-  const [storeServices, setStoreServices] = useState(() => JSON.parse(localStorage.getItem('storeServices')) || DEFAULT_STORE_SERVICES);
+  const [claimServices, setClaimServices] = useState([]);
+  const [serviceServices, setServiceServices] = useState([]);
+  const [storeServices, setStoreServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAllServices = async () => {
+    try {
+      const res = await api.get('/department-services');
+      let data = res.data;
+      if (data.length === 0) {
+        // Seed default data
+        const seedData = [
+          ...DEFAULT_CLAIM_SERVICES.map(s => ({ ...s, type: 'claim' })),
+          ...DEFAULT_SERVICE_SERVICES.map(s => ({ ...s, type: 'service' })),
+          ...DEFAULT_STORE_SERVICES.map(s => ({ ...s, type: 'store' }))
+        ];
+        await api.post('/department-services/seed', { services: seedData });
+        const res2 = await api.get('/department-services');
+        data = res2.data;
+      }
+      setClaimServices(data.filter(d => d.type === 'claim'));
+      setServiceServices(data.filter(d => d.type === 'service'));
+      setStoreServices(data.filter(d => d.type === 'store'));
+    } catch (err) {
+      console.error('Failed to fetch services', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllServices();
+  }, []);
 
   const services = activeTab === 'claim' ? claimServices : activeTab === 'service' ? serviceServices : storeServices;
-  const setServices = activeTab === 'claim' ? setClaimServices : activeTab === 'service' ? setServiceServices : setStoreServices;
-
-  useEffect(() => { localStorage.setItem('claimServices', JSON.stringify(claimServices)); }, [claimServices]);
-  useEffect(() => { localStorage.setItem('serviceServices', JSON.stringify(serviceServices)); }, [serviceServices]);
-  useEffect(() => { localStorage.setItem('storeServices', JSON.stringify(storeServices)); }, [storeServices]);
 
   const [activeService, setActiveService] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -78,10 +104,19 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
     return true;
   });
 
-  const handleToggle = (id) => {
-    setServices(prev => prev.map(s => s.id === id ? { ...s, status: !s.status } : s));
-    if (activeService && activeService.id === id) {
-      setActiveService(prev => ({ ...prev, status: !prev.status }));
+  const handleToggle = async (id) => {
+    const service = services.find(s => s._id === id || s.id === id);
+    if (!service) return;
+    
+    try {
+      const updated = { ...service, status: !service.status };
+      await api.put(`/department-services/${service._id}`, { status: updated.status });
+      fetchAllServices();
+      if (activeService && (activeService._id === id || activeService.id === id)) {
+        setActiveService(prev => ({ ...prev, status: !prev.status }));
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -103,16 +138,22 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
     setIsAdding(true);
   };
 
-  const handleSaveEdit = () => {
-    if (isAdding) {
-      setServices(prev => [{ ...editForm, id: Math.random().toString() }, ...prev]);
-      setIsAdding(false);
-    } else {
-      setServices(prev => prev.map(s => s.id === editForm.id ? editForm : s));
-      if (activeService && activeService.id === editForm.id) {
-        setActiveService(editForm);
+  const handleSaveEdit = async () => {
+    try {
+      if (isAdding) {
+        const newService = { ...editForm, type: activeTab };
+        await api.post('/department-services', newService);
+        setIsAdding(false);
+      } else {
+        await api.put(`/department-services/${editForm._id}`, editForm);
+        if (activeService && activeService._id === editForm._id) {
+          setActiveService(editForm);
+        }
+        setIsEditing(false);
       }
-      setIsEditing(false);
+      fetchAllServices();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -244,9 +285,14 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                       <div className="db-actions">
                         <div className="db-action-icon" onClick={() => openView(service)}><Eye size={14} /></div>
                         <div className="db-action-icon" onClick={() => openEdit(service)}><Edit2 size={14} /></div>
-                        <div className="db-action-icon" onClick={() => {
+                        <div className="db-action-icon" onClick={async () => {
                           if (window.confirm('Are you sure you want to delete this service?')) {
-                            setServices(prev => prev.filter(s => s.id !== service.id));
+                            try {
+                              await api.delete(`/department-services/${service._id}`);
+                              fetchAllServices();
+                            } catch(err) {
+                              console.error(err);
+                            }
                           }
                         }}><Trash2 size={14} /></div>
                       </div>

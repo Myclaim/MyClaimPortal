@@ -291,6 +291,7 @@ const getClientDashboardStats = async (req, res) => {
         shares,
         isin,
         estValue,
+        stages: t.stages || [],
         comments: t.comments || [],
       };
     });
