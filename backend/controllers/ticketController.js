@@ -442,29 +442,39 @@ const addTicketAttachment = async (req, res) => {
 
 const updateTicketStages = async (req, res) => {
   const { stages, progress, status } = req.body;
-  const ticket = await Ticket.findById(req.params.id);
   
-  if (!ticket) {
+  const updateData = {};
+  if (stages !== undefined) updateData.stages = stages;
+  if (progress !== undefined) updateData.progress = progress;
+  if (status !== undefined) updateData.status = status;
+
+  const updated = await Ticket.findByIdAndUpdate(
+    req.params.id,
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+  
+  if (!updated) {
     return res.status(404).json({ message: 'Ticket not found' });
   }
 
-  if (stages !== undefined) {
-    ticket.stages = stages;
-    ticket.markModified('stages');
-  }
-  if (progress !== undefined) ticket.progress = progress;
-  if (status !== undefined) ticket.status = status;
-
-  const updated = await ticket.save();
-
   const Client = require('../models/client/Client');
   const User = require('../models/User');
-  let clientUser = await Client.findById(ticket.client).lean();
-  if (!clientUser) clientUser = await User.findById(ticket.client).lean();
+  let clientUser = await Client.findById(updated.client).lean();
+  if (!clientUser) clientUser = await User.findById(updated.client).lean();
   const clientName = clientUser ? clientUser.name : 'Unknown';
 
+  if (updated.assignedTo) {
+    await addNotification(
+      updated.assignedTo,
+      `Ticket "${updated.service}" stages updated`,
+      `Client ${clientName}'s ticket stages were updated. Progress: ${updated.progress}%`,
+      'ticket'
+    );
+  }
+
   await Activity.create({
-    action: `Claim stages updated for ticket ${ticket.service} (${clientName}) by ${req.user.name || 'System'}`,
+    action: `Claim stages updated for ticket ${updated.service} (${clientName}) by ${req.user.name || 'System'}`,
     user: req.user._id,
     ticket: updated._id,
   });
