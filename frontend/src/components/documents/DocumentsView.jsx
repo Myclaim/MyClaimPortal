@@ -41,15 +41,20 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
     if (!d) return false;
     const uploader = d.uploaded_by;
     if (!uploader) return false;
+
+    // Resolve client ID from the client prop
+    const clientId = client?._id || client?.id;
+    if (!clientId) return false;
     
-    // Check if it's a populated object and role is client
+    // Check if it's a populated object
     if (typeof uploader === 'object') {
       if (uploader.role === 'client') return true;
-      if (uploader._id && uploader._id === client?._id) return true;
+      const uploaderId = uploader._id || uploader.id;
+      if (uploaderId && String(uploaderId) === String(clientId)) return true;
     }
     
-    // Fallback: check if it's a string matching client._id
-    if (typeof uploader === 'string' && uploader === client?._id) return true;
+    // Check if it's a string
+    if (typeof uploader === 'string' && String(uploader) === String(clientId)) return true;
     
     return false;
   };
