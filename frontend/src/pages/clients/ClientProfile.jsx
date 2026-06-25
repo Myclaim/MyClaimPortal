@@ -186,7 +186,7 @@ const ClientProfile = () => {
         {activeTab === 'documents' && <DocumentsView documents={documents} client={client} onRefresh={fetchData} setIsUploadModalOpen={setIsUploadModalOpen} />}
         {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => setIsAddFamilyModalOpen(true)} />}
-        {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} />}
+        {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} onRefresh={fetchData} />}
         {activeTab === 'tickets' && <TicketsView tickets={tickets} />}
         {activeTab === 'activity' && <ActivityView tickets={tickets} client={client} />}
         {!['profile', 'overview', 'documents', 'family', 'holders', 'claims', 'tickets', 'activity'].includes(activeTab) && (
@@ -659,8 +659,7 @@ const HoldersView = ({ members, onAddHolder }) => {
     </div>
   );
 };
-
-const ClaimsView = ({ claims, tickets = [] }) => {
+const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
   const [localClaims, setLocalClaims] = useState([]);
   const [selectedClaimId, setSelectedClaimId] = useState(null);
   const [editingStages, setEditingStages] = useState(false);
@@ -730,6 +729,7 @@ const ClaimsView = ({ claims, tickets = [] }) => {
     ];
 
     const claimTickets = tickets.filter(t => t.hubType === 'Claim Hub');
+    console.log("Claim Tickets from API:", claimTickets);
 
     const displayClaims = claimTickets.length > 0 ? claimTickets.map((t, i) => {
       const mockRef = demoClaims[i % demoClaims.length];
@@ -821,6 +821,9 @@ const ClaimsView = ({ claims, tickets = [] }) => {
           status: claim.status
         });
         console.log("Successfully saved stages:", res.data);
+        if (onRefresh) {
+          await onRefresh();
+        }
       } catch (err) {
         console.error('Failed to save claim stages:', err.response?.data || err.message);
         alert('Failed to save: ' + (err.response?.data?.message || err.message));

@@ -448,7 +448,10 @@ const updateTicketStages = async (req, res) => {
     return res.status(404).json({ message: 'Ticket not found' });
   }
 
-  if (stages !== undefined) ticket.stages = stages;
+  if (stages !== undefined) {
+    ticket.stages = stages;
+    ticket.markModified('stages');
+  }
   if (progress !== undefined) ticket.progress = progress;
   if (status !== undefined) ticket.status = status;
 
