@@ -7,7 +7,7 @@ import {
 import api from '../../services/api';
 import DocumentUploadModal from './DocumentUploadModal';
 
-const DocumentsView = ({ documents, client, onRefresh }) => {
+const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false, theme = 'light' }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [currentFolderId, setCurrentFolderId] = useState(null);
   const [folderPath, setFolderPath] = useState([{ _id: null, name: 'Client Documents' }]);
@@ -398,25 +398,48 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
             {folderPath.map((crumb, idx) => (
               <React.Fragment key={crumb._id || 'root'}>
                 <span 
-                  style={{ cursor: idx === folderPath.length - 1 ? 'default' : 'pointer', color: idx === folderPath.length - 1 ? '#0f172a' : '#2563eb', fontWeight: idx === folderPath.length - 1 ? 900 : 600, fontSize: idx === 0 ? '18px' : '15px' }} 
+                  style={{ 
+                    cursor: idx === folderPath.length - 1 ? 'default' : 'pointer', 
+                    color: idx === folderPath.length - 1 ? (theme === 'dark' ? '#fff' : '#0f172a') : (theme === 'dark' ? '#10B981' : '#2563eb'), 
+                    fontWeight: idx === folderPath.length - 1 ? 900 : 600, 
+                    fontSize: idx === 0 ? '18px' : '15px' 
+                  }} 
                   onClick={() => idx !== folderPath.length - 1 && navigateToCrumb(idx)}
                 >
                   {crumb.name}
                 </span>
-                {idx < folderPath.length - 1 && <ChevronRight size={16} color="#94a3b8" />}
+                {idx < folderPath.length - 1 && <ChevronRight size={16} color={theme === 'dark' ? 'rgba(255,255,255,0.4)' : '#94a3b8'} />}
               </React.Fragment>
             ))}
           </div>
           {uploadingFiles && <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 700, marginTop: '4px' }}>Uploading files...</div>}
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          {clipboard && (
+          {clipboard && !readOnlyStructure && (
             <button onClick={handlePaste} style={{ padding: '10px 20px', background: '#f59e0b', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 800, cursor: 'pointer', display: 'flex', gap: 6 }}>
               <Copy size={16} /> Paste Here
             </button>
           )}
-          <button onClick={() => setIsAddingFolder(true)} style={{ padding: '10px 20px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#0f172a', fontWeight: 800, cursor: 'pointer', display: 'flex', gap: 6 }}><Folder size={16} /> Add Folder</button>
-          <button onClick={() => setIsUploadModalOpen(true)} style={{ padding: '10px 20px', background: '#2563eb', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 800, cursor: 'pointer', display: 'flex', gap: 6 }}><Upload size={16} /> Upload Doc</button>
+          {!readOnlyStructure && (
+            <button onClick={() => setIsAddingFolder(true)} style={{ padding: '10px 20px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#0f172a', fontWeight: 800, cursor: 'pointer', display: 'flex', gap: 6 }}><Folder size={16} /> Add Folder</button>
+          )}
+          <button 
+            onClick={() => setIsUploadModalOpen(true)} 
+            style={{ 
+              padding: '10px 20px', 
+              background: theme === 'dark' ? 'linear-gradient(135deg, #10B981, #059669)' : '#2563eb', 
+              border: 'none', 
+              borderRadius: '10px', 
+              color: '#fff', 
+              fontWeight: 800, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              gap: 6,
+              boxShadow: theme === 'dark' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
+            }}
+          >
+            <Upload size={16} /> Upload Doc
+          </button>
         </div>
       </div>
       
@@ -537,20 +560,20 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
 
       {/* Document Preview Modal */}
       {previewDoc && (
-        <div className="modal-overlay open" style={{ zIndex: 1200 }} onClick={() => setPreviewDoc(null)}>
-          <div className="modal" style={{ width: '90%', maxWidth: '1000px', height: '90vh', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header" style={{ padding: '16px 24px' }}>
+        <div className="modal-overlay open" style={{ zIndex: 1200, background: theme === 'dark' ? 'rgba(15,23,42,0.85)' : 'rgba(0,0,0,0.5)', backdropFilter: theme === 'dark' ? 'blur(8px)' : 'none' }} onClick={() => setPreviewDoc(null)}>
+          <div className="modal" style={{ width: '90%', maxWidth: '1000px', height: '90vh', display: 'flex', flexDirection: 'column', background: theme === 'dark' ? 'var(--dashboard-card)' : '#fff', border: theme === 'dark' ? '1px solid var(--dashboard-border)' : '1px solid #e2e8f0' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ padding: '16px 24px', borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0', background: theme === 'dark' ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <h3 className="modal-title" style={{ margin: 0 }}>{previewDoc.name}</h3>
+                <h3 className="modal-title" style={{ margin: 0, color: theme === 'dark' ? '#fff' : 'inherit' }}>{previewDoc.name}</h3>
                 <a 
                   href={`${api.defaults.baseURL.replace('/api', '')}${previewDoc.file_url}`}
                   onClick={(e) => forceDownload(e, `${api.defaults.baseURL.replace('/api', '')}${previewDoc.file_url}`, previewDoc.name)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: '#f1f5f9', padding: '4px 10px', borderRadius: '6px', textDecoration: 'none', color: '#0f172a', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#f1f5f9', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : 'none', padding: '4px 10px', borderRadius: '6px', textDecoration: 'none', color: theme === 'dark' ? '#fff' : '#0f172a', fontWeight: 600, cursor: 'pointer' }}
                 ><Download size={12} /> Download Original</a>
               </div>
-              <button className="modal-close" onClick={() => setPreviewDoc(null)}><X size={20} /></button>
+              <button className="modal-close" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'inherit', background: 'none', border: 'none' }} onClick={() => setPreviewDoc(null)}><X size={20} /></button>
             </div>
-            <div className="modal-body" style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="modal-body" style={{ flex: 1, padding: 0, overflow: 'hidden', background: theme === 'dark' ? '#0a0f18' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
                 const url = `${api.defaults.baseURL.replace('/api', '')}${previewDoc.file_url}`;
                 const ext = previewDoc.file_url ? previewDoc.file_url.split('.').pop().toLowerCase() : previewDoc.name.split('.').pop().toLowerCase();
@@ -575,12 +598,12 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
         {currentFolders.map(f => (
           <div 
             key={f._id} 
-            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', cursor: 'pointer', background: activeFolderMenu === f._id ? '#f1f5f9' : 'transparent' }}
+            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', cursor: 'pointer', background: activeFolderMenu === f._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveFolderMenu(null)}
           >
             {/* Folder Context Menu */}
             <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 5 }}>
-              {!f.isVirtual && (
+              {!f.isVirtual && !readOnlyStructure && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); setActiveFolderMenu(activeFolderMenu === f._id ? null : f._id); }}
                   style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e2e8f0', cursor: 'pointer', width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: activeFolderMenu === f._id ? 1 : 0.4 }}
@@ -627,7 +650,7 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
                   )}
                 </div>
               )}
-              <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b', marginTop: '12px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 600, fontSize: '13px', color: theme === 'dark' ? '#fff' : '#1e293b', marginTop: '12px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 }}>
                 {f.name}
               </div>
             </div>
@@ -638,7 +661,7 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
         {currentDocs.map(d => (
           <div 
             key={d._id} 
-            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', background: activeDocMenu === d._id ? '#f1f5f9' : 'transparent' }}
+            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', background: activeDocMenu === d._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveDocMenu(null)}
           >
             {/* Document Context Menu */}
@@ -661,28 +684,32 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
                       forceDownload(e, `${api.defaults.baseURL.replace('/api', '')}${d.file_url}`, d.name);
                     }}
                   ><Download size={14} /> Download</a>
-                  <div 
-                    style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}
-                    onClick={async (e) => { 
-                      e.stopPropagation(); 
-                      setDocToMove(d); 
-                      setMoveToFolder('root');
-                      setActiveDocMenu(null); 
-                      setIsMovingDoc(true); 
-                      try {
-                        const res = await api.get(`/folders?client_id=${client._id}&parent_folder_id=all`);
-                        setAllFolders(res.data);
-                      } catch(err) { console.error('Failed to fetch all folders'); }
-                    }}
-                  ><CornerUpRight size={14} /> Move To...</div>
-                  <div 
-                    style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}
-                    onClick={(e) => { e.stopPropagation(); handleCopyDoc(d); }}
-                  ><Copy size={14} /> Copy</div>
-                  <div 
-                    style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color: '#ef4444', fontWeight: 600, borderTop: '1px solid #f1f5f9' }}
-                    onClick={(e) => { e.stopPropagation(); handleDeleteDoc(d); setActiveDocMenu(null); }}
-                  ><Trash2 size={14} /> Delete</div>
+                  {!readOnlyStructure && (
+                    <>
+                      <div 
+                        style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}
+                        onClick={async (e) => { 
+                          e.stopPropagation(); 
+                          setDocToMove(d); 
+                          setMoveToFolder('root');
+                          setActiveDocMenu(null); 
+                          setIsMovingDoc(true); 
+                          try {
+                            const res = await api.get(`/folders?client_id=${client._id}&parent_folder_id=all`);
+                            setAllFolders(res.data);
+                          } catch(err) { console.error('Failed to fetch all folders'); }
+                        }}
+                      ><CornerUpRight size={14} /> Move To...</div>
+                      <div 
+                        style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}
+                        onClick={(e) => { e.stopPropagation(); handleCopyDoc(d); }}
+                      ><Copy size={14} /> Copy</div>
+                      <div 
+                        style={{ padding: '10px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color: '#ef4444', fontWeight: 600, borderTop: '1px solid #f1f5f9' }}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteDoc(d); setActiveDocMenu(null); }}
+                      ><Trash2 size={14} /> Delete</div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -697,7 +724,7 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
                   {d.file_type ? d.file_type.substring(0,4) : (d.name.split('.').pop() || 'FILE')}
                 </div>
               </div>
-              <div style={{ fontWeight: 500, fontSize: '12px', color: '#334155', marginTop: '12px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 500, fontSize: '12px', color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#334155', marginTop: '12px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 }}>
                 {d.name.length > 35 ? d.name.substring(0, 32) + '...' : d.name}
               </div>
             </div>
@@ -705,10 +732,12 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
         ))}
 
         {currentFolders.length === 0 && currentDocs.length === 0 && !loadingFolders && (
-          <div style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', color: '#94a3b8', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
-            <FolderInput size={48} color="#cbd5e1" style={{ marginBottom: 16 }} />
-            <div style={{ fontSize: '16px', fontWeight: 600, color: '#64748b' }}>This folder is empty</div>
-            <div style={{ fontSize: '14px', marginTop: 8 }}>Drag and drop files here or click Add Folder</div>
+          <div style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : '#94a3b8', background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#f8fafc', borderRadius: '16px', border: theme === 'dark' ? '2px dashed rgba(255,255,255,0.1)' : '2px dashed #e2e8f0' }}>
+            <FolderInput size={48} color={theme === 'dark' ? 'rgba(255,255,255,0.2)' : '#cbd5e1'} style={{ marginBottom: 16 }} />
+            <div style={{ fontSize: '16px', fontWeight: 600, color: theme === 'dark' ? '#fff' : '#64748b' }}>This folder is empty</div>
+            <div style={{ fontSize: '14px', marginTop: 8, color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'inherit' }}>
+              {readOnlyStructure ? 'Drag and drop files here to upload' : 'Drag and drop files here or click Add Folder'}
+            </div>
           </div>
         )}
       </div>
@@ -720,6 +749,7 @@ const DocumentsView = ({ documents, client, onRefresh }) => {
         linkedTo="client"
         onUploadSuccess={onRefresh}
         folderId={currentFolderId}
+        theme={theme}
       />
     </div>
   );

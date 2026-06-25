@@ -6,6 +6,10 @@ const Document = require('../models/Document');
 // @access  Private
 const createFolder = async (req, res) => {
   try {
+    if (req.user.role === 'client') {
+      return res.status(403).json({ message: 'Clients are not authorized to edit folder structures' });
+    }
+
     const { name, client_id, parent_folder_id, tag, tag_color } = req.body;
     if (!name || !client_id) {
       return res.status(400).json({ message: 'Folder name and client ID are required' });
@@ -44,7 +48,10 @@ const createFolder = async (req, res) => {
 // @access  Private
 const getFolders = async (req, res) => {
   try {
-    const { client_id, parent_folder_id } = req.query;
+    let { client_id, parent_folder_id } = req.query;
+    if (req.user.role === 'client') {
+      client_id = req.user._id;
+    }
     if (!client_id) {
       return res.status(400).json({ message: 'Client ID is required' });
     }
@@ -71,6 +78,10 @@ const getFolders = async (req, res) => {
 // @access  Private
 const renameFolder = async (req, res) => {
   try {
+    if (req.user.role === 'client') {
+      return res.status(403).json({ message: 'Clients are not authorized to edit folder structures' });
+    }
+
     const { name, tag, tag_color } = req.body;
     if (!name) return res.status(400).json({ message: 'New name is required' });
 
@@ -118,6 +129,10 @@ const deleteFolderRecursive = async (folderId) => {
 // @access  Private
 const deleteFolder = async (req, res) => {
   try {
+    if (req.user.role === 'client') {
+      return res.status(403).json({ message: 'Clients are not authorized to edit folder structures' });
+    }
+
     const folder = await Folder.findById(req.params.id);
     if (!folder) return res.status(404).json({ message: 'Folder not found' });
 

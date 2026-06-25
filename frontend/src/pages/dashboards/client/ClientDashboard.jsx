@@ -9,6 +9,7 @@ import {
   GitBranch, TreeDeciduous, X
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
+import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../../hooks/useAuth';
 import '../../super-admin/Overview.css';
@@ -1312,7 +1313,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
           )}
 
           {/* Cards Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
             {cardItems.map(item => {
               const details = getDocDetails(item.name);
               const isUploaded = details.uploaded;
@@ -1419,50 +1420,21 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
             })}
           </div>
 
-          {/* Drag & Drop Upload Zone */}
-          <div 
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={triggerGeneralUpload}
-            style={{
-              padding: '48px 24px',
-              textAlign: 'center',
-              borderRadius: '20px',
-              border: isDragging ? '2px dashed #10B981' : '2px dashed rgba(255,255,255,0.12)',
-              background: isDragging ? 'rgba(16,185,129,0.02)' : 'rgba(255,255,255,0.01)',
-              cursor: 'pointer',
-              transition: 'all 0.25s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: isDragging ? '0 10px 30px rgba(16,185,129,0.05)' : 'none'
-            }}
-          >
-            <div style={{
-              width: 56, height: 56, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.03)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: isDragging ? '#10B981' : 'rgba(255,255,255,0.4)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              marginBottom: 16
-            }}>
-              <Upload size={24} className={uploading ? 'animate-bounce' : ''} />
-            </div>
-            {uploading ? (
-              <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Uploading your document...</div>
-            ) : (
-              <>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: 6 }}>
-                  Drop files here or <span style={{ color: '#3B82F6', textDecoration: 'underline' }}>browse to upload</span>
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--dashboard-text-muted)', fontWeight: 600 }}>
-                  PDF, JPG, PNG up to 10MB
-                </div>
-              </>
-            )}
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '32px 0' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+            <Folder size={18} color="#10B981" />
+            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#fff' }}>Document Folders</h3>
           </div>
+
+          {/* Folder & Document Browser */}
+          <DocumentsView 
+            documents={documents} 
+            client={clientProfile || user} 
+            onRefresh={onRefresh} 
+            readOnlyStructure={true} 
+            theme="dark" 
+          />
         </div>
       ) : (
         /* Company Documents View */
