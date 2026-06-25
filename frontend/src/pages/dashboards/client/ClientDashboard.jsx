@@ -1772,14 +1772,12 @@ const DashboardView = ({ overview, claims, navigate }) => {
           {[
             { label: 'Upload Document', icon: Upload },
             { label: 'Support', icon: MessageSquare },
-            { label: 'Investment Store', icon: ShoppingBag },
             { label: 'Document Hub', icon: Folder }
           ].map(a => (
             <div key={a.label} 
               onClick={() => {
                 if (a.label === 'Document Hub' || a.label === 'Upload Document') navigate('/client?tab=documents');
                 else if (a.label === 'Support') navigate('/client?tab=service-hub');
-                else if (a.label === 'Investment Store') navigate('/client?tab=investment-store');
               }}
               style={{
                 backgroundColor: CL.card, backgroundImage: CL.cardBgImage,

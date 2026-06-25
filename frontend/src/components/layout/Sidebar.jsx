@@ -466,13 +466,6 @@ const ITEMS = [
     badgeSource: 'claims'
   },
   {
-    id: 'client-investment-store',
-    section: 'client-main',
-    label: 'Investment Store',
-    path: '/client?tab=investment-store',
-    icon: ShoppingBag,
-  },
-  {
     id: 'client-family-tree',
     section: 'client-tools',
     label: 'Family Tree',
