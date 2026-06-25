@@ -801,17 +801,22 @@ const ClaimsView = ({ claims, tickets = [] }) => {
     }));
   };
 
-  const handleSaveStages = async () => {
+  const handleSaveStages = async (e) => {
+    e.preventDefault();
+    console.log("Toggling Save Stages. Current editing mode:", editingStages);
     if (editingStages) {
       try {
         const claim = localClaims.find(c => c._id === selectedClaimId);
-        await api.patch(`/tickets/${selectedClaimId}/stages`, { 
+        console.log("Sending PATCH request for claim:", claim._id);
+        const res = await api.patch(`/tickets/${selectedClaimId}/stages`, { 
           stages: claim.stages,
           progress: claim.progress,
           status: claim.status
         });
+        console.log("Successfully saved stages:", res.data);
       } catch (err) {
-        console.error('Failed to save claim stages', err);
+        console.error('Failed to save claim stages:', err.response?.data || err.message);
+        alert('Failed to save: ' + (err.response?.data?.message || err.message));
       }
     }
     setEditingStages(!editingStages);
