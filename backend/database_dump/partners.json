@@ -1,0 +1,65 @@
+[
+  {
+    "_id": "69d5eda117fad4b70e3f4381",
+    "email": "partner@myclaim.com",
+    "__v": 0,
+    "createdAt": "2026-04-08T05:54:41.485Z",
+    "is_active": true,
+    "name": "Partner User",
+    "password": "$2a$10$C.Tr9IU/5DkIMngy0pBAquslyidrnG1frHBypbOjqwBUsflsgcjnW",
+    "role": "partner",
+    "updatedAt": "2026-04-08T05:54:41.485Z"
+  },
+  {
+    "_id": "69d887f05dbf80d48d21f1aa",
+    "name": "Prathmesh Ahire",
+    "email": "patilpratham0105@gmail.com",
+    "password": "$2a$10$oeqk/OkBf4nDd6t5UE9SX.X6QnM4arjg40FqAvgGAgmdi0iGSX976",
+    "role": "partner",
+    "phone": "",
+    "is_active": true,
+    "createdAt": "2026-04-10T05:17:36.748Z",
+    "updatedAt": "2026-04-10T05:17:36.748Z",
+    "__v": 0
+  },
+  {
+    "_id": "69dcc823bd8d31ca047075d0",
+    "name": "Super",
+    "email": "superpater@myclaim.com",
+    "username": "super",
+    "password": "$2a$10$hAD0VlJrIXNJLGbndSpnI.TESon/.B/o.z77w98FEpYDWhAw8Fpum",
+    "role": "super_partner",
+    "phone": "9119516956",
+    "is_active": true,
+    "createdAt": "2026-04-13T10:40:35.801Z",
+    "updatedAt": "2026-04-13T10:40:35.801Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de6516f6400ad7e9894fa5",
+    "name": "VasuSP",
+    "email": "vasusp@my.com",
+    "username": "vasusp",
+    "password": "$2a$10$jJXVuAxkkUUf0zfOoufzZOixpl72Xh5CwClCnGlUjLazqBHLz6.Bm",
+    "role": "super_partner",
+    "phone": "3213941211",
+    "is_active": true,
+    "createdAt": "2026-04-14T16:02:30.523Z",
+    "updatedAt": "2026-04-14T16:02:30.523Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de8389c573a910cbb1d77f",
+    "name": "Pratham Ahire",
+    "email": "pratham010504@gmail.com",
+    "username": "patner",
+    "password": "$2a$10$WiRpvZXxxJmWQdE7JdBrgefO0eSilEAUeI1b7OnxxeuB6zHtOKrEu",
+    "role": "partner",
+    "phone": "+917774954741",
+    "parent_id": "69dcc823bd8d31ca047075d0",
+    "is_active": true,
+    "createdAt": "2026-04-14T18:12:25.961Z",
+    "updatedAt": "2026-04-14T18:12:25.961Z",
+    "__v": 0
+  }
+]

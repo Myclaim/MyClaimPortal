@@ -1,0 +1,402 @@
+[
+  {
+    "_id": "69d228ae14ea7ca3da873ae5",
+    "action": "New lead created: Prathmesh Ahire for Health Insurance",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-05T09:17:34.675Z",
+    "updatedAt": "2026-04-05T09:17:34.675Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d2569814ea7ca3da873b8d",
+    "action": "Claim created for kjjksdff",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-05T12:33:28.897Z",
+    "updatedAt": "2026-04-05T12:33:28.897Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d257b214ea7ca3da873ba0",
+    "action": "New lead created: Jagdish Ahire for sfggs",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-05T12:38:10.582Z",
+    "updatedAt": "2026-04-05T12:38:10.582Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d258dd14ea7ca3da873ba5",
+    "action": "New lead created: Jagdish Ahire for fxbx",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-05T12:43:09.159Z",
+    "updatedAt": "2026-04-05T12:43:09.159Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d258fe14ea7ca3da873baa",
+    "action": "New lead created: xvxv xvxcvx for dgdsg",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-05T12:43:42.169Z",
+    "updatedAt": "2026-04-05T12:43:42.169Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d285decb5b1a475191c386",
+    "action": "New lead created: weqrwerewqrqew asdd for sdsffs",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-05T15:55:10.481Z",
+    "updatedAt": "2026-04-05T15:55:10.481Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d3cd1eb4366b6ba7347434",
+    "action": "New lead created: sds sdfsf for sfds",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-06T15:11:26.011Z",
+    "updatedAt": "2026-04-06T15:11:26.011Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d3e08a74b8cd18000a3a9c",
+    "action": "Lead sds sdfsf status updated to in_discussion",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-06T16:34:18.086Z",
+    "updatedAt": "2026-04-06T16:34:18.086Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d3e08c74b8cd18000a3aa1",
+    "action": "Lead sds sdfsf status updated to new",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-06T16:34:20.096Z",
+    "updatedAt": "2026-04-06T16:34:20.096Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d492cb51d928f6c2aac43f",
+    "action": "New lead created: gegg dsfs for sva",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-07T05:14:51.653Z",
+    "updatedAt": "2026-04-07T05:14:51.653Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d4944df7d4040ed6b7a717",
+    "action": "Lead gegg dsfs updated",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-07T05:21:17.789Z",
+    "updatedAt": "2026-04-07T05:21:17.789Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d49514f7d4040ed6b7a748",
+    "action": "Lead gegg dsfs updated",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-07T05:24:36.744Z",
+    "updatedAt": "2026-04-07T05:24:36.744Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d4951cf7d4040ed6b7a74f",
+    "action": "Lead gegg dsfs updated",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-07T05:24:44.527Z",
+    "updatedAt": "2026-04-07T05:24:44.527Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d4a22df7d4040ed6b7a8eb",
+    "action": "Client enrolled: Prathmesh Ahire (MCL-C-4561)",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-07T06:20:29.369Z",
+    "updatedAt": "2026-04-07T06:20:29.369Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d4a2e578a4e28a7b08cf30",
+    "action": "User updated: Prathmesh Ahire (client)",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-07T06:23:33.226Z",
+    "updatedAt": "2026-04-07T06:23:33.226Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d5dcc466629eeadf2b3ff9",
+    "action": "Lead gegg dsfs updated",
+    "user": "69d2227986e18e72c962fca8",
+    "createdAt": "2026-04-08T04:42:44.769Z",
+    "updatedAt": "2026-04-08T04:42:44.769Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d887f05dbf80d48d21f1ac",
+    "action": "User Prathmesh Ahire (partner) created in partner collection",
+    "user": "69d5ee6817fad4b70e3f4383",
+    "createdAt": "2026-04-10T05:17:36.762Z",
+    "updatedAt": "2026-04-10T05:17:36.762Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d88d473bc574b7e1cc897f",
+    "action": "User Prathmesh Ahire (admin) created in admin collection",
+    "user": "69d5ee6817fad4b70e3f4383",
+    "createdAt": "2026-04-10T05:40:23.005Z",
+    "updatedAt": "2026-04-10T05:40:23.005Z",
+    "__v": 0
+  },
+  {
+    "_id": "69dcc823bd8d31ca047075d2",
+    "action": "User Super (super_partner) created in super_partner collection",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-13T10:40:35.818Z",
+    "updatedAt": "2026-04-13T10:40:35.818Z",
+    "__v": 0
+  },
+  {
+    "_id": "69dd28f5c1811febcfa62466",
+    "action": "New lead created: Pratham Patil for IEPF Claims",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-13T17:33:41.111Z",
+    "updatedAt": "2026-04-13T17:33:41.111Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de3cee7b8273ac2ad340fe",
+    "action": "New lead created: Pratham Ahire for IEPF Claim",
+    "user": "69dcc823bd8d31ca047075d0",
+    "createdAt": "2026-04-14T13:11:10.503Z",
+    "updatedAt": "2026-04-14T13:11:10.503Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de3d6f7b8273ac2ad34104",
+    "action": "New lead created: Hello for GST Filing",
+    "user": "69dcc823bd8d31ca047075d0",
+    "createdAt": "2026-04-14T13:13:19.263Z",
+    "updatedAt": "2026-04-14T13:13:19.263Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de6516f6400ad7e9894fa7",
+    "action": "User VasuSP (super_partner) created in super_partner collection",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-14T16:02:30.531Z",
+    "updatedAt": "2026-04-14T16:02:30.531Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de655bf6400ad7e9894ffd",
+    "action": "New lead created: Manassss for IEPF Claim",
+    "user": "69de6516f6400ad7e9894fa5",
+    "createdAt": "2026-04-14T16:03:39.643Z",
+    "updatedAt": "2026-04-14T16:03:39.643Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de759faa76903a23783ddb",
+    "action": "User Banku bhaiyya (partner) created in partner collection",
+    "user": "69dcc823bd8d31ca047075d0",
+    "createdAt": "2026-04-14T17:13:03.243Z",
+    "updatedAt": "2026-04-14T17:13:03.243Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de7a03aa76903a23783ffc",
+    "action": "User bunty (partner) created in partner collection",
+    "user": "69dcc823bd8d31ca047075d0",
+    "createdAt": "2026-04-14T17:31:47.862Z",
+    "updatedAt": "2026-04-14T17:31:47.862Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de830bc573a910cbb1d489",
+    "action": "User bunnty (partner) created in partner collection",
+    "user": "69dcc823bd8d31ca047075d0",
+    "createdAt": "2026-04-14T18:10:19.191Z",
+    "updatedAt": "2026-04-14T18:10:19.191Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de8389c573a910cbb1d781",
+    "action": "User Pratham Ahire (partner) created in partner collection",
+    "user": "69dcc823bd8d31ca047075d0",
+    "createdAt": "2026-04-14T18:12:25.965Z",
+    "updatedAt": "2026-04-14T18:12:25.965Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de93bfef764be04ac125db",
+    "action": "Lead Hello updated",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-14T19:21:35.724Z",
+    "updatedAt": "2026-04-14T19:21:35.724Z",
+    "__v": 0
+  },
+  {
+    "_id": "69de93e6ef764be04ac12648",
+    "action": "Lead Hello updated",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-14T19:22:14.470Z",
+    "updatedAt": "2026-04-14T19:22:14.470Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e1276346b8fe91fded0991",
+    "action": "New lead created: bunny for IEPF Claim",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-16T18:16:03.059Z",
+    "updatedAt": "2026-04-16T18:16:03.059Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e1277d46b8fe91fded0a02",
+    "action": "Lead bunny updated",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-16T18:16:29.422Z",
+    "updatedAt": "2026-04-16T18:16:29.422Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12a0b5c85d37608949c0e",
+    "action": "New lead created: bunti for IEPF Claim",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-16T18:27:23.373Z",
+    "updatedAt": "2026-04-16T18:27:23.373Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12a1c5c85d37608949c1d",
+    "action": "Lead bunti updated",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-16T18:27:40.103Z",
+    "updatedAt": "2026-04-16T18:27:40.103Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12c5c8fb93b2b60fa0774",
+    "action": "New lead created: honey for IEPF Claim",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-16T18:37:16.268Z",
+    "updatedAt": "2026-04-16T18:37:16.268Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12c6b8fb93b2b60fa07c2",
+    "action": "Lead honey updated",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-16T18:37:31.172Z",
+    "updatedAt": "2026-04-16T18:37:31.172Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12ca18fb93b2b60fa0892",
+    "action": "New lead created: jm for Share Recovery",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-16T18:38:25.626Z",
+    "updatedAt": "2026-04-16T18:38:25.626Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e12ec9551d2f58c7ff0bb7",
+    "action": "New lead created: jhjh for Duplicate Share Issuance",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-16T18:47:37.416Z",
+    "updatedAt": "2026-04-16T18:47:37.416Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e132c4114fab6a5ddbc876",
+    "action": "Lead jhjh updated",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-16T19:04:36.683Z",
+    "updatedAt": "2026-04-16T19:04:36.683Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e35e4f4157da3cfed28ae7",
+    "action": "User super Adminn (super_admin) created in super_admin collection",
+    "user": "69d5eda117fad4b70e3f4380",
+    "createdAt": "2026-04-18T10:34:55.891Z",
+    "updatedAt": "2026-04-18T10:34:55.891Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e362314157da3cfed28e40",
+    "action": "Client enrolled in Client collection: Om",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-18T10:51:29.753Z",
+    "updatedAt": "2026-04-18T10:51:29.753Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e37d5d11ee92d8f5e3f2b6",
+    "action": "Client enrolled in Client collection: CL1",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-18T12:47:25.547Z",
+    "updatedAt": "2026-04-18T12:47:25.547Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e38a4882256446e3e7aae3",
+    "action": "Lead jhjh updated",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-18T13:42:32.154Z",
+    "updatedAt": "2026-04-18T13:42:32.154Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c3451f6f0db2b461e22a",
+    "action": "New lead created: Manas for Share Recovery",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-19T11:57:57.833Z",
+    "updatedAt": "2026-04-19T11:57:57.833Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c3861f6f0db2b461e305",
+    "action": "Lead Manas updated",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-19T11:59:02.274Z",
+    "updatedAt": "2026-04-19T11:59:02.274Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c4f21f6f0db2b461eaec",
+    "action": "Lead Manas updated",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-19T12:05:06.996Z",
+    "updatedAt": "2026-04-19T12:05:06.996Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c6c91f6f0db2b461ecbe",
+    "action": "New lead created: Prasad for Share Recovery",
+    "user": "69de8389c573a910cbb1d77f",
+    "createdAt": "2026-04-19T12:12:57.705Z",
+    "updatedAt": "2026-04-19T12:12:57.705Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c83849c24e95db1b93de",
+    "action": "Lead Prasad updated",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-19T12:19:04.009Z",
+    "updatedAt": "2026-04-19T12:19:04.009Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c84e49c24e95db1b93e9",
+    "action": "Lead Prasad updated",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-19T12:19:26.689Z",
+    "updatedAt": "2026-04-19T12:19:26.689Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e4c978884ccabbd74ebc8f",
+    "action": "Lead Prasad updated",
+    "user": "69e35e4f4157da3cfed28ae5",
+    "createdAt": "2026-04-19T12:24:24.776Z",
+    "updatedAt": "2026-04-19T12:24:24.776Z",
+    "__v": 0
+  }
+]

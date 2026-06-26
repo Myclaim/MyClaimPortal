@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "69d2227986e18e72c962fcac",
+    "clientName": "Acme Corp",
+    "status": "pending",
+    "__v": 0,
+    "createdAt": "2026-04-05T08:51:05.747Z",
+    "updatedAt": "2026-04-05T08:51:05.747Z"
+  },
+  {
+    "_id": "69d2227986e18e72c962fcad",
+    "clientName": "Global Tech",
+    "status": "in-progress",
+    "__v": 0,
+    "createdAt": "2026-04-05T08:51:05.747Z",
+    "updatedAt": "2026-04-05T08:51:05.747Z"
+  },
+  {
+    "_id": "69d2227986e18e72c962fcae",
+    "clientName": "Local Store",
+    "status": "completed",
+    "__v": 0,
+    "createdAt": "2026-04-05T08:51:05.748Z",
+    "updatedAt": "2026-04-05T08:51:05.748Z"
+  }
+]
