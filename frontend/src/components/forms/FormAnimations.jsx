@@ -412,7 +412,7 @@ export const MotionButton = ({ children, onClick, type = "button", variant = "pr
  */
 export const FormSplashScreen = ({ title, subtitle, onComplete }) => {
   React.useEffect(() => {
-    const timer = setTimeout(onComplete, 2000);
+    const timer = setTimeout(onComplete, 400);
     return () => clearTimeout(timer);
   }, [onComplete]);
 

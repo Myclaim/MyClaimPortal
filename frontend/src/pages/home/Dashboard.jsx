@@ -122,7 +122,7 @@ const Dashboard = () => {
           <div className="topbar-title" style={{ 
             fontSize: '28px', 
             fontWeight: 850, 
-            color: '#1e293b', 
+            color: 'var(--text)', 
             letterSpacing: '-1px',
             display: 'flex',
             alignItems: 'center',
@@ -136,7 +136,7 @@ const Dashboard = () => {
           </div>
           
           <div className="topbar-subtitle" style={{ 
-            color: '#64748b', 
+            color: 'var(--text-muted)', 
             fontSize: '15px', 
             fontWeight: 600,
             display: 'flex',

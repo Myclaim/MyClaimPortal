@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useClientTheme } from '../../../hooks/useClientTheme';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -16,18 +17,18 @@ import api from '../../../services/api';
 import '../../super-admin/Overview.css';
 
 const CL = {
-  bg: 'var(--dashboard-bg)',
-  bgImage: 'var(--dashboard-bg-image)',
-  card: 'var(--dashboard-card)',
-  cardBgImage: 'var(--dashboard-card-image)',
-  cardSoft: 'var(--dashboard-card-soft)',
-  border: 'var(--dashboard-border)',
-  text: 'var(--dashboard-text)',
-  textMuted: 'var(--dashboard-text-muted)',
-  accent: 'var(--dashboard-accent)',
-  accentSoft: 'rgba(16, 185, 129, 0.15)',
-  green: 'var(--dashboard-accent)',
-  greenSoft: 'rgba(16, 185, 129, 0.08)'
+  bg: 'transparent',
+  bgImage: 'none',
+  card: 'rgba(29, 26, 57, 0.4)',
+  cardBgImage: 'linear-gradient(135deg, rgba(69, 25, 82, 0.4) 0%, rgba(29, 26, 57, 0.6) 100%)',
+  cardSoft: 'rgba(69, 25, 82, 0.3)',
+  border: 'rgba(232, 188, 185, 0.2)',
+  text: '#ffffff',
+  textMuted: 'rgba(232, 188, 185, 0.75)',
+  accent: '#F39F5A',
+  accentSoft: 'rgba(243, 159, 90, 0.15)',
+  green: '#AE445A',
+  greenSoft: 'rgba(174, 68, 90, 0.15)'
 };
 
 /* ── helpers ── */
@@ -60,6 +61,19 @@ const getNSE = (name) => {
   const map = { 'TATA STEEL': 'TATASTEEL', 'L&T LIMITED': 'LT', 'WIPRO LTD': 'WIPRO' };
   const key = Object.keys(map).find(k => name?.toUpperCase().includes(k.split(' ')[0]));
   return key ? `NSE: ${map[key]}` : 'NSE: ---';
+};
+
+const handleRipple = (e) => {
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const circle = document.createElement('span');
+  const d = Math.max(btn.clientWidth, btn.clientHeight);
+  circle.style.width = circle.style.height = `${d}px`;
+  circle.style.left = `${e.clientX - rect.left - d/2}px`;
+  circle.style.top = `${e.clientY - rect.top - d/2}px`;
+  circle.classList.add('liquid-ripple');
+  btn.appendChild(circle);
+  setTimeout(() => circle.remove(), 600);
 };
 
 /* ── Animated Counter ── */
@@ -104,6 +118,19 @@ const CLAIM_CSS = `
   @keyframes ribbonShine   { 0%{transform:translateX(-100%) skew(-20deg)} 100%{transform:translateX(300%) skew(-20deg)} }
   @keyframes tiltLeft      { to{transform:rotateY(-8deg) rotateX(3deg) translateZ(10px)} }
   @keyframes progressFill  { from{width:0%} to{width:var(--progress-w)} }
+  @keyframes bellRing      { 
+    0% { transform: rotate(0); }
+    5% { transform: rotate(15deg); }
+    10% { transform: rotate(-10deg); }
+    15% { transform: rotate(5deg); }
+    20% { transform: rotate(-5deg); }
+    25%, 100% { transform: rotate(0); }
+  }
+  @keyframes iconFlip {
+    0%, 70% { transform: rotateY(0deg) scale(1); }
+    85% { transform: rotateY(180deg) scale(1.1); }
+    100% { transform: rotateY(360deg) scale(1); }
+  }
 
   /* ── Particles ── */
   .claims-page-wrap {
@@ -120,10 +147,10 @@ const CLAIM_CSS = `
 
   /* ── Stat chip ── */
   .stat-chip {
-    position: relative; overflow: hidden;
-    flex: 1 1 140px;
+    position: relative; overflow: hidden !important;
+    flex: 1 1 200px; min-width: 200px; max-width: 100%;
     border-radius: 18px;
-    padding: 20px 22px;
+    padding: 16px 20px;
     display: flex; flex-direction: column; align-items: flex-start;
     cursor: default;
     transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), box-shadow 0.28s ease;
@@ -134,12 +161,12 @@ const CLAIM_CSS = `
   .chip-shimmer {
     position: absolute; top: 0; left: -100%;
     width: 50%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.09), transparent);
     pointer-events: none; skew-x: -20deg;
   }
   .chip-bar-track {
     width: 100%; height: 3px; border-radius: 999px;
-    background: rgba(255,255,255,0.06); margin-top: 12px; overflow: hidden;
+    background: rgba(255, 255, 255,0.06); margin-top: 12px; overflow: hidden;
   }
   .chip-bar-fill {
     height: 100%; border-radius: 999px;
@@ -158,7 +185,7 @@ const CLAIM_CSS = `
     transition: color 0.2s ease, background 0.2s ease;
     position: relative; z-index: 1;
   }
-  .claims-tab-btn:hover { background: rgba(255,255,255,0.05); }
+  .claims-tab-btn:hover { background: rgba(255, 255, 255,0.05); }
   .claims-tab-btn.active { font-weight: 800; }
   .tab-active-indicator {
     position: absolute; bottom: 0; height: 2px;
@@ -170,7 +197,7 @@ const CLAIM_CSS = `
 
   /* ── Claim card ── */
   .claim-card {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255,0.03);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border-radius: 22px; padding: 22px;
     display: flex; flex-direction: column; gap: 16px;
@@ -180,7 +207,7 @@ const CLAIM_CSS = `
   }
   .claim-card::before {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 55%);
+    background: linear-gradient(135deg, rgba(255, 255, 255,0.05) 0%, transparent 55%);
     border-radius: 22px; pointer-events: none; z-index: 0;
   }
   .claim-card > * { position: relative; z-index: 1; }
@@ -195,7 +222,7 @@ const CLAIM_CSS = `
   .claim-card .card-ribbon::after {
     content: ''; position: absolute; top: 0; left: -100%;
     width: 60%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.7), transparent);
     animation: ribbonShine 3s ease infinite;
   }
   .card-active  { border: 1px solid rgba(16,185,129,0.28); }
@@ -212,6 +239,74 @@ const CLAIM_CSS = `
   .claim-card:hover .claim-avatar {
     transform: scale(1.18) rotate(-6deg);
     box-shadow: 0 10px 28px rgba(16,185,129,0.45);
+  }
+
+  /* ── Doc Card Hover ── */
+  .doc-card-hover {
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    transform-style: preserve-3d; perspective: 800px;
+    cursor: pointer;
+  }
+  
+  @keyframes borderPulseGreen { 
+    0%, 100% { border-color: rgba(16,185,129,0.3); box-shadow: 0 0 12px rgba(16,185,129,0.08) } 
+    50% { border-color: rgba(16,185,129,0.8); box-shadow: 0 0 24px rgba(16,185,129,0.25) } 
+  }
+  @keyframes borderPulseOrange { 
+    0%, 100% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 12px rgba(245,158,11,0.08) } 
+    50% { border-color: rgba(245,158,11,0.8); box-shadow: 0 0 24px rgba(245,158,11,0.25) } 
+  }
+  @keyframes borderPulseBlue { 
+    0%, 100% { border-color: rgba(129,140,248,0.3); box-shadow: 0 0 12px rgba(129,140,248,0.08) } 
+    50% { border-color: rgba(129,140,248,0.8); box-shadow: 0 0 24px rgba(129,140,248,0.25) } 
+  }
+
+  .doc-border-green { animation: borderPulseGreen 3s infinite ease-in-out; border: 2px solid rgba(16,185,129,0.3); }
+  .doc-border-orange { animation: borderPulseOrange 3s infinite ease-in-out; border: 2px solid rgba(245,158,11,0.3); }
+  .doc-border-blue { animation: borderPulseBlue 3s infinite ease-in-out; border: 2px solid rgba(129,140,248,0.3); }
+
+  @keyframes spinBorder {
+    100% { transform: rotate(360deg); }
+  }
+
+  .doc-card-animated-border {
+    position: relative;
+    border-radius: 16px;
+    z-index: 1;
+    overflow: hidden;
+    padding: 2px; /* THICK BORDER */
+    background: rgba(255, 255, 255, 0.04); /* static fallback border */
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, background 0.4s ease;
+    cursor: pointer;
+  }
+  .doc-card-animated-border:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 30px 60px -12px var(--anim-color) !important;
+    background: var(--anim-color); /* Statically fill border track with color */
+  }
+
+  .doc-card-border-sweeper {
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    /* Bright white sweeper beam to contrast the solid color border track */
+    background: conic-gradient(from 0deg, transparent 60%, rgba(255,255,255,0.9) 100%);
+    animation: spinBorder 2s linear infinite;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .doc-card-animated-border:hover .doc-card-border-sweeper {
+    opacity: 1;
+  }
+
+  .doc-card-inner-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
   }
 
   /* ── Orb ── */
@@ -231,20 +326,20 @@ const CLAIM_CSS = `
   }
   .claim-btn-primary::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.25), transparent);
     transform: translateX(-100%); transition: transform 0.45s ease;
   }
   .claim-btn-primary:hover { transform: translateY(-2px) scale(1.05); }
   .claim-btn-primary:hover::after { transform: translateX(100%); }
   .claim-btn-primary:active { transform: scale(0.96); }
   .claim-btn-sec {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+    background: rgba(255, 255, 255,0.05);
+    border: 1px solid rgba(255, 255, 255,0.1); color: #94a3b8;
     padding: 10px 14px; border-radius: 11px;
     font-weight: 700; font-size: 12px; cursor: pointer;
     transition: all 0.2s ease;
   }
-  .claim-btn-sec:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; border-color: rgba(255,255,255,0.22); transform: translateY(-1px); }
+  .claim-btn-sec:hover { background: rgba(255, 255, 255,0.1); color: #e2e8f0; border-color: rgba(255, 255, 255,0.22); transform: translateY(-1px); }
 
   /* ── Warn banner ── */
   .warn-banner {
@@ -270,7 +365,7 @@ const CLAIM_CSS = `
   }
   .new-claim-btn::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.2), transparent);
     transform: translateX(-100%); transition: transform 0.4s ease;
   }
   .new-claim-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 30px rgba(16,185,129,0.5); }
@@ -279,7 +374,7 @@ const CLAIM_CSS = `
 
   /* ── Progress bar ── */
   .progress-bar-track {
-    width: 100%; height: 5px; background: rgba(255,255,255,0.06);
+    width: 100%; height: 5px; background: rgba(255, 255, 255,0.06);
     border-radius: 999px; overflow: hidden;
   }
   .progress-bar-fill {
@@ -297,12 +392,12 @@ const CLAIM_CSS = `
 
 /* ── Floating particle component ── */
 const PARTICLES = [
-  { size: 6, color: 'rgba(16,185,129,0.25)', x: '10%', delay: '0s', dur: '8s' },
-  { size: 4, color: 'rgba(129,140,248,0.2)', x: '25%', delay: '1.5s', dur: '10s' },
-  { size: 8, color: 'rgba(16,185,129,0.15)', x: '45%', delay: '3s', dur: '7s' },
-  { size: 5, color: 'rgba(245,158,11,0.2)', x: '65%', delay: '0.5s', dur: '9s' },
-  { size: 3, color: 'rgba(129,140,248,0.25)', x: '80%', delay: '2s', dur: '6s' },
-  { size: 7, color: 'rgba(16,185,129,0.2)', x: '90%', delay: '4s', dur: '11s' },
+  { size: 6, color: 'rgba(243, 159, 90, 0.2)', x: '10%', delay: '0s', dur: '8s' },
+  { size: 4, color: 'rgba(232, 188, 185, 0.15)', x: '25%', delay: '1.5s', dur: '10s' },
+  { size: 8, color: 'rgba(174, 68, 90, 0.2)', x: '45%', delay: '3s', dur: '7s' },
+  { size: 5, color: 'rgba(102, 37, 73, 0.25)', x: '65%', delay: '0.5s', dur: '9s' },
+  { size: 3, color: 'rgba(243, 159, 90, 0.15)', x: '80%', delay: '2s', dur: '6s' },
+  { size: 7, color: 'rgba(232, 188, 185, 0.2)', x: '90%', delay: '4s', dur: '11s' },
 ];
 
 /* ── StatChip ── */
@@ -314,33 +409,51 @@ const StatChip = ({ label, value, color, icon: Icon, delay = 0, barColor }) => {
 
   return (
     <div
-      className="stat-chip"
+      className="stat-chip cursor-spotlight-card"
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      }}
       style={{
         '--chip-delay': `${delay}ms`,
-        background: `linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)`,
+        background: `linear-gradient(145deg, rgba(255, 255, 255,0.06) 0%, rgba(255, 255, 255,0.02) 100%)`,
         border: `1px solid ${color}25`,
         boxShadow: `0 4px 24px ${color}12`,
+        padding: '20px 24px',
+        borderRadius: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
       <div className="chip-shimmer" />
+      <svg className="sparkline-glow" style={{ position: 'absolute', right: -10, bottom: -5, width: '110px', height: '55px', opacity: 0.4, pointerEvents: 'none', filter: `drop-shadow(0px 4px 6px rgba(0,0,0,0.3))` }} viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path d="M0,25 Q15,25 25,15 T50,20 T75,10 T100,5" fill="none" stroke={color} strokeWidth="3.5" />
+      </svg>
       {Icon && (
         <div style={{
           width: 38, height: 38, borderRadius: 12,
           background: `${color}18`, border: `1px solid ${color}35`,
           display: 'grid', placeItems: 'center', color, marginBottom: 12,
-          boxShadow: `0 4px 16px ${color}20`
+          boxShadow: `0 4px 16px ${color}20`,
+          perspective: '400px'
         }}>
-          <Icon size={18} />
+          <div style={{ animation: 'iconFlip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={18} />
+          </div>
         </div>
       )}
       <div style={{ fontSize: 30, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-1.2px', animation: 'countUp 0.4s ease both' }}>
         {displayValue}
       </div>
-      <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+      <div style={{ fontSize: 11, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
         {label}
       </div>
       <div className="chip-bar-track" style={{ '--bar-delay': `${delay + 300}ms` }}>
-        <div className="chip-bar-fill" style={{ background: barColor || color, width: '100%' }} />
+        <div className="chip-bar-fill pipeline-flow" style={{ background: barColor || color, width: '100%' }} />
       </div>
     </div>
   );
@@ -364,7 +477,7 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
   }, [animDelay]);
 
   const orbColor = needsDocs ? '#818CF8' : isActive ? '#10B981' : '#F59E0B';
-  const cardClass = needsDocs ? 'claim-card card-pending' : isActive ? 'claim-card card-active' : 'claim-card card-progress';
+  const cardClass = `cursor-spotlight-card ${needsDocs ? 'claim-card card-pending' : isActive ? 'claim-card card-active' : 'claim-card card-progress'}`;
   const ribbonColor = needsDocs ? 'linear-gradient(90deg,#818CF8,#6366F1)' : isActive ? 'linear-gradient(90deg,#10B981,#059669)' : 'linear-gradient(90deg,#F59E0B,#D97706)';
 
   return (
@@ -372,6 +485,11 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
       className={cardClass}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      }}
       style={{ animation: `cardRise 0.55s cubic-bezier(.34,1.56,.64,1) ${animDelay}ms both` }}
     >
       {/* ribbon top */}
@@ -401,13 +519,13 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
             boxShadow: `0 6px 18px ${orbColor}25`
           }}>{initials}</div>
           <div>
-            <div style={{ fontWeight: 900, color: CL.text, fontSize: 15, letterSpacing: '-0.4px', lineHeight: 1.2 }}>{claim.name}</div>
+            <div style={{ fontWeight: 900, color: CL.text, fontSize: 15, letterSpacing: '-0.4px', lineHeight: 1.2, wordBreak: 'break-word' }}>{claim.name}</div>
             <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 3, fontWeight: 600, letterSpacing: '0.02em' }}>
               {claim.isin} · {nse}
             </div>
           </div>
         </div>
-        <div style={{
+        <div className="holographic-badge" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '5px 12px', borderRadius: 999,
           background: badge.bg, color: badge.color, border: badge.border,
@@ -435,8 +553,8 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
           { label: 'Est. Value', value: claim.estValue, color: '#10B981' }
         ].map((m, mi) => (
           <div key={m.label} style={{
-            background: 'rgba(255,255,255,0.03)', borderRadius: 11, padding: '10px 11px',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(255, 255, 255,0.03)', borderRadius: 11, padding: '10px 11px',
+            border: '1px solid rgba(255, 255, 255,0.06)',
             animation: `fadeSlideUp 0.45s ease ${animDelay + 200 + mi * 60}ms both`
           }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: m.color || CL.text, letterSpacing: '-0.3px' }}>{m.value}</div>
@@ -452,7 +570,7 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
           <span style={{ fontWeight: 800, color: needsDocs ? '#F59E0B' : '#10B981', fontSize: 11 }}>{progressLabel}</span>
         </div>
         <div className="progress-bar-track">
-          <div className="progress-bar-fill" style={{
+          <div className="progress-bar-fill pipeline-flow" style={{
             '--progress-w': `${claim.progress}%`,
             background: progressColor,
             width: progressVisible ? `${claim.progress}%` : '0%',
@@ -462,27 +580,27 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
           {[0, 25, 50, 75, 100].map(v => (
             <div key={v} style={{
-              width: 1, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 1
+              width: 1, height: 4, background: 'rgba(255, 255, 255,0.1)', borderRadius: 1
             }} />
           ))}
         </div>
       </div>
 
       {/* buttons */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
         {needsDocs ? (
           <>
-            <button className="claim-btn-primary" style={{ background: 'linear-gradient(135deg,#F59E0B,#EF4444)', boxShadow: '0 4px 16px rgba(239,68,68,0.35)', flex: 1 }}>
+            <button className="claim-btn-primary liquid-btn" onClick={(e) => { handleRipple(e); }} style={{ background: 'linear-gradient(135deg,#F59E0B,#EF4444)', boxShadow: '0 4px 16px rgba(239,68,68,0.35)', flex: 1 }}>
               <Upload size={13} /> Upload Docs
             </button>
-            <button className="claim-btn-sec" onClick={() => onViewDetails && onViewDetails(claim)}>View</button>
+            <button className="claim-btn-sec" onClick={(e) => { handleRipple(e); onViewDetails && onViewDetails(claim); }}>View</button>
           </>
         ) : (
           <>
-            <button className="claim-btn-primary" onClick={() => onViewDetails && onViewDetails(claim)} style={{ background: 'linear-gradient(135deg,#10B981,#059669)', boxShadow: '0 4px 16px rgba(16,185,129,0.35)', flex: 1 }}>
+            <button className="claim-btn-primary liquid-btn" onClick={(e) => { handleRipple(e); onViewDetails && onViewDetails(claim); }} style={{ background: 'linear-gradient(135deg,#10B981,#059669)', boxShadow: '0 4px 16px rgba(16,185,129,0.35)', flex: 1 }}>
               <Eye size={13} /> View Details
             </button>
-            <button className="claim-btn-sec">Docs</button>
+            <button className="claim-btn-sec" onClick={handleRipple}>Docs</button>
           </>
         )}
       </div>
@@ -502,14 +620,14 @@ const CLAIM_DETAIL_CSS = `
 
   .detail-wrap { animation: detailSlideIn 0.45s cubic-bezier(.34,1.56,.64,1) both; }
   .detail-section {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255, 255, 255,0.03);
+    border: 1px solid rgba(255, 255, 255,0.07);
     border-radius: 18px; padding: 22px;
     backdrop-filter: blur(12px);
     animation: detailFadeUp 0.4s ease var(--sec-delay,0s) both;
   }
   .detail-section:hover {
-    border-color: rgba(255,255,255,0.12);
+    border-color: rgba(255, 255, 255,0.12);
     transition: border-color 0.3s ease;
   }
   .step-dot {
@@ -526,38 +644,38 @@ const CLAIM_DETAIL_CSS = `
   .holder-row {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255, 255, 255,0.06);
+    background: rgba(255, 255, 255,0.02);
     transition: all 0.2s ease;
     animation: detailFadeUp 0.4s ease var(--holder-delay,0s) both;
   }
-  .holder-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: translateX(4px); }
+  .holder-row:hover { background: rgba(255, 255, 255,0.05); border-color: rgba(255, 255, 255,0.1); transform: translateX(4px); }
   .action-row {
     display: flex; align-items: center; justify-content: space-between;
     padding: 11px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255, 255, 255,0.06);
+    background: rgba(255, 255, 255,0.02);
     transition: all 0.2s ease;
     animation: detailFadeUp 0.4s ease var(--action-delay,0s) both;
   }
-  .action-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+  .action-row:hover { background: rgba(255, 255, 255,0.05); border-color: rgba(255, 255, 255,0.1); }
   .update-row {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255,0.05);
     animation: detailFadeUp 0.4s ease var(--upd-delay,0s) both;
   }
   .update-row:last-child { border-bottom: none; }
   .back-btn {
     display: flex; align-items: center; gap: 6px;
     padding: 7px 14px; border-radius: 10px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    color: var(--dashboard-text-muted); cursor: pointer; font-size: 12px; font-weight: 700;
+    background: rgba(255, 255, 255,0.06); border: 1px solid rgba(255, 255, 255,0.1);
+    color: #4a586e; cursor: pointer; font-size: 12px; font-weight: 700;
     transition: all 0.2s ease;
   }
-  .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--dashboard-text); transform: translateX(-3px); }
+  .back-btn:hover { background: rgba(255, 255, 255,0.1); color: #ffffff; transform: translateX(-3px); }
   .stat-box {
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255,0.04); border: 1px solid rgba(255, 255, 255,0.08);
     border-radius: 14px; padding: 14px 20px; min-width: 110px;
     animation: detailFadeUp 0.4s ease var(--sbox-delay,0s) both;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -627,7 +745,7 @@ const ClaimDetailView = ({ claim, onBack }) => {
 
       {/* ── Company Header ── */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(255, 255, 255,0.03)', border: '1px solid rgba(255, 255, 255,0.07)',
         borderRadius: 20, padding: '24px 28px', marginBottom: 20,
         backdropFilter: 'blur(12px)', position: 'relative', overflow: 'hidden',
         animation: 'detailFadeUp 0.4s ease both'
@@ -686,19 +804,19 @@ const ClaimDetailView = ({ claim, onBack }) => {
                     '--dot-delay': `${0.15 + i * 0.07}s`,
                     background: step.done ? 'linear-gradient(135deg,#10B981,#059669)'
                       : step.active ? `linear-gradient(135deg,${orbColor}40,${orbColor}15)`
-                      : 'rgba(255,255,255,0.06)',
-                    border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid rgba(255,255,255,0.1)',
+                      : 'rgba(255, 255, 255,0.06)',
+                    border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid rgba(255, 255, 255,0.1)',
                     boxShadow: step.done ? '0 4px 12px rgba(16,185,129,0.35)' : step.active ? `0 4px 12px ${orbColor}35` : 'none'
                   }}>
                     {step.done ? <CheckCircle2 size={16} color="#fff" /> :
                       step.active ? <Activity size={14} color={orbColor} /> :
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />}
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255, 255, 255,0.15)' }} />}
                   </div>
                   {i < steps.length - 1 && (
                     <div className="step-line" style={{
                       '--line-delay': `${0.2 + i * 0.07}s`,
                       background: step.done ? 'linear-gradient(180deg,#10B981,#059669)'
-                        : 'rgba(255,255,255,0.07)'
+                        : 'rgba(255, 255, 255,0.07)'
                     }} />
                   )}
                 </div>
@@ -839,7 +957,7 @@ const MyClaimsView = ({ claims, navigate }) => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setTabKey(k => k + 1);
-    if (tab === 'Claim Hub') setTimeout(() => navigate('/client?tab=service-hub'), 180);
+    if (tab === 'Claim Hub') navigate('/client?tab=service-hub');
   };
 
 
@@ -884,7 +1002,7 @@ const MyClaimsView = ({ claims, navigate }) => {
                 className={`claims-tab-btn${isActive ? ' active' : ''}`}
                 onClick={() => handleTabChange(tab)}
                 style={{
-                  color: isActive ? (isServiceHub ? '#10B981' : CL.text) : CL.textMuted,
+                  color: isActive ? '#F39F5A' : 'rgba(232, 188, 185, 0.75)',
                   marginBottom: -1,
                 }}
               >
@@ -901,7 +1019,7 @@ const MyClaimsView = ({ claims, navigate }) => {
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: 18, height: 18, borderRadius: '50%',
                     background: 'linear-gradient(135deg,#EF4444,#DC2626)',
-                    color: '#fff', fontSize: 9, fontWeight: 900, marginLeft: 6,
+                    color: '#ffffff', fontSize: 9, fontWeight: 900, marginLeft: 6,
                     boxShadow: '0 2px 8px rgba(239,68,68,0.5)',
                     animation: 'pulseDot 2s ease infinite'
                   }}>{pendingDocs}</span>
@@ -930,11 +1048,11 @@ const MyClaimsView = ({ claims, navigate }) => {
         {filtered.length === 0 ? (
           <div style={{
             gridColumn: '1/-1', textAlign: 'center', padding: '70px 0',
-            color: CL.textMuted, animation: 'fadeSlideUp 0.4s ease both'
+            color: 'rgba(232, 188, 185, 0.75)', animation: 'fadeSlideUp 0.4s ease both'
           }}>
             <div className="empty-emoji" style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
-            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>No claims for this filter</div>
-            <div style={{ fontSize: 13, opacity: 0.6 }}>Try switching to a different tab above</div>
+            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6, color: '#ffffff' }}>No claims for this filter</div>
+            <div style={{ fontSize: 13, color: 'rgba(232, 188, 185, 0.75)' }}>Try switching to a different tab above</div>
           </div>
         ) : filtered.map((claim, i) => (
           <ClaimCard
@@ -957,14 +1075,14 @@ const ClientFamilyTreeNode = ({ member, name, role, isClient, onEditFamily }) =>
   <div style={{ 
     background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(30, 41, 59, 0.45)', 
     border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-    color: '#fff',
+    color: '#ffffff',
     padding: '14px 28px', 
     borderRadius: '16px', 
     minWidth: '140px',
     textAlign: 'center',
     boxShadow: isClient 
       ? '0 10px 25px -5px rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15)' 
-      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
+      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255, 255, 255,0.05)',
     position: 'relative',
     zIndex: 2,
     backdropFilter: 'blur(8px)',
@@ -1024,7 +1142,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
           style={{ 
             padding: '10px 20px', 
             background: 'linear-gradient(135deg, #10B981, #059669)', 
-            color: '#fff', 
+            color: '#ffffff', 
             border: 'none', 
             borderRadius: '12px', 
             cursor: 'pointer', 
@@ -1127,7 +1245,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center',
-            background: 'rgba(255,255,255,0.01)'
+            background: 'rgba(255, 255, 255,0.01)'
           }}>
             <GitBranch size={32} style={{ marginBottom: '12px', opacity: 0.5, color: CL.accent }} />
             <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
@@ -1269,17 +1387,17 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
       {previewDoc && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }} onClick={() => setPreviewDoc(null)}>
           <div style={{ background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', borderRadius: '20px', width: '90%', maxWidth: '1000px', height: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255, 255, 255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#fff' }}>{previewDoc.name}</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#ffffff' }}>{previewDoc.name}</h3>
                 <a 
                   href={`http://localhost:5005${previewDoc.url}`}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255, 255, 255,0.05)', border: '1px solid rgba(255, 255, 255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
                 ><Download size={14} /> View Original</a>
               </div>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
+              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255, 255, 255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
             </div>
             <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
@@ -1298,14 +1416,14 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid rgba(255, 255, 255,0.08)', marginBottom: 24 }}>
         {['My Documents', 'Company Documents'].map(tab => (
           <div 
             key={tab}
             style={{
               padding: '12px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-              color: activeSubTab === tab ? '#fff' : 'rgba(255,255,255,0.4)',
-              borderBottom: activeSubTab === tab ? '2.5px solid #10B981' : '2.5px solid transparent',
+              color: activeSubTab === tab ? '#fff' : 'rgba(255, 255, 255,0.4)',
+              borderBottom: activeSubTab === tab ? '2.5px solid #F39F5A' : '2.5px solid transparent',
               transition: 'all 0.2s',
               position: 'relative',
               top: '1px'
@@ -1319,7 +1437,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
 
       {activeSubTab === 'My Documents' ? (
         <div>
-          <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', marginBottom: 20, fontWeight: 500 }}>
+          <div style={{ fontSize: '13px', color: 'rgba(232, 188, 185, 0.75)', marginBottom: 20, fontWeight: 500 }}>
             Your identity and financial documents
           </div>
 
@@ -1335,63 +1453,73 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
               const details = getDocDetails(item.name);
               const isUploaded = details.uploaded;
               
-              let borderStyle = '1px solid rgba(255,255,255,0.08)';
-              let bgStyle = 'rgba(255,255,255,0.02)';
-              let iconColor = 'rgba(255,255,255,0.4)';
+              let bgStyle = 'rgba(255, 255, 255,0.02)';
+              let iconColor = 'rgba(255, 255, 255,0.4)';
               let statusText = 'Not uploaded';
-              let statusColor = 'rgba(255,255,255,0.4)';
+              let statusColor = 'rgba(255, 255, 255,0.4)';
               let cardGlow = 'none';
+              let animColor = 'rgba(255,255,255,0.4)';
+              let innerBgColor = '#0F172A'; /* Slate 900 for dark mode */
 
               if (!isUploaded) {
-                borderStyle = '1px solid rgba(245,158,11,0.2)';
-                bgStyle = 'rgba(245,158,11,0.02)';
+                bgStyle = 'rgba(245,158,11,0.05)';
                 iconColor = '#F59E0B';
                 statusColor = '#F59E0B';
-                cardGlow = '0 8px 24px rgba(245,158,11,0.06)';
+                cardGlow = '0 8px 24px rgba(245,158,11,0.1)';
+                animColor = '#F59E0B';
               } else if (details.status === 'verified') {
-                borderStyle = '1px solid rgba(16,185,129,0.25)';
-                bgStyle = 'rgba(16,185,129,0.02)';
+                bgStyle = 'rgba(16,185,129,0.05)';
                 iconColor = '#10B981';
                 statusText = 'Verified';
                 statusColor = '#10B981';
-                cardGlow = '0 8px 24px rgba(16,185,129,0.08)';
+                cardGlow = '0 8px 24px rgba(16,185,129,0.15)';
+                animColor = '#10B981';
               } else {
-                borderStyle = '1px solid rgba(129,140,248,0.25)';
-                bgStyle = 'rgba(129,140,248,0.02)';
+                bgStyle = 'rgba(129,140,248,0.05)';
                 iconColor = '#818CF8';
                 statusText = details.status.charAt(0).toUpperCase() + details.status.slice(1);
                 statusColor = '#818CF8';
-                cardGlow = '0 8px 24px rgba(129,140,248,0.08)';
+                cardGlow = '0 8px 24px rgba(129,140,248,0.15)';
+                animColor = '#818CF8';
               }
 
               return (
                 <div 
                   key={item.name} 
                   style={{
-                    background: bgStyle,
-                    border: borderStyle,
+                    '--anim-color': animColor,
                     borderRadius: '16px',
-                    padding: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
                     boxShadow: cardGlow,
-                    backdropFilter: 'blur(8px)',
-                    transition: 'transform 0.2s ease, border-color 0.2s ease'
                   }}
-                  className="family-node-hover"
+                  className="doc-card-animated-border"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.03)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: iconColor, border: '1px solid rgba(255,255,255,0.06)'
-                    }}>
+                  {/* Rotating thick border sweeper */}
+                  <div className="doc-card-border-sweeper"></div>
+
+                  <div style={{ 
+                    position: 'relative', 
+                    zIndex: 1, 
+                    backgroundColor: innerBgColor,
+                    background: `linear-gradient(to bottom right, ${innerBgColor}, ${bgStyle})`,
+                    borderRadius: '14px', 
+                    padding: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    height: '100%',
+                    backdropFilter: 'blur(12px)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: '50%',
+                        background: 'rgba(255, 255, 255,0.04)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: iconColor, border: '1px solid rgba(255, 255, 255,0.08)'
+                      }}>
                       <FileText size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: 4 }}>{item.name}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', marginBottom: 4 }}>{item.name}</div>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: statusColor, display: 'flex', alignItems: 'center', gap: 4 }}>
                         {isUploaded && details.status === 'verified' && <span>✓</span>}
                         {isUploaded && details.status !== 'verified' && <span>⌛</span>}
@@ -1407,12 +1535,12 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                         onClick={() => setPreviewDoc({ name: item.name, url: details.url })}
                         style={{
                           width: 36, height: 36, borderRadius: '50%',
-                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'rgba(255, 255, 255,0.05)', border: '1px solid rgba(255, 255, 255,0.1)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', cursor: 'pointer', transition: 'all 0.2s'
+                          color: '#ffffff', cursor: 'pointer', transition: 'all 0.2s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255,0.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255,0.05)'}
                       >
                         <Eye size={16} />
                       </button>
@@ -1433,15 +1561,16 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                     )}
                   </div>
                 </div>
+                </div>
               );
             })}
           </div>
 
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '32px 0' }} />
+          <div style={{ height: '1px', background: 'rgba(255, 255, 255,0.08)', margin: '32px 0' }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
             <Folder size={18} color="#10B981" />
-            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#fff' }}>Document Folders</h3>
+            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#ffffff' }}>Document Folders</h3>
           </div>
 
           {/* Folder & Document Browser */}
@@ -1456,11 +1585,11 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
       ) : (
         /* Company Documents View */
         <div style={{
-          textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)',
-          background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)'
+          textAlign: 'center', padding: '60px 20px', color: '#4a586e',
+          background: 'rgba(255, 255, 255,0.01)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255,0.06)'
         }}>
           <Folder size={48} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>No company documents shared yet</div>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff' }}>No company documents shared yet</div>
           <div style={{ fontSize: '12px', marginTop: '6px' }}>Shared files from My Claim team will be visible here.</div>
         </div>
       )}
@@ -1478,7 +1607,7 @@ const getNotifTypeStyles = (type) => {
     case 'task_overdue': return { icon: AlertCircle, color: '#dc2626', bg: 'rgba(220,38,38,0.1)' };
     case 'due_approaching': return { icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' };
     case 'task_completed': return { icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.1)' };
-    default: return { icon: Bell, color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)' };
+    default: return { icon: Bell, color: 'var(--text-muted)', bg: 'rgba(255, 255, 255,0.03)' };
   }
 };
 
@@ -1560,7 +1689,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
           <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text, display: 'flex', alignItems: 'center', gap: 10 }}>
             Notifications
             {unreadCount > 0 && (
-              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#fff', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
+              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#ffffff', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
                 {unreadCount} New
               </span>
             )}
@@ -1572,9 +1701,9 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
           disabled={unreadCount === 0}
           style={{ 
             padding: '10px 20px', 
-            background: 'rgba(255,255,255,0.05)', 
+            background: 'rgba(255, 255, 255,0.05)', 
             color: CL.text, 
-            border: '1px solid rgba(255,255,255,0.1)', 
+            border: '1px solid rgba(255, 255, 255,0.1)', 
             borderRadius: '12px', 
             cursor: unreadCount === 0 ? 'not-allowed' : 'pointer', 
             fontSize: '12px', 
@@ -1600,7 +1729,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center',
-            background: 'rgba(255,255,255,0.01)',
+            background: 'rgba(255, 255, 255,0.01)',
             textAlign: 'center'
           }}>
             <Bell size={40} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
@@ -1615,14 +1744,14 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
                 <div style={{
                   width: '40px', height: '40px', borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyItems: 'center',
-                  background: bg || 'rgba(255,255,255,0.03)', color: color || CL.textMuted,
-                  justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)'
+                  background: bg || 'rgba(255, 255, 255,0.03)', color: color || CL.textMuted,
+                  justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255, 255, 255,0.05)'
                 }}>
                   <Icon size={18} strokeWidth={2.5} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#fff' }}>{n.title}</h4>
+                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#ffffff' }}>{n.title}</h4>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '10px', color: CL.textMuted, fontWeight: 700 }}>
                       <Clock size={11} />
                       {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -1634,8 +1763,8 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
                     {!n.isRead && (
                       <button 
                         onClick={() => markAsRead(n._id)}
-                        style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        style={{ background: 'none', border: '1px solid rgba(255, 255, 255,0.1)', color: '#ffffff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255,0.05)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                       >
                         Mark as read
@@ -1676,68 +1805,15 @@ const DashboardView = ({ overview, claims, navigate }) => {
   return (
     <>
       {/* Overview stat cards */}
-      <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 24 }}>
         {[
           { label: 'Total Claims', value: overview.totalClaims || claims.length, color: CL.text, icon: FileText },
           { label: 'In Progress', value: overview.inProgress || inProgress, color: '#F59E0B', icon: TrendingUp },
           { label: 'Completed', value: overview.completed || 1, color: '#10B981', icon: CheckCircle2 },
           { label: 'Need Action', value: overview.needAction || 2, color: '#EF4444', icon: AlertTriangle },
-        ].map(s => (
-          <div key={s.label} style={{
-            flex: '1 1 140px',
-            backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
-            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            border: `1px solid ${CL.border}`, borderRadius: 14, padding: '16px 14px',
-            display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
-          }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* My Claims preview — clicking navigates to the claims tab */}
-      <div style={{
-        backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        border: `1px solid ${CL.border}`, borderRadius: 16, padding: 20, marginBottom: 24
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: CL.text, margin: 0 }}>My Claims</h2>
-          <button onClick={() => navigate('/client?tab=claims')} style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            background: 'none', border: 'none', color: CL.accent,
-            fontWeight: 700, fontSize: 12, cursor: 'pointer'
-          }}>View All <ArrowRight size={13} /></button>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
-          {claims.slice(0, 3).map((claim, i) => {
-            const badge = getStatusBadgeStyle(claim.status);
-            const initials = claim.name.split(' ').map(n => n[0]).join('').slice(0, 2);
-            return (
-              <div key={i} style={{
-                backgroundColor: 'rgba(255,255,255,0.02)', border: `1px solid ${CL.border}`,
-                borderRadius: 12, padding: '14px 16px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 11 }}>{initials}</div>
-                    <div style={{ fontWeight: 800, color: CL.text, fontSize: 13 }}>{claim.name}</div>
-                  </div>
-                  <div style={{ padding: '3px 8px', borderRadius: 999, background: badge.bg, color: badge.color, border: badge.border, fontSize: 9, fontWeight: 800 }}>
-                    {claim.status}
-                  </div>
-                </div>
-                <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 999 }}>
-                  <div style={{ width: `${claim.progress}%`, height: '100%', background: getProgressColor(claim.status), borderRadius: 999 }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginTop: 6, color: CL.textMuted }}>
-                  <span>{claim.progress}%</span><span>{claim.folio}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        ].map((s, idx) => (
+          <StatChip key={s.label} label={s.label} value={s.value} color={s.color === CL.text ? '#3B82F6' : s.color} barColor={s.color === CL.text ? '#3B82F6' : s.color} icon={s.icon} delay={idx * 50} />
+        ))} 
       </div>
 
       {/* Pending Actions */}
@@ -1756,11 +1832,19 @@ const DashboardView = ({ overview, claims, navigate }) => {
           </div>
         </div>
         <div style={{ display: 'grid', gap: 10 }}>
-          {[{ title: 'Upload Documents', subtitle: '2 documents pending' }, { title: 'Verify Identity', subtitle: 'Pending verification' }].map(item => (
-            <div key={item.title} style={{
+          {[{ title: 'Upload Documents', subtitle: '2 documents pending' }, { title: 'Verify Identity', subtitle: 'Pending verification' }].map((item, idx) => (
+            <div key={item.title} className="cursor-spotlight-card" onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(16,185,129,0.15)'; e.currentTarget.style.borderColor='rgba(16,185,129,0.3)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='rgba(16,185,129,0.12)'; }}
+              style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
               padding: '12px 16px', borderRadius: 12,
-              background: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.12)', flexWrap: 'wrap'
+              background: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.12)', flexWrap: 'wrap',
+              animation: `fadeSlideUp 0.3s ease ${idx * 50 + 100}ms both`, transition: 'all 0.3s cubic-bezier(.34,1.56,.64,1)'
             }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
@@ -1772,8 +1856,11 @@ const DashboardView = ({ overview, claims, navigate }) => {
                 </div>
               </div>
               <button 
-                onClick={() => navigate('/client?tab=documents')}
-                style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+                className="liquid-btn"
+                onClick={(e) => { handleRipple(e); navigate('/client?tab=documents'); }}
+                style={{ background: CL.accent, border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer', transition: 'transform 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
                 Upload
               </button>
@@ -1790,18 +1877,31 @@ const DashboardView = ({ overview, claims, navigate }) => {
             { label: 'Upload Document', icon: Upload },
             { label: 'Support', icon: MessageSquare },
             { label: 'Document Hub', icon: Folder }
-          ].map(a => (
+          ].map((a, idx) => (
             <div key={a.label} 
-              onClick={() => {
-                if (a.label === 'Document Hub' || a.label === 'Upload Document') navigate('/client?tab=documents');
-                else if (a.label === 'Support') navigate('/client?tab=service-hub');
+              className="cursor-spotlight-card"
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform='translateY(-6px) scale(1.02)'; e.currentTarget.style.boxShadow='0 12px 30px rgba(0,0,0,0.3)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform='translateY(0) scale(1)'; e.currentTarget.style.boxShadow='none'; }}
+              onClick={(e) => {
+                handleRipple(e);
+                setTimeout(() => {
+                  if (a.label === 'Document Hub' || a.label === 'Upload Document') navigate('/client?tab=documents');
+                  else if (a.label === 'Support') navigate('/client?tab=service-hub');
+                }, 200);
               }}
               style={{
                 backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
                 backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                 border: `1px solid ${CL.border}`, borderRadius: 14, padding: '20px 14px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s'
+                justifyContent: 'center', textAlign: 'center', cursor: 'pointer', 
+                transition: 'all 0.4s cubic-bezier(.34,1.56,.64,1)',
+                animation: `statPop 0.35s cubic-bezier(.34,1.56,.64,1) ${idx * 50 + 100}ms both`
               }}
             >
               <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', display: 'grid', placeItems: 'center', color: CL.accent, marginBottom: 12 }}>
@@ -1814,12 +1914,23 @@ const DashboardView = ({ overview, claims, navigate }) => {
       </div>
 
       {/* Refer & Earn */}
-      <div style={{
+      <div 
+        className="cursor-spotlight-card"
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+          e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 30px rgba(16,185,129,0.2)'; e.currentTarget.style.borderColor='rgba(16,185,129,0.3)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='rgba(16,185,129,0.15)'; }}
+        style={{
         backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         border: '1px solid rgba(16,185,129,0.15)',
         borderRadius: 14, padding: '18px 24px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14,
+        transition: 'all 0.4s cubic-bezier(.34,1.56,.64,1)',
+        animation: 'cardRise 0.4s cubic-bezier(.34,1.56,.64,1) 150ms both'
       }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
@@ -1830,7 +1941,7 @@ const DashboardView = ({ overview, claims, navigate }) => {
             <div style={{ color: CL.textMuted, fontSize: 11, marginTop: 2 }}>For every friend who completes their claim recovery through RM Legal</div>
           </div>
         </div>
-        <button style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>
+        <button className="liquid-btn" onClick={handleRipple} style={{ background: CL.accent, border: 'none', color: '#ffffff', padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform='scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform='scale(1)'}>
           Refer Now
         </button>
       </div>
@@ -1842,6 +1953,8 @@ const DashboardView = ({ overview, claims, navigate }) => {
    MAIN COMPONENT
 ═══════════════════════════════════════════════ */
 const ClientDashboard = ({ user: propUser }) => {
+  useClientTheme();
+
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
   const location = useLocation();
@@ -1969,7 +2082,13 @@ const ClientDashboard = ({ user: propUser }) => {
     @keyframes orb2        { 0%,100%{ transform:translate(0,0) scale(1); } 33%{ transform:translate(-25px,15px) scale(0.9); } 66%{ transform:translate(20px,-20px) scale(1.1); } }
 
     .header-title-shimmer {
-      color: var(--dashboard-text);
+      color: #ffffff;
+      background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.4) 50%, #ffffff 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 3.5s linear infinite;
+      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
     }
     .notif-btn {
       position: relative; overflow: visible;
@@ -1978,7 +2097,7 @@ const ClientDashboard = ({ user: propUser }) => {
       cursor: pointer; font-weight: 800; font-size: 13px;
       border: 1px solid rgba(16,185,129,0.35);
       background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(129,140,248,0.08));
-      color: var(--dashboard-text);
+      color: #ffffff;
       backdrop-filter: blur(12px);
       transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease, border-color 0.2s ease;
       animation: headerSlide 0.6s ease 0.4s both;
@@ -1990,10 +2109,13 @@ const ClientDashboard = ({ user: propUser }) => {
     }
     .notif-btn:active { transform: scale(0.97); }
     .notif-btn .bell-icon {
+      display: inline-block;
       transition: transform 0.3s ease;
+      animation: bellRing 3s ease-in-out infinite;
+      transform-origin: top center;
     }
     .notif-btn:hover .bell-icon {
-      animation: bellShake 0.5s ease;
+      animation: bellRing 1s ease-in-out infinite; /* rings faster on hover */
     }
     .notif-ring {
       position: absolute; inset: -4px;
@@ -2019,8 +2141,8 @@ const ClientDashboard = ({ user: propUser }) => {
       margin-bottom: 36px;
       padding: 28px 32px;
       border-radius: 20px;
-      background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(129,140,248,0.05) 50%, rgba(255,255,255,0.02) 100%);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(129,140,248,0.05) 50%, rgba(255, 255, 255,0.02) 100%);
+      border: 1px solid rgba(255, 255, 255,0.07);
       backdrop-filter: blur(8px);
       overflow: hidden;
       animation: headerSlide 0.5s ease both;
@@ -2054,7 +2176,7 @@ const ClientDashboard = ({ user: propUser }) => {
     }
     .header-subtitle {
       font-size: 14px; font-weight: 600;
-      color: var(--dashboard-text-muted);
+      color: #4a586e;
       animation: subtitleIn 0.5s ease 0.3s both;
     }
     .header-tag {
@@ -2153,7 +2275,7 @@ const ClientDashboard = ({ user: propUser }) => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🚀</div>
           <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>My Services</h2>
-          <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '16px', color: '#4a586e', maxWidth: '400px', lineHeight: 1.6 }}>
             We are working hard to bring you this feature. Stay tuned for exciting updates!
           </p>
           <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -2166,7 +2288,7 @@ const ClientDashboard = ({ user: propUser }) => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🔍</div>
           <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>IEPF Search</h2>
-          <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '16px', color: '#4a586e', maxWidth: '400px', lineHeight: 1.6 }}>
             The advanced IEPF search engine is coming soon. Get ready to uncover unclaimed wealth easily!
           </p>
           <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>

@@ -135,7 +135,7 @@ const ClientForm = () => {
       await uploadKycFiles(data._id);
 
       setSuccess('Client enrolled successfully!');
-      setTimeout(() => navigate(-1), 2000);
+      setTimeout(() => navigate(-1), 300);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
       setLoading(false);

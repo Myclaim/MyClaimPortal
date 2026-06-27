@@ -98,7 +98,7 @@ const SuperPartnerForm = () => {
       };
       await api.post('/users', payload);
       setSuccess('Super Partner registered successfully!');
-      setTimeout(() => navigate(-1), 2000);
+      setTimeout(() => navigate(-1), 300);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {

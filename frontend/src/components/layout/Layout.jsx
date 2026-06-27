@@ -23,6 +23,54 @@ const Toast = ({ message, onClose }) => (
   </div>
 );
 
+const FloatingBubbles = () => {
+  return (
+    <div className="bubbles-container">
+      {[...Array(15)].map((_, i) => (
+        <div key={i} className={`bubble bubble-${i + 1}`}></div>
+      ))}
+      <style>{`
+        .bubbles-container {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0; /* Behind everything */
+        }
+        .bubble {
+          position: absolute;
+          border-radius: 50%;
+          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(16,185,129,0.05), transparent);
+          box-shadow: inset 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(16,185,129,0.1);
+          border: 1px solid rgba(255,255,255,0.05);
+          animation: floatRoam linear infinite;
+        }
+        @keyframes floatRoam {
+          0% { transform: translateY(110vh) translateX(0) scale(0.8) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.8; }
+          50% { transform: translateY(50vh) translateX(50px) scale(1.1) rotate(180deg); opacity: 0.5; }
+          90% { opacity: 0; }
+          100% { transform: translateY(-10vh) translateX(-50px) scale(0.9) rotate(360deg); opacity: 0; }
+        }
+        ${[...Array(15)].map((_, i) => {
+          const size = Math.random() * 80 + 30; // 30px to 110px
+          const left = Math.random() * 100;
+          const animDuration = Math.random() * 20 + 15; // 15s to 35s
+          const animDelay = Math.random() * -30; // Start at random positions
+          return `
+            .bubble-${i + 1} {
+              width: ${size}px; height: ${size}px;
+              left: ${left}%;
+              animation-duration: ${animDuration}s;
+              animation-delay: ${animDelay}s;
+            }
+          `;
+        }).join('')}
+      `}</style>
+    </div>
+  );
+};
+
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -91,6 +139,7 @@ const Layout = () => {
 
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <main className="main">
+        <FloatingBubbles />
         <Outlet />
       </main>
       <CommandPalette />
