@@ -122,7 +122,11 @@ const Dashboard = () => {
           <div className="topbar-title" style={{ 
             fontSize: '28px', 
             fontWeight: 850, 
+<<<<<<< HEAD
             color: '#1e293b', 
+=======
+            color: 'var(--text)', 
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             letterSpacing: '-1px',
             display: 'flex',
             alignItems: 'center',
@@ -136,7 +140,11 @@ const Dashboard = () => {
           </div>
           
           <div className="topbar-subtitle" style={{ 
+<<<<<<< HEAD
             color: '#64748b', 
+=======
+            color: 'var(--text-muted)', 
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             fontSize: '15px', 
             fontWeight: 600,
             display: 'flex',

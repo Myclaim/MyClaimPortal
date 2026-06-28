@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
+<<<<<<< HEAD
 const SOCKET_URL = 'https://myclaimportal.onrender.com';
+=======
+const SOCKET_URL = 'http://localhost:5005';
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
 let socketInstance = null;
 

@@ -407,6 +407,20 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       onDrop={handleDrop}
       style={{ position: 'relative', minHeight: '400px' }}
     >
+<<<<<<< HEAD
+=======
+      <style>{`
+        .doc-grid-item {
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease !important;
+        }
+        .doc-grid-item:hover {
+          transform: translateY(-8px) scale(1.02);
+          background: ${theme === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff'} !important;
+          box-shadow: 0 20px 40px -12px ${theme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.1)'} !important;
+        }
+      `}</style>
+
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       {/* Drag Drop Overlay */}
       {isDragging && (
         <div style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10, background: 'rgba(59, 130, 246, 0.1)', border: '2px dashed #3b82f6', borderRadius: '16px', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -633,6 +647,10 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         {currentFolders.map(f => (
           <div 
             key={f._id} 
+<<<<<<< HEAD
+=======
+            className="doc-grid-item"
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', cursor: 'pointer', background: activeFolderMenu === f._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveFolderMenu(null)}
           >
@@ -696,6 +714,10 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         {currentDocs.map(d => (
           <div 
             key={d._id} 
+<<<<<<< HEAD
+=======
+            className="doc-grid-item"
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', background: activeDocMenu === d._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveDocMenu(null)}
           >

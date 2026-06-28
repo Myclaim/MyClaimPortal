@@ -98,7 +98,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
       if (vertical === 'service') {
         try {
           const token = localStorage.getItem('token');
+<<<<<<< HEAD
           const res = await fetch('https://myclaimportal.onrender.com/api/services', {
+=======
+          const res = await fetch('http://localhost:5005/api/services', {
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           });
           if (res.ok) {
@@ -138,7 +142,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem('token');
+<<<<<<< HEAD
       const res = await fetch('https://myclaimportal.onrender.com/api/tickets', {
+=======
+      const res = await fetch('http://localhost:5005/api/tickets', {
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (!res.ok) return;
@@ -195,7 +203,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
 
   useEffect(() => {
     fetchTickets();
+<<<<<<< HEAD
     const socket = io('https://myclaimportal.onrender.com');
+=======
+    const socket = io('http://localhost:5005');
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     socket.on('ticket_created', fetchTickets);
     socket.on('ticket_updated', fetchTickets);
     socket.on('ticket_comment', fetchTickets);
@@ -213,7 +225,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
       if (status === 'Completed') backendStatus = 'completed';
       if (status === 'Blocked' || status === 'Waiting Client') backendStatus = 'closed'; // Fallback mapping
       
+<<<<<<< HEAD
       await fetch(`https://myclaimportal.onrender.com/api/tickets/${ticketId}/status`, {
+=======
+      await fetch(`http://localhost:5005/api/tickets/${ticketId}/status`, {
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -272,7 +288,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
     if (!newComment.trim() || !selectedTaskDetail) return;
     try {
       const token = localStorage.getItem('token');
+<<<<<<< HEAD
       await fetch(`https://myclaimportal.onrender.com/api/tickets/${selectedTaskDetail.id}/comments`, {
+=======
+      await fetch(`http://localhost:5005/api/tickets/${selectedTaskDetail.id}/comments`, {
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ text: newComment })
@@ -286,7 +306,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
     if (!selectedTaskDetail) return;
     try {
       const token = localStorage.getItem('token');
+<<<<<<< HEAD
       await fetch(`https://myclaimportal.onrender.com/api/tickets/${selectedTaskDetail.id}/escalate`, {
+=======
+      await fetch(`http://localhost:5005/api/tickets/${selectedTaskDetail.id}/escalate`, {
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({})
@@ -304,7 +328,11 @@ const HubPage = ({ title, vertical, subtitle }) => {
       formData.append('files', e.target.files[i]);
     }
     try {
+<<<<<<< HEAD
       await fetch(`https://myclaimportal.onrender.com/api/tickets/${selectedTaskDetail.id}/attachments`, {
+=======
+      await fetch(`http://localhost:5005/api/tickets/${selectedTaskDetail.id}/attachments`, {
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData

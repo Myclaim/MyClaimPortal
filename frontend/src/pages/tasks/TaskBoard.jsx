@@ -66,7 +66,11 @@ const TaskBoard = () => {
 
   useEffect(() => {
     fetchTasks();
+<<<<<<< HEAD
     const socketUrl = import.meta.env.VITE_API_URL || 'https://myclaimportal.onrender.com';
+=======
+    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5005';
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     const socket = io(socketUrl);
     
     socket.on('ticket_created', (newTicket) => {

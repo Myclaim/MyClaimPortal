@@ -193,7 +193,11 @@ const AdminDocumentVerification = () => {
               <div style={{ flex: '2', background: 'var(--bg)', borderRight: '1px solid var(--border)', position: 'relative' }}>
                 {selectedDoc.file_url ? (
                   <iframe 
+<<<<<<< HEAD
                     src={`https://myclaimportal.onrender.com${selectedDoc.file_url}`} 
+=======
+                    src={`http://localhost:5005${selectedDoc.file_url}`} 
+>>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                     style={{ width: '100%', height: '100%', border: 'none' }} 
                     title="Document Preview"
                   />
