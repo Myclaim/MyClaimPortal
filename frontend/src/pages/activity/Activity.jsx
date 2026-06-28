@@ -35,11 +35,7 @@ const Activity = () => {
       fetchLogs(false);
     }
 
-<<<<<<< HEAD
     const socket = io('https://myclaimportal.onrender.com');
-=======
-    const socket = io('http://localhost:5005');
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     socket.on('activity_created', () => fetchLogs(true));
     return () => socket.disconnect();
   }, []);

@@ -3,11 +3,7 @@ import { Download, Plus, CheckCircle2, FileVideo, Eye, Edit2, Search, X, Loader,
 import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 
-<<<<<<< HEAD
 const API = import.meta.env.VITE_API_URL || 'https://myclaimportal.onrender.com/api';
-=======
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
 // Module-level SWR cache — persists across navigations
 let _proposalsCache = null;

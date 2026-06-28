@@ -437,11 +437,7 @@ const EmployeeTickets = () => {
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{doc.uploaded_by?.name || 'You'} &bull; {fmt(doc.createdAt)} &bull; {doc.file_type?.toUpperCase()}</span>
-<<<<<<< HEAD
                         <a href={`https://myclaimportal.onrender.com${doc.file_url}`} download target="_blank" rel="noreferrer" style={{ color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 700 }}>Download</a>
-=======
-                        <a href={`http://localhost:5005${doc.file_url}`} download target="_blank" rel="noreferrer" style={{ color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 700 }}>Download</a>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                       </div>
                     </div>
                   ))

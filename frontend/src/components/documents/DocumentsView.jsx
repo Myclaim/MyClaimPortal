@@ -91,7 +91,32 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
     try {
       const parentQuery = currentFolderId ? currentFolderId : 'root';
       const res = await api.get(`/folders?client_id=${client._id}&parent_folder_id=${parentQuery}`);
-      setDbFolders(res.data);
+      let fetchedFolders = res.data;
+
+      // Auto-create standard folders at root if missing
+      if (!currentFolderId) {
+        const stdFolders = [
+          { name: 'Legal Documents', folder_color: '#ef4444' },
+          { name: 'Client Documents', folder_color: '#3b82f6' },
+          { name: 'Admin Uploads', folder_color: '#10b981' }
+        ];
+        const missing = stdFolders.filter(std => !fetchedFolders.find(f => f.name === std.name));
+        if (missing.length > 0) {
+          await Promise.all(missing.map(async (std) => {
+            const formData = new FormData();
+            formData.append('name', std.name);
+            formData.append('client_id', client._id);
+            formData.append('folder_color', std.folder_color);
+            try {
+              await api.post(`/folders`, formData, { headers: { 'Content-Type': 'multipart/form-data' }});
+            } catch (e) {}
+          }));
+          const res2 = await api.get(`/folders?client_id=${client._id}&parent_folder_id=root`);
+          fetchedFolders = res2.data;
+        }
+      }
+
+      setDbFolders(fetchedFolders);
     } catch (err) {
       console.error('Error fetching folders', err);
     } finally {
@@ -138,9 +163,41 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       if (currentFolderId) {
         return d.folder_id === currentFolderId;
       } else {
-        // Root documents: either no folder_id and folder='General', or just no folder_id
+        // Root documents: Hide them in the client dashboard so only the 3 standard folders appear
+        if (readOnlyStructure) return false;
+        
         return !d.folder_id || d.folder === 'General';
       }
+    });
+  }
+
+  // Specific rule for "Legal Documents" folder
+  const currentFolderName = folderPath[folderPath.length - 1]?.name;
+  if (currentFolderName === 'Legal Documents') {
+    currentDocs = currentDocs.filter(d => {
+      const isSuperAdmin = d.uploaded_by && d.uploaded_by.role === 'super_admin';
+      const nameLower = d.name.toLowerCase();
+      const isLegal = nameLower.includes('agreement') || 
+                      nameLower.includes('contract') || 
+                      nameLower.includes('legal') ||
+                      nameLower.includes('nda') ||
+                      nameLower.includes('mou');
+      return isSuperAdmin && isLegal;
+    });
+  } else if (currentFolderName === 'Client Documents') {
+    currentDocs = currentDocs.filter(d => {
+      return d.uploaded_by && d.uploaded_by.role === 'client';
+    });
+  } else if (currentFolderName === 'Admin Uploads') {
+    currentDocs = currentDocs.filter(d => {
+      const isClient = d.uploaded_by && d.uploaded_by.role === 'client';
+      const nameLower = d.name.toLowerCase();
+      const isLegal = nameLower.includes('agreement') || 
+                      nameLower.includes('contract') || 
+                      nameLower.includes('legal') ||
+                      nameLower.includes('nda') ||
+                      nameLower.includes('mou');
+      return !isClient && !isLegal;
     });
   }
 
@@ -237,6 +294,18 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       return;
     }
 
+    const currentFolderName = folderPath[folderPath.length - 1]?.name;
+    if ((currentFolderName === 'Legal Documents' || currentFolderName === 'Admin Uploads') && currentUser?.role === 'client') {
+      alert('You do not have permission to upload to this folder.');
+      return;
+    }
+
+    let targetUploadFolderId = currentFolderId;
+    if (currentFolderId === null && currentUser?.role === 'client') {
+      const clientDocFolder = currentFolders.find(f => f.name === 'Client Documents');
+      if (clientDocFolder) targetUploadFolderId = clientDocFolder._id;
+    }
+
     setUploadingFiles(true);
     const items = Array.from(e.dataTransfer.items);
     
@@ -244,7 +313,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       if (item.kind === 'file') {
         const entry = item.webkitGetAsEntry();
         if (entry) {
-          await processEntry(entry, currentFolderId);
+          await processEntry(entry, targetUploadFolderId);
         }
       }
     }
@@ -407,20 +476,6 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       onDrop={handleDrop}
       style={{ position: 'relative', minHeight: '400px' }}
     >
-<<<<<<< HEAD
-=======
-      <style>{`
-        .doc-grid-item {
-          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease !important;
-        }
-        .doc-grid-item:hover {
-          transform: translateY(-8px) scale(1.02);
-          background: ${theme === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff'} !important;
-          box-shadow: 0 20px 40px -12px ${theme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.1)'} !important;
-        }
-      `}</style>
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       {/* Drag Drop Overlay */}
       {isDragging && (
         <div style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10, background: 'rgba(59, 130, 246, 0.1)', border: '2px dashed #3b82f6', borderRadius: '16px', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -463,23 +518,25 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
           {!readOnlyStructure && (
             <button onClick={() => setIsAddingFolder(true)} style={{ padding: '10px 20px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#0f172a', fontWeight: 800, cursor: 'pointer', display: 'flex', gap: 6 }}><Folder size={16} /> Add Folder</button>
           )}
-          <button 
-            onClick={() => setIsUploadModalOpen(true)} 
-            style={{ 
-              padding: '10px 20px', 
-              background: theme === 'dark' ? 'linear-gradient(135deg, #10B981, #059669)' : '#2563eb', 
-              border: 'none', 
-              borderRadius: '10px', 
-              color: '#fff', 
-              fontWeight: 800, 
-              cursor: 'pointer', 
-              display: 'flex', 
-              gap: 6,
-              boxShadow: theme === 'dark' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
-            }}
-          >
-            <Upload size={16} /> Upload Doc
-          </button>
+          {!( (currentFolderName === 'Legal Documents' || currentFolderName === 'Admin Uploads') && currentUser?.role === 'client') && (
+            <button 
+              onClick={() => setIsUploadModalOpen(true)} 
+              style={{ 
+                padding: '10px 20px', 
+                background: theme === 'dark' ? 'linear-gradient(135deg, #10B981, #059669)' : '#2563eb', 
+                border: 'none', 
+                borderRadius: '10px', 
+                color: '#fff', 
+                fontWeight: 800, 
+                cursor: 'pointer', 
+                display: 'flex', 
+                gap: 6,
+                boxShadow: theme === 'dark' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
+              }}
+            >
+              <Upload size={16} /> Upload Doc
+            </button>
+          )}
         </div>
       </div>
       
@@ -647,10 +704,6 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         {currentFolders.map(f => (
           <div 
             key={f._id} 
-<<<<<<< HEAD
-=======
-            className="doc-grid-item"
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', cursor: 'pointer', background: activeFolderMenu === f._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveFolderMenu(null)}
           >
@@ -714,10 +767,6 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         {currentDocs.map(d => (
           <div 
             key={d._id} 
-<<<<<<< HEAD
-=======
-            className="doc-grid-item"
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', background: activeDocMenu === d._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveDocMenu(null)}
           >
@@ -791,19 +840,6 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
                 <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   {d.file_type ? d.file_type.substring(0,4) : (d.name.split('.').pop() || 'FILE')}
                 </div>
-                {d.verification_status && (
-                  <div style={{ 
-                    position: 'absolute', top: -4, right: -4, 
-                    width: 20, height: 20, borderRadius: '50%', 
-                    display: 'grid', placeItems: 'center',
-                    background: d.verification_status === 'verified' ? '#10B981' : d.verification_status === 'rejected' ? '#EF4444' : '#F59E0B',
-                    color: '#fff', fontSize: '10px', fontWeight: 'bold',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                    zIndex: 2
-                  }}>
-                    {d.verification_status === 'verified' ? '✓' : d.verification_status === 'rejected' ? '✗' : '⌛'}
-                  </div>
-                )}
               </div>
               <div style={{ fontWeight: 500, fontSize: '12px', color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#334155', marginTop: '12px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 }}>
                 {d.name.length > 35 ? d.name.substring(0, 32) + '...' : d.name}
@@ -829,7 +865,11 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         clientId={client._id}
         linkedTo="client"
         onUploadSuccess={onRefresh}
-        folderId={currentFolderId}
+        folderId={
+          currentFolderId === null && currentUser?.role === 'client' 
+            ? (currentFolders.find(f => f.name === 'Client Documents')?._id || currentFolderId)
+            : currentFolderId
+        }
         theme={theme}
       />
 

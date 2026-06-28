@@ -151,11 +151,7 @@ const AdminForm = ({ role }) => {
       }
 
       setSuccess('User profile saved successfully!');
-<<<<<<< HEAD
       setTimeout(() => navigate(-1), 2000);
-=======
-      setTimeout(() => navigate(-1), 300);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     } catch (err) {
       setError(err.response?.data?.message || err.message);
       setLoading(false);

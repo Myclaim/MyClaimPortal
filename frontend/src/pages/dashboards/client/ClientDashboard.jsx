@@ -1,8 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-<<<<<<< HEAD
-=======
-import { useClientTheme } from '../../../hooks/useClientTheme';
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -10,9 +6,10 @@ import {
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
-  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket
+  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
+import ClientMyServices from './ClientMyServices';
 import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../../hooks/useAuth';
@@ -20,7 +17,6 @@ import api from '../../../services/api';
 import '../../super-admin/Overview.css';
 
 const CL = {
-<<<<<<< HEAD
   bg: 'var(--dashboard-bg)',
   bgImage: 'var(--dashboard-bg-image)',
   card: 'var(--dashboard-card)',
@@ -33,20 +29,6 @@ const CL = {
   accentSoft: 'rgba(16, 185, 129, 0.15)',
   green: 'var(--dashboard-accent)',
   greenSoft: 'rgba(16, 185, 129, 0.08)'
-=======
-  bg: 'transparent',
-  bgImage: 'none',
-  card: 'rgba(29, 26, 57, 0.4)',
-  cardBgImage: 'linear-gradient(135deg, rgba(69, 25, 82, 0.4) 0%, rgba(29, 26, 57, 0.6) 100%)',
-  cardSoft: 'rgba(69, 25, 82, 0.3)',
-  border: 'rgba(232, 188, 185, 0.2)',
-  text: '#ffffff',
-  textMuted: 'rgba(232, 188, 185, 0.75)',
-  accent: '#F39F5A',
-  accentSoft: 'rgba(243, 159, 90, 0.15)',
-  green: '#AE445A',
-  greenSoft: 'rgba(174, 68, 90, 0.15)'
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 };
 
 /* ── helpers ── */
@@ -81,22 +63,6 @@ const getNSE = (name) => {
   return key ? `NSE: ${map[key]}` : 'NSE: ---';
 };
 
-<<<<<<< HEAD
-=======
-const handleRipple = (e) => {
-  const btn = e.currentTarget;
-  const rect = btn.getBoundingClientRect();
-  const circle = document.createElement('span');
-  const d = Math.max(btn.clientWidth, btn.clientHeight);
-  circle.style.width = circle.style.height = `${d}px`;
-  circle.style.left = `${e.clientX - rect.left - d/2}px`;
-  circle.style.top = `${e.clientY - rect.top - d/2}px`;
-  circle.classList.add('liquid-ripple');
-  btn.appendChild(circle);
-  setTimeout(() => circle.remove(), 600);
-};
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 /* ── Animated Counter ── */
 const useCountUp = (end, duration = 1200) => {
   const [count, setCount] = useState(0);
@@ -139,22 +105,6 @@ const CLAIM_CSS = `
   @keyframes ribbonShine   { 0%{transform:translateX(-100%) skew(-20deg)} 100%{transform:translateX(300%) skew(-20deg)} }
   @keyframes tiltLeft      { to{transform:rotateY(-8deg) rotateX(3deg) translateZ(10px)} }
   @keyframes progressFill  { from{width:0%} to{width:var(--progress-w)} }
-<<<<<<< HEAD
-=======
-  @keyframes bellRing      { 
-    0% { transform: rotate(0); }
-    5% { transform: rotate(15deg); }
-    10% { transform: rotate(-10deg); }
-    15% { transform: rotate(5deg); }
-    20% { transform: rotate(-5deg); }
-    25%, 100% { transform: rotate(0); }
-  }
-  @keyframes iconFlip {
-    0%, 70% { transform: rotateY(0deg) scale(1); }
-    85% { transform: rotateY(180deg) scale(1.1); }
-    100% { transform: rotateY(360deg) scale(1); }
-  }
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
   /* ── Particles ── */
   .claims-page-wrap {
@@ -171,17 +121,10 @@ const CLAIM_CSS = `
 
   /* ── Stat chip ── */
   .stat-chip {
-<<<<<<< HEAD
     position: relative; overflow: hidden;
     flex: 1 1 140px;
     border-radius: 18px;
     padding: 20px 22px;
-=======
-    position: relative; overflow: hidden !important;
-    flex: 1 1 200px; min-width: 200px; max-width: 100%;
-    border-radius: 18px;
-    padding: 16px 20px;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     display: flex; flex-direction: column; align-items: flex-start;
     cursor: default;
     transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), box-shadow 0.28s ease;
@@ -192,20 +135,12 @@ const CLAIM_CSS = `
   .chip-shimmer {
     position: absolute; top: 0; left: -100%;
     width: 50%; height: 100%;
-<<<<<<< HEAD
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
-=======
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.09), transparent);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     pointer-events: none; skew-x: -20deg;
   }
   .chip-bar-track {
     width: 100%; height: 3px; border-radius: 999px;
-<<<<<<< HEAD
     background: rgba(255,255,255,0.06); margin-top: 12px; overflow: hidden;
-=======
-    background: rgba(255, 255, 255,0.06); margin-top: 12px; overflow: hidden;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   }
   .chip-bar-fill {
     height: 100%; border-radius: 999px;
@@ -224,11 +159,7 @@ const CLAIM_CSS = `
     transition: color 0.2s ease, background 0.2s ease;
     position: relative; z-index: 1;
   }
-<<<<<<< HEAD
   .claims-tab-btn:hover { background: rgba(255,255,255,0.05); }
-=======
-  .claims-tab-btn:hover { background: rgba(255, 255, 255,0.05); }
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   .claims-tab-btn.active { font-weight: 800; }
   .tab-active-indicator {
     position: absolute; bottom: 0; height: 2px;
@@ -240,11 +171,7 @@ const CLAIM_CSS = `
 
   /* ── Claim card ── */
   .claim-card {
-<<<<<<< HEAD
     background: rgba(255,255,255,0.03);
-=======
-    background: rgba(255, 255, 255,0.03);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border-radius: 22px; padding: 22px;
     display: flex; flex-direction: column; gap: 16px;
@@ -254,11 +181,7 @@ const CLAIM_CSS = `
   }
   .claim-card::before {
     content: ''; position: absolute; inset: 0;
-<<<<<<< HEAD
     background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 55%);
-=======
-    background: linear-gradient(135deg, rgba(255, 255, 255,0.05) 0%, transparent 55%);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     border-radius: 22px; pointer-events: none; z-index: 0;
   }
   .claim-card > * { position: relative; z-index: 1; }
@@ -273,11 +196,7 @@ const CLAIM_CSS = `
   .claim-card .card-ribbon::after {
     content: ''; position: absolute; top: 0; left: -100%;
     width: 60%; height: 100%;
-<<<<<<< HEAD
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
-=======
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.7), transparent);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     animation: ribbonShine 3s ease infinite;
   }
   .card-active  { border: 1px solid rgba(16,185,129,0.28); }
@@ -296,77 +215,6 @@ const CLAIM_CSS = `
     box-shadow: 0 10px 28px rgba(16,185,129,0.45);
   }
 
-<<<<<<< HEAD
-=======
-  /* ── Doc Card Hover ── */
-  .doc-card-hover {
-    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
-    transform-style: preserve-3d; perspective: 800px;
-    cursor: pointer;
-  }
-  
-  @keyframes borderPulseGreen { 
-    0%, 100% { border-color: rgba(16,185,129,0.3); box-shadow: 0 0 12px rgba(16,185,129,0.08) } 
-    50% { border-color: rgba(16,185,129,0.8); box-shadow: 0 0 24px rgba(16,185,129,0.25) } 
-  }
-  @keyframes borderPulseOrange { 
-    0%, 100% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 12px rgba(245,158,11,0.08) } 
-    50% { border-color: rgba(245,158,11,0.8); box-shadow: 0 0 24px rgba(245,158,11,0.25) } 
-  }
-  @keyframes borderPulseBlue { 
-    0%, 100% { border-color: rgba(129,140,248,0.3); box-shadow: 0 0 12px rgba(129,140,248,0.08) } 
-    50% { border-color: rgba(129,140,248,0.8); box-shadow: 0 0 24px rgba(129,140,248,0.25) } 
-  }
-
-  .doc-border-green { animation: borderPulseGreen 3s infinite ease-in-out; border: 2px solid rgba(16,185,129,0.3); }
-  .doc-border-orange { animation: borderPulseOrange 3s infinite ease-in-out; border: 2px solid rgba(245,158,11,0.3); }
-  .doc-border-blue { animation: borderPulseBlue 3s infinite ease-in-out; border: 2px solid rgba(129,140,248,0.3); }
-
-  @keyframes spinBorder {
-    100% { transform: rotate(360deg); }
-  }
-
-  .doc-card-animated-border {
-    position: relative;
-    border-radius: 16px;
-    z-index: 1;
-    overflow: hidden;
-    padding: 2px; /* THICK BORDER */
-    background: rgba(255, 255, 255, 0.04); /* static fallback border */
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, background 0.4s ease;
-    cursor: pointer;
-  }
-  .doc-card-animated-border:hover {
-    transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 30px 60px -12px var(--anim-color) !important;
-    background: var(--anim-color); /* Statically fill border track with color */
-  }
-
-  .doc-card-border-sweeper {
-    position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    /* Bright white sweeper beam to contrast the solid color border track */
-    background: conic-gradient(from 0deg, transparent 60%, rgba(255,255,255,0.9) 100%);
-    animation: spinBorder 2s linear infinite;
-    z-index: 0;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  .doc-card-animated-border:hover .doc-card-border-sweeper {
-    opacity: 1;
-  }
-
-  .doc-card-inner-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 100%;
-    width: 100%;
-  }
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   /* ── Orb ── */
   .card-orb {
     position: absolute; border-radius: 50%;
@@ -384,33 +232,20 @@ const CLAIM_CSS = `
   }
   .claim-btn-primary::after {
     content: ''; position: absolute; inset: 0;
-<<<<<<< HEAD
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-=======
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.25), transparent);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     transform: translateX(-100%); transition: transform 0.45s ease;
   }
   .claim-btn-primary:hover { transform: translateY(-2px) scale(1.05); }
   .claim-btn-primary:hover::after { transform: translateX(100%); }
   .claim-btn-primary:active { transform: scale(0.96); }
   .claim-btn-sec {
-<<<<<<< HEAD
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
-=======
-    background: rgba(255, 255, 255,0.05);
-    border: 1px solid rgba(255, 255, 255,0.1); color: #94a3b8;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     padding: 10px 14px; border-radius: 11px;
     font-weight: 700; font-size: 12px; cursor: pointer;
     transition: all 0.2s ease;
   }
-<<<<<<< HEAD
   .claim-btn-sec:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; border-color: rgba(255,255,255,0.22); transform: translateY(-1px); }
-=======
-  .claim-btn-sec:hover { background: rgba(255, 255, 255,0.1); color: #e2e8f0; border-color: rgba(255, 255, 255,0.22); transform: translateY(-1px); }
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
   /* ── Warn banner ── */
   .warn-banner {
@@ -436,11 +271,7 @@ const CLAIM_CSS = `
   }
   .new-claim-btn::after {
     content: ''; position: absolute; inset: 0;
-<<<<<<< HEAD
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-=======
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255,0.2), transparent);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     transform: translateX(-100%); transition: transform 0.4s ease;
   }
   .new-claim-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 30px rgba(16,185,129,0.5); }
@@ -449,11 +280,7 @@ const CLAIM_CSS = `
 
   /* ── Progress bar ── */
   .progress-bar-track {
-<<<<<<< HEAD
     width: 100%; height: 5px; background: rgba(255,255,255,0.06);
-=======
-    width: 100%; height: 5px; background: rgba(255, 255, 255,0.06);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     border-radius: 999px; overflow: hidden;
   }
   .progress-bar-fill {
@@ -471,21 +298,12 @@ const CLAIM_CSS = `
 
 /* ── Floating particle component ── */
 const PARTICLES = [
-<<<<<<< HEAD
   { size: 6, color: 'rgba(16,185,129,0.25)', x: '10%', delay: '0s', dur: '8s' },
   { size: 4, color: 'rgba(129,140,248,0.2)', x: '25%', delay: '1.5s', dur: '10s' },
   { size: 8, color: 'rgba(16,185,129,0.15)', x: '45%', delay: '3s', dur: '7s' },
   { size: 5, color: 'rgba(245,158,11,0.2)', x: '65%', delay: '0.5s', dur: '9s' },
   { size: 3, color: 'rgba(129,140,248,0.25)', x: '80%', delay: '2s', dur: '6s' },
   { size: 7, color: 'rgba(16,185,129,0.2)', x: '90%', delay: '4s', dur: '11s' },
-=======
-  { size: 6, color: 'rgba(243, 159, 90, 0.2)', x: '10%', delay: '0s', dur: '8s' },
-  { size: 4, color: 'rgba(232, 188, 185, 0.15)', x: '25%', delay: '1.5s', dur: '10s' },
-  { size: 8, color: 'rgba(174, 68, 90, 0.2)', x: '45%', delay: '3s', dur: '7s' },
-  { size: 5, color: 'rgba(102, 37, 73, 0.25)', x: '65%', delay: '0.5s', dur: '9s' },
-  { size: 3, color: 'rgba(243, 159, 90, 0.15)', x: '80%', delay: '2s', dur: '6s' },
-  { size: 7, color: 'rgba(232, 188, 185, 0.2)', x: '90%', delay: '4s', dur: '11s' },
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 ];
 
 /* ── StatChip ── */
@@ -497,7 +315,6 @@ const StatChip = ({ label, value, color, icon: Icon, delay = 0, barColor }) => {
 
   return (
     <div
-<<<<<<< HEAD
       className="stat-chip"
       style={{
         '--chip-delay': `${delay}ms`,
@@ -507,67 +324,24 @@ const StatChip = ({ label, value, color, icon: Icon, delay = 0, barColor }) => {
       }}
     >
       <div className="chip-shimmer" />
-=======
-      className="stat-chip cursor-spotlight-card"
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-      }}
-      style={{
-        '--chip-delay': `${delay}ms`,
-        background: `linear-gradient(145deg, rgba(255, 255, 255,0.06) 0%, rgba(255, 255, 255,0.02) 100%)`,
-        border: `1px solid ${color}25`,
-        boxShadow: `0 4px 24px ${color}12`,
-        padding: '20px 24px',
-        borderRadius: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-    >
-      <div className="chip-shimmer" />
-      <svg className="sparkline-glow" style={{ position: 'absolute', right: -10, bottom: -5, width: '110px', height: '55px', opacity: 0.4, pointerEvents: 'none', filter: `drop-shadow(0px 4px 6px rgba(0,0,0,0.3))` }} viewBox="0 0 100 30" preserveAspectRatio="none">
-        <path d="M0,25 Q15,25 25,15 T50,20 T75,10 T100,5" fill="none" stroke={color} strokeWidth="3.5" />
-      </svg>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       {Icon && (
         <div style={{
           width: 38, height: 38, borderRadius: 12,
           background: `${color}18`, border: `1px solid ${color}35`,
           display: 'grid', placeItems: 'center', color, marginBottom: 12,
-<<<<<<< HEAD
           boxShadow: `0 4px 16px ${color}20`
         }}>
           <Icon size={18} />
-=======
-          boxShadow: `0 4px 16px ${color}20`,
-          perspective: '400px'
-        }}>
-          <div style={{ animation: 'iconFlip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon size={18} />
-          </div>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         </div>
       )}
       <div style={{ fontSize: 30, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-1.2px', animation: 'countUp 0.4s ease both' }}>
         {displayValue}
       </div>
-<<<<<<< HEAD
       <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
         {label}
       </div>
       <div className="chip-bar-track" style={{ '--bar-delay': `${delay + 300}ms` }}>
         <div className="chip-bar-fill" style={{ background: barColor || color, width: '100%' }} />
-=======
-      <div style={{ fontSize: 11, color: CL.textMuted, marginTop: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
-        {label}
-      </div>
-      <div className="chip-bar-track" style={{ '--bar-delay': `${delay + 300}ms` }}>
-        <div className="chip-bar-fill pipeline-flow" style={{ background: barColor || color, width: '100%' }} />
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       </div>
     </div>
   );
@@ -591,11 +365,7 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
   }, [animDelay]);
 
   const orbColor = needsDocs ? '#818CF8' : isActive ? '#10B981' : '#F59E0B';
-<<<<<<< HEAD
   const cardClass = needsDocs ? 'claim-card card-pending' : isActive ? 'claim-card card-active' : 'claim-card card-progress';
-=======
-  const cardClass = `cursor-spotlight-card ${needsDocs ? 'claim-card card-pending' : isActive ? 'claim-card card-active' : 'claim-card card-progress'}`;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const ribbonColor = needsDocs ? 'linear-gradient(90deg,#818CF8,#6366F1)' : isActive ? 'linear-gradient(90deg,#10B981,#059669)' : 'linear-gradient(90deg,#F59E0B,#D97706)';
 
   return (
@@ -603,14 +373,6 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
       className={cardClass}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-<<<<<<< HEAD
-=======
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-      }}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       style={{ animation: `cardRise 0.55s cubic-bezier(.34,1.56,.64,1) ${animDelay}ms both` }}
     >
       {/* ribbon top */}
@@ -640,21 +402,13 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
             boxShadow: `0 6px 18px ${orbColor}25`
           }}>{initials}</div>
           <div>
-<<<<<<< HEAD
             <div style={{ fontWeight: 900, color: CL.text, fontSize: 15, letterSpacing: '-0.4px', lineHeight: 1.2 }}>{claim.name}</div>
-=======
-            <div style={{ fontWeight: 900, color: CL.text, fontSize: 15, letterSpacing: '-0.4px', lineHeight: 1.2, wordBreak: 'break-word' }}>{claim.name}</div>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             <div style={{ fontSize: 10, color: CL.textMuted, marginTop: 3, fontWeight: 600, letterSpacing: '0.02em' }}>
               {claim.isin} · {nse}
             </div>
           </div>
         </div>
-<<<<<<< HEAD
         <div style={{
-=======
-        <div className="holographic-badge" style={{
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '5px 12px', borderRadius: 999,
           background: badge.bg, color: badge.color, border: badge.border,
@@ -682,13 +436,8 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
           { label: 'Est. Value', value: claim.estValue, color: '#10B981' }
         ].map((m, mi) => (
           <div key={m.label} style={{
-<<<<<<< HEAD
             background: 'rgba(255,255,255,0.03)', borderRadius: 11, padding: '10px 11px',
             border: '1px solid rgba(255,255,255,0.06)',
-=======
-            background: 'rgba(255, 255, 255,0.03)', borderRadius: 11, padding: '10px 11px',
-            border: '1px solid rgba(255, 255, 255,0.06)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             animation: `fadeSlideUp 0.45s ease ${animDelay + 200 + mi * 60}ms both`
           }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: m.color || CL.text, letterSpacing: '-0.3px' }}>{m.value}</div>
@@ -704,11 +453,7 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
           <span style={{ fontWeight: 800, color: needsDocs ? '#F59E0B' : '#10B981', fontSize: 11 }}>{progressLabel}</span>
         </div>
         <div className="progress-bar-track">
-<<<<<<< HEAD
           <div className="progress-bar-fill" style={{
-=======
-          <div className="progress-bar-fill pipeline-flow" style={{
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             '--progress-w': `${claim.progress}%`,
             background: progressColor,
             width: progressVisible ? `${claim.progress}%` : '0%',
@@ -718,18 +463,13 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
           {[0, 25, 50, 75, 100].map(v => (
             <div key={v} style={{
-<<<<<<< HEAD
               width: 1, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 1
-=======
-              width: 1, height: 4, background: 'rgba(255, 255, 255,0.1)', borderRadius: 1
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             }} />
           ))}
         </div>
       </div>
 
       {/* buttons */}
-<<<<<<< HEAD
       <div style={{ display: 'flex', gap: 8 }}>
         {needsDocs ? (
           <>
@@ -744,22 +484,6 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
               <Eye size={13} /> View Details
             </button>
             <button className="claim-btn-sec">Docs</button>
-=======
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
-        {needsDocs ? (
-          <>
-            <button className="claim-btn-primary liquid-btn" onClick={(e) => { handleRipple(e); }} style={{ background: 'linear-gradient(135deg,#F59E0B,#EF4444)', boxShadow: '0 4px 16px rgba(239,68,68,0.35)', flex: 1 }}>
-              <Upload size={13} /> Upload Docs
-            </button>
-            <button className="claim-btn-sec" onClick={(e) => { handleRipple(e); onViewDetails && onViewDetails(claim); }}>View</button>
-          </>
-        ) : (
-          <>
-            <button className="claim-btn-primary liquid-btn" onClick={(e) => { handleRipple(e); onViewDetails && onViewDetails(claim); }} style={{ background: 'linear-gradient(135deg,#10B981,#059669)', boxShadow: '0 4px 16px rgba(16,185,129,0.35)', flex: 1 }}>
-              <Eye size={13} /> View Details
-            </button>
-            <button className="claim-btn-sec" onClick={handleRipple}>Docs</button>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           </>
         )}
       </div>
@@ -779,23 +503,14 @@ const CLAIM_DETAIL_CSS = `
 
   .detail-wrap { animation: detailSlideIn 0.45s cubic-bezier(.34,1.56,.64,1) both; }
   .detail-section {
-<<<<<<< HEAD
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
-=======
-    background: rgba(255, 255, 255,0.03);
-    border: 1px solid rgba(255, 255, 255,0.07);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     border-radius: 18px; padding: 22px;
     backdrop-filter: blur(12px);
     animation: detailFadeUp 0.4s ease var(--sec-delay,0s) both;
   }
   .detail-section:hover {
-<<<<<<< HEAD
     border-color: rgba(255,255,255,0.12);
-=======
-    border-color: rgba(255, 255, 255,0.12);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     transition: border-color 0.3s ease;
   }
   .step-dot {
@@ -812,7 +527,6 @@ const CLAIM_DETAIL_CSS = `
   .holder-row {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px; border-radius: 12px;
-<<<<<<< HEAD
     border: 1px solid rgba(255,255,255,0.06);
     background: rgba(255,255,255,0.02);
     transition: all 0.2s ease;
@@ -832,34 +546,12 @@ const CLAIM_DETAIL_CSS = `
     display: flex; align-items: flex-start; gap: 12px;
     padding: 12px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
-=======
-    border: 1px solid rgba(255, 255, 255,0.06);
-    background: rgba(255, 255, 255,0.02);
-    transition: all 0.2s ease;
-    animation: detailFadeUp 0.4s ease var(--holder-delay,0s) both;
-  }
-  .holder-row:hover { background: rgba(255, 255, 255,0.05); border-color: rgba(255, 255, 255,0.1); transform: translateX(4px); }
-  .action-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 11px 14px; border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255,0.06);
-    background: rgba(255, 255, 255,0.02);
-    transition: all 0.2s ease;
-    animation: detailFadeUp 0.4s ease var(--action-delay,0s) both;
-  }
-  .action-row:hover { background: rgba(255, 255, 255,0.05); border-color: rgba(255, 255, 255,0.1); }
-  .update-row {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255,0.05);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     animation: detailFadeUp 0.4s ease var(--upd-delay,0s) both;
   }
   .update-row:last-child { border-bottom: none; }
   .back-btn {
     display: flex; align-items: center; gap: 6px;
     padding: 7px 14px; border-radius: 10px;
-<<<<<<< HEAD
     background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
     color: var(--dashboard-text-muted); cursor: pointer; font-size: 12px; font-weight: 700;
     transition: all 0.2s ease;
@@ -867,15 +559,6 @@ const CLAIM_DETAIL_CSS = `
   .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--dashboard-text); transform: translateX(-3px); }
   .stat-box {
     background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-=======
-    background: rgba(255, 255, 255,0.06); border: 1px solid rgba(255, 255, 255,0.1);
-    color: #4a586e; cursor: pointer; font-size: 12px; font-weight: 700;
-    transition: all 0.2s ease;
-  }
-  .back-btn:hover { background: rgba(255, 255, 255,0.1); color: #ffffff; transform: translateX(-3px); }
-  .stat-box {
-    background: rgba(255, 255, 255,0.04); border: 1px solid rgba(255, 255, 255,0.08);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     border-radius: 14px; padding: 14px 20px; min-width: 110px;
     animation: detailFadeUp 0.4s ease var(--sbox-delay,0s) both;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -945,11 +628,7 @@ const ClaimDetailView = ({ claim, onBack }) => {
 
       {/* ── Company Header ── */}
       <div style={{
-<<<<<<< HEAD
         background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
-=======
-        background: 'rgba(255, 255, 255,0.03)', border: '1px solid rgba(255, 255, 255,0.07)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         borderRadius: 20, padding: '24px 28px', marginBottom: 20,
         backdropFilter: 'blur(12px)', position: 'relative', overflow: 'hidden',
         animation: 'detailFadeUp 0.4s ease both'
@@ -1008,32 +687,19 @@ const ClaimDetailView = ({ claim, onBack }) => {
                     '--dot-delay': `${0.15 + i * 0.07}s`,
                     background: step.done ? 'linear-gradient(135deg,#10B981,#059669)'
                       : step.active ? `linear-gradient(135deg,${orbColor}40,${orbColor}15)`
-<<<<<<< HEAD
                       : 'rgba(255,255,255,0.06)',
                     border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid rgba(255,255,255,0.1)',
-=======
-                      : 'rgba(255, 255, 255,0.06)',
-                    border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid rgba(255, 255, 255,0.1)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                     boxShadow: step.done ? '0 4px 12px rgba(16,185,129,0.35)' : step.active ? `0 4px 12px ${orbColor}35` : 'none'
                   }}>
                     {step.done ? <CheckCircle2 size={16} color="#fff" /> :
                       step.active ? <Activity size={14} color={orbColor} /> :
-<<<<<<< HEAD
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />}
-=======
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255, 255, 255,0.15)' }} />}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                   </div>
                   {i < steps.length - 1 && (
                     <div className="step-line" style={{
                       '--line-delay': `${0.2 + i * 0.07}s`,
                       background: step.done ? 'linear-gradient(180deg,#10B981,#059669)'
-<<<<<<< HEAD
                         : 'rgba(255,255,255,0.07)'
-=======
-                        : 'rgba(255, 255, 255,0.07)'
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                     }} />
                   )}
                 </div>
@@ -1152,7 +818,7 @@ const MyClaimsView = ({ claims, navigate }) => {
   const [activeTab, setActiveTab] = useState('All Companies');
   const [tabKey, setTabKey] = useState(0);
 
-  const tabs = ['All Companies', 'Active', 'In Progress', 'Pending', 'Claim Hub'];
+  const tabs = ['All Companies', 'Active', 'In Progress', 'Completed', 'Claim Hub'];
   const { refs: tabRefs, indicator } = useTabIndicator(tabs, activeTab);
 
   if (selectedClaim) return <ClaimDetailView claim={selectedClaim} onBack={() => setSelectedClaim(null)} />;
@@ -1161,24 +827,20 @@ const MyClaimsView = ({ claims, navigate }) => {
 
   const totalCompanies = new Set(claims.map(c => c.name)).size;
   const totalShares = claims.reduce((s, c) => s + (Number(c.shares) || 0), 0);
-  const pendingDocs = claims.filter(c => c.status?.toLowerCase().includes('pending')).length;
+  const completedDocs = claims.filter(c => c.status?.toLowerCase().includes('completed') || c.status?.toLowerCase() === 'closed').length;
 
   const filtered = claims.filter(c => {
     if (activeTab === 'All Companies') return true;
     if (activeTab === 'Active') return c.status?.toLowerCase() === 'active';
     if (activeTab === 'In Progress') return c.status?.toLowerCase().includes('progress');
-    if (activeTab === 'Pending') return c.status?.toLowerCase().includes('pending');
+    if (activeTab === 'Completed') return c.status?.toLowerCase().includes('completed') || c.status?.toLowerCase() === 'closed';
     return true;
   });
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setTabKey(k => k + 1);
-<<<<<<< HEAD
     if (tab === 'Claim Hub') setTimeout(() => navigate('/client?tab=service-hub'), 180);
-=======
-    if (tab === 'Claim Hub') navigate('/client?tab=service-hub');
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   };
 
 
@@ -1202,7 +864,7 @@ const MyClaimsView = ({ claims, navigate }) => {
         <StatChip label="Total Companies" value={totalCompanies}   color="#3B82F6" barColor="#3B82F6" icon={FileText}     delay={0}   />
         <StatChip label="Total Shares"    value={totalShares}      color="#818CF8"  barColor="#818CF8"              icon={TrendingUp}   delay={90}  />
         <StatChip label="Recovery Value"  value="₹3.45L"           color="#10B981"  barColor="#10B981"              icon={CheckCircle2} delay={180} />
-        <StatChip label="Pending Docs"    value={pendingDocs}      color="#F59E0B"  barColor="#F59E0B"              icon={AlertTriangle} delay={270} />
+        <StatChip label="Completed"       value={completedDocs}    color="#10B981"  barColor="#10B981"              icon={CheckCircle2} delay={270} />
       </div>
 
       {/* ── Tabs row ── */}
@@ -1223,11 +885,7 @@ const MyClaimsView = ({ claims, navigate }) => {
                 className={`claims-tab-btn${isActive ? ' active' : ''}`}
                 onClick={() => handleTabChange(tab)}
                 style={{
-<<<<<<< HEAD
                   color: isActive ? (isServiceHub ? '#10B981' : CL.text) : CL.textMuted,
-=======
-                  color: isActive ? '#F39F5A' : 'rgba(232, 188, 185, 0.75)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                   marginBottom: -1,
                 }}
               >
@@ -1244,11 +902,7 @@ const MyClaimsView = ({ claims, navigate }) => {
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: 18, height: 18, borderRadius: '50%',
                     background: 'linear-gradient(135deg,#EF4444,#DC2626)',
-<<<<<<< HEAD
                     color: '#fff', fontSize: 9, fontWeight: 900, marginLeft: 6,
-=======
-                    color: '#ffffff', fontSize: 9, fontWeight: 900, marginLeft: 6,
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                     boxShadow: '0 2px 8px rgba(239,68,68,0.5)',
                     animation: 'pulseDot 2s ease infinite'
                   }}>{pendingDocs}</span>
@@ -1277,19 +931,11 @@ const MyClaimsView = ({ claims, navigate }) => {
         {filtered.length === 0 ? (
           <div style={{
             gridColumn: '1/-1', textAlign: 'center', padding: '70px 0',
-<<<<<<< HEAD
             color: CL.textMuted, animation: 'fadeSlideUp 0.4s ease both'
           }}>
             <div className="empty-emoji" style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>No claims for this filter</div>
             <div style={{ fontSize: 13, opacity: 0.6 }}>Try switching to a different tab above</div>
-=======
-            color: 'rgba(232, 188, 185, 0.75)', animation: 'fadeSlideUp 0.4s ease both'
-          }}>
-            <div className="empty-emoji" style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
-            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6, color: '#ffffff' }}>No claims for this filter</div>
-            <div style={{ fontSize: 13, color: 'rgba(232, 188, 185, 0.75)' }}>Try switching to a different tab above</div>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           </div>
         ) : filtered.map((claim, i) => (
           <ClaimCard
@@ -1308,30 +954,18 @@ const MyClaimsView = ({ claims, navigate }) => {
    DASHBOARD TAB VIEW (default, no ?tab or ?tab=dashboard)
 ═══════════════════════════════════════════════ */
 /* ── FAMILY TREE COMPONENT ── */
-<<<<<<< HEAD
 const ClientFamilyTreeNode = ({ name, role, isClient }) => (
   <div style={{ 
     background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(30, 41, 59, 0.45)', 
     border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
     color: '#fff',
-=======
-const ClientFamilyTreeNode = ({ member, name, role, isClient, onEditFamily }) => (
-  <div style={{ 
-    background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(30, 41, 59, 0.45)', 
-    border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-    color: '#ffffff',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     padding: '14px 28px', 
     borderRadius: '16px', 
     minWidth: '140px',
     textAlign: 'center',
     boxShadow: isClient 
       ? '0 10px 25px -5px rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15)' 
-<<<<<<< HEAD
       : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
-=======
-      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255, 255, 255,0.05)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     position: 'relative',
     zIndex: 2,
     backdropFilter: 'blur(8px)',
@@ -1339,27 +973,12 @@ const ClientFamilyTreeNode = ({ member, name, role, isClient, onEditFamily }) =>
   }}
   className="family-node-hover"
   >
-<<<<<<< HEAD
-=======
-    {!isClient && onEditFamily && member && (
-      <button 
-        onClick={() => onEditFamily(member)} 
-        style={{ position: 'absolute', top: '6px', right: '6px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}
-      >
-        <Edit2 size={12} />
-      </button>
-    )}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     <div style={{ fontWeight: 800, fontSize: '14px', letterSpacing: '-0.3px' }}>{name}</div>
     <div style={{ fontSize: '10px', color: isClient ? '#A7F3D0' : 'rgba(255, 255, 255, 0.5)', fontWeight: 800, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{role}</div>
   </div>
 );
 
-<<<<<<< HEAD
-const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
-=======
-const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily }) => {
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
+const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) => {
   const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
   const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
   const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
@@ -1394,15 +1013,11 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text }}>Family Tree &amp; Hierarchy</h3>
         <button 
-          onClick={onAddFamily}
+          onClick={onNotificationClick}
           style={{ 
             padding: '10px 20px', 
             background: 'linear-gradient(135deg, #10B981, #059669)', 
-<<<<<<< HEAD
             color: '#fff', 
-=======
-            color: '#ffffff', 
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             border: 'none', 
             borderRadius: '12px', 
             cursor: 'pointer', 
@@ -1423,7 +1038,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
             e.currentTarget.style.boxShadow = '0 8px 20px rgba(16,185,129,0.35)';
           }}
         >
-          <Plus size={16} /> Add Member
+          <Bell size={16} /> Notifications
         </button>
       </div>
       
@@ -1432,11 +1047,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
         {/* Ancestors Level */}
         {ancestors.length > 0 && (
           <div style={{ display: 'flex', gap: '30px', marginBottom: '40px', position: 'relative' }}>
-<<<<<<< HEAD
             {ancestors.map((m, i) => <ClientFamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-            {ancestors.map((m, i) => <ClientFamilyTreeNode key={`anc-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
             {ancestors.length > 1 && (
               <div style={{ position: 'absolute', bottom: '-20px', left: '10%', right: '10%', height: '2px', background: lineBg, zIndex: 1 }} />
@@ -1449,11 +1060,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
           
           {/* Siblings (Left) */}
           <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-end' }}>
-<<<<<<< HEAD
             {siblings.map((m, i) => <ClientFamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-            {siblings.map((m, i) => <ClientFamilyTreeNode key={`sib-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             {siblings.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', right: '-40px', width: '40px', height: '2px', background: lineBg, zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
@@ -1472,11 +1079,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
             {spouse.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', left: '-40px', width: '40px', height: '2px', background: lineBg, zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
-<<<<<<< HEAD
             {spouse.map((m, i) => <ClientFamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-            {spouse.map((m, i) => <ClientFamilyTreeNode key={`sp-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           </div>
         </div>
 
@@ -1489,11 +1092,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
             {children.map((m, i) => (
               <div key={`child-${i}`} style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '-20px', left: '50%', width: '2px', height: '20px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
-<<<<<<< HEAD
                 <ClientFamilyTreeNode name={m.name} role={m.relationWithHolder} />
-=======
-                <ClientFamilyTreeNode member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               </div>
             ))}
           </div>
@@ -1505,35 +1104,18 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.08)', margin: '0 0 20px' }} />
             <h4 style={{ fontSize: '13px', fontWeight: 800, color: CL.textMuted, marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Other Relatives</h4>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-<<<<<<< HEAD
               {others.map((m, i) => <ClientFamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-              {others.map((m, i) => <ClientFamilyTreeNode key={`oth-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             </div>
           </div>
         )}
 
         {familyMembers.length === 0 && (
-          <div style={{ 
-            color: CL.textMuted, 
-            padding: '40px', 
-            border: `2px dashed ${CL.border}`, 
-            borderRadius: '16px', 
-            width: '100%', 
-            maxWidth: '400px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center',
-<<<<<<< HEAD
-            background: 'rgba(255,255,255,0.01)'
-=======
-            background: 'rgba(255, 255, 255,0.01)'
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
-          }}>
-            <GitBranch size={32} style={{ marginBottom: '12px', opacity: 0.5, color: CL.accent }} />
+          <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: `1px dashed rgba(255,255,255,0.1)`, marginTop: '20px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: CL.textMuted }}>
+              <Users size={24} />
+            </div>
             <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
-            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Click "Add Member" to start building your family tree.</p>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Contact your partner to build your family tree.</p>
           </div>
         )}
 
@@ -1544,6 +1126,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily, onEditFamily
 
 /* ── DOCUMENTS HUB COMPONENT ── */
 const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
+  const BASE_URL = import.meta.env.DEV ? 'http://localhost:5000' : 'https://myclaimportal.onrender.com';
   const [activeSubTab, setActiveSubTab] = useState('My Documents');
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1593,11 +1176,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
     formData.append('client_id', clientProfile?._id || clientProfile?.id || user?._id || user?.id);
 
     try {
-<<<<<<< HEAD
-      await axios.post('https://myclaimportal.onrender.com/api/documents/upload', formData, {
-=======
-      await axios.post('http://localhost:5005/api/documents/upload', formData, {
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
+      await axios.post(`${BASE_URL}/api/documents/upload`, formData, {
         headers: {
           Authorization: `Bearer ${user.token}`,
           'Content-Type': 'multipart/form-data'
@@ -1662,12 +1241,19 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
     }
   };
 
-  const cardItems = [
-    { name: 'PAN Card', type: 'pan' },
-    { name: 'Aadhaar Card', type: 'aadhaar' },
-    { name: 'Bank Cancelled Cheque', type: 'cheque' },
-    { name: 'Death Certificate', type: 'death' },
-  ];
+  // Generate dynamic cards based on primary documents uploaded
+  const primaryDocs = documents.filter(d => d.doc_category === 'primary');
+  const uniquePrimaryNames = [...new Set(primaryDocs.map(d => d.name))];
+  
+  const cardItems = uniquePrimaryNames.map(name => ({ name, type: 'dynamic' }));
+  
+  // Ensure basic KYC docs are always present to prompt upload
+  if (!cardItems.find(c => c.name.toLowerCase() === 'aadhaar card')) {
+    cardItems.unshift({ name: 'Aadhaar Card', type: 'aadhaar' });
+  }
+  if (!cardItems.find(c => c.name.toLowerCase() === 'pan card')) {
+    cardItems.unshift({ name: 'PAN Card', type: 'pan' });
+  }
 
   return (
     <div style={{ position: 'relative' }}>
@@ -1675,40 +1261,27 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
       {previewDoc && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }} onClick={() => setPreviewDoc(null)}>
           <div style={{ background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', borderRadius: '20px', width: '90%', maxWidth: '1000px', height: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
-<<<<<<< HEAD
             <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#fff' }}>{previewDoc.name}</h3>
-                <a 
-                  href={`https://myclaimportal.onrender.com${previewDoc.url}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
-                ><Download size={14} /> View Original</a>
+                {previewDoc.url && (
+                  <a 
+                    href={`${BASE_URL}${previewDoc.url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+                  ><Download size={14} /> View Original</a>
+                )}
               </div>
               <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
             </div>
             <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
-                const fullUrl = `https://myclaimportal.onrender.com${previewDoc.url}`;
-=======
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255, 255, 255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#ffffff' }}>{previewDoc.name}</h3>
-                <a 
-                  href={`http://localhost:5005${previewDoc.url}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255, 255, 255,0.05)', border: '1px solid rgba(255, 255, 255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
-                ><Download size={14} /> View Original</a>
-              </div>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255, 255, 255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
-            </div>
-            <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {(() => {
-                const fullUrl = `http://localhost:5005${previewDoc.url}`;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
-                const ext = previewDoc.url.split('.').pop().toLowerCase();
+                if (!previewDoc.url) {
+                  return <div style={{ color: '#fff', fontSize: '16px' }}>No file uploaded yet.</div>;
+                }
+                const fullUrl = `${BASE_URL}${previewDoc.url}`;
+                const ext = previewDoc.url.includes('.') ? previewDoc.url.split('.').pop().toLowerCase() : '';
                 const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                 
                 if (isImage) {
@@ -1722,23 +1295,14 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
         </div>
       )}
 
-<<<<<<< HEAD
       <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 24 }}>
-=======
-      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid rgba(255, 255, 255,0.08)', marginBottom: 24 }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         {['My Documents', 'Company Documents'].map(tab => (
           <div 
             key={tab}
             style={{
               padding: '12px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-<<<<<<< HEAD
               color: activeSubTab === tab ? '#fff' : 'rgba(255,255,255,0.4)',
               borderBottom: activeSubTab === tab ? '2.5px solid #10B981' : '2.5px solid transparent',
-=======
-              color: activeSubTab === tab ? '#fff' : 'rgba(255, 255, 255,0.4)',
-              borderBottom: activeSubTab === tab ? '2.5px solid #F39F5A' : '2.5px solid transparent',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               transition: 'all 0.2s',
               position: 'relative',
               top: '1px'
@@ -1752,11 +1316,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
 
       {activeSubTab === 'My Documents' ? (
         <div>
-<<<<<<< HEAD
           <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', marginBottom: 20, fontWeight: 500 }}>
-=======
-          <div style={{ fontSize: '13px', color: 'rgba(232, 188, 185, 0.75)', marginBottom: 20, fontWeight: 500 }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             Your identity and financial documents
           </div>
 
@@ -1772,7 +1332,6 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
               const details = getDocDetails(item.name);
               const isUploaded = details.uploaded;
               
-<<<<<<< HEAD
               let borderStyle = '1px solid rgba(255,255,255,0.08)';
               let bgStyle = 'rgba(255,255,255,0.02)';
               let iconColor = 'rgba(255,255,255,0.4)';
@@ -1800,43 +1359,12 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                 statusText = details.status.charAt(0).toUpperCase() + details.status.slice(1);
                 statusColor = '#818CF8';
                 cardGlow = '0 8px 24px rgba(129,140,248,0.08)';
-=======
-              let bgStyle = 'rgba(255, 255, 255,0.02)';
-              let iconColor = 'rgba(255, 255, 255,0.4)';
-              let statusText = 'Not uploaded';
-              let statusColor = 'rgba(255, 255, 255,0.4)';
-              let cardGlow = 'none';
-              let animColor = 'rgba(255,255,255,0.4)';
-              let innerBgColor = '#0F172A'; /* Slate 900 for dark mode */
-
-              if (!isUploaded) {
-                bgStyle = 'rgba(245,158,11,0.05)';
-                iconColor = '#F59E0B';
-                statusColor = '#F59E0B';
-                cardGlow = '0 8px 24px rgba(245,158,11,0.1)';
-                animColor = '#F59E0B';
-              } else if (details.status === 'verified') {
-                bgStyle = 'rgba(16,185,129,0.05)';
-                iconColor = '#10B981';
-                statusText = 'Verified';
-                statusColor = '#10B981';
-                cardGlow = '0 8px 24px rgba(16,185,129,0.15)';
-                animColor = '#10B981';
-              } else {
-                bgStyle = 'rgba(129,140,248,0.05)';
-                iconColor = '#818CF8';
-                statusText = details.status.charAt(0).toUpperCase() + details.status.slice(1);
-                statusColor = '#818CF8';
-                cardGlow = '0 8px 24px rgba(129,140,248,0.15)';
-                animColor = '#818CF8';
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               }
 
               return (
                 <div 
                   key={item.name} 
                   style={{
-<<<<<<< HEAD
                     background: bgStyle,
                     border: borderStyle,
                     borderRadius: '16px',
@@ -1861,41 +1389,6 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                     </div>
                     <div>
                       <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: 4 }}>{item.name}</div>
-=======
-                    '--anim-color': animColor,
-                    borderRadius: '16px',
-                    boxShadow: cardGlow,
-                  }}
-                  className="doc-card-animated-border"
-                >
-                  {/* Rotating thick border sweeper */}
-                  <div className="doc-card-border-sweeper"></div>
-
-                  <div style={{ 
-                    position: 'relative', 
-                    zIndex: 1, 
-                    backgroundColor: innerBgColor,
-                    background: `linear-gradient(to bottom right, ${innerBgColor}, ${bgStyle})`,
-                    borderRadius: '14px', 
-                    padding: '20px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    height: '100%',
-                    backdropFilter: 'blur(12px)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <div style={{
-                        width: 44, height: 44, borderRadius: '50%',
-                        background: 'rgba(255, 255, 255,0.04)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: iconColor, border: '1px solid rgba(255, 255, 255,0.08)'
-                      }}>
-                      <FileText size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', marginBottom: 4 }}>{item.name}</div>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                       <div style={{ fontSize: '12px', fontWeight: 700, color: statusColor, display: 'flex', alignItems: 'center', gap: 4 }}>
                         {isUploaded && details.status === 'verified' && <span>✓</span>}
                         {isUploaded && details.status !== 'verified' && <span>⌛</span>}
@@ -1911,21 +1404,12 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                         onClick={() => setPreviewDoc({ name: item.name, url: details.url })}
                         style={{
                           width: 36, height: 36, borderRadius: '50%',
-<<<<<<< HEAD
                           background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           color: '#fff', cursor: 'pointer', transition: 'all 0.2s'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-=======
-                          background: 'rgba(255, 255, 255,0.05)', border: '1px solid rgba(255, 255, 255,0.1)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#ffffff', cursor: 'pointer', transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255,0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255,0.05)'}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                       >
                         <Eye size={16} />
                       </button>
@@ -1946,27 +1430,15 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                     )}
                   </div>
                 </div>
-<<<<<<< HEAD
-=======
-                </div>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               );
             })}
           </div>
 
-<<<<<<< HEAD
           <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '32px 0' }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
             <Folder size={18} color="#10B981" />
             <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#fff' }}>Document Folders</h3>
-=======
-          <div style={{ height: '1px', background: 'rgba(255, 255, 255,0.08)', margin: '32px 0' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-            <Folder size={18} color="#10B981" />
-            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#ffffff' }}>Document Folders</h3>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           </div>
 
           {/* Folder & Document Browser */}
@@ -1981,19 +1453,11 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
       ) : (
         /* Company Documents View */
         <div style={{
-<<<<<<< HEAD
           textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)',
           background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)'
         }}>
           <Folder size={48} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
           <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>No company documents shared yet</div>
-=======
-          textAlign: 'center', padding: '60px 20px', color: '#4a586e',
-          background: 'rgba(255, 255, 255,0.01)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255,0.06)'
-        }}>
-          <Folder size={48} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff' }}>No company documents shared yet</div>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           <div style={{ fontSize: '12px', marginTop: '6px' }}>Shared files from My Claim team will be visible here.</div>
         </div>
       )}
@@ -2011,11 +1475,7 @@ const getNotifTypeStyles = (type) => {
     case 'task_overdue': return { icon: AlertCircle, color: '#dc2626', bg: 'rgba(220,38,38,0.1)' };
     case 'due_approaching': return { icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' };
     case 'task_completed': return { icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.1)' };
-<<<<<<< HEAD
     default: return { icon: Bell, color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)' };
-=======
-    default: return { icon: Bell, color: 'var(--text-muted)', bg: 'rgba(255, 255, 255,0.03)' };
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   }
 };
 
@@ -2024,11 +1484,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
 
   const markAsRead = async (id) => {
     try {
-<<<<<<< HEAD
       await axios.patch(`https://myclaimportal.onrender.com/api/notifications/${id}/read`, {}, {
-=======
-      await axios.patch(`http://localhost:5005/api/notifications/${id}/read`, {}, {
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         headers: { Authorization: `Bearer ${user.token}` }
       });
       onRefresh();
@@ -2039,11 +1495,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
 
   const markAllAsRead = async () => {
     try {
-<<<<<<< HEAD
       await axios.patch('https://myclaimportal.onrender.com/api/notifications/read-all', {}, {
-=======
-      await axios.patch('http://localhost:5005/api/notifications/read-all', {}, {
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         headers: { Authorization: `Bearer ${user.token}` }
       });
       onRefresh();
@@ -2105,11 +1557,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
           <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text, display: 'flex', alignItems: 'center', gap: 10 }}>
             Notifications
             {unreadCount > 0 && (
-<<<<<<< HEAD
               <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#fff', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
-=======
-              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#ffffff', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                 {unreadCount} New
               </span>
             )}
@@ -2121,15 +1569,9 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
           disabled={unreadCount === 0}
           style={{ 
             padding: '10px 20px', 
-<<<<<<< HEAD
             background: 'rgba(255,255,255,0.05)', 
             color: CL.text, 
             border: '1px solid rgba(255,255,255,0.1)', 
-=======
-            background: 'rgba(255, 255, 255,0.05)', 
-            color: CL.text, 
-            border: '1px solid rgba(255, 255, 255,0.1)', 
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             borderRadius: '12px', 
             cursor: unreadCount === 0 ? 'not-allowed' : 'pointer', 
             fontSize: '12px', 
@@ -2155,11 +1597,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center',
-<<<<<<< HEAD
             background: 'rgba(255,255,255,0.01)',
-=======
-            background: 'rgba(255, 255, 255,0.01)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             textAlign: 'center'
           }}>
             <Bell size={40} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
@@ -2174,23 +1612,14 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
                 <div style={{
                   width: '40px', height: '40px', borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyItems: 'center',
-<<<<<<< HEAD
                   background: bg || 'rgba(255,255,255,0.03)', color: color || CL.textMuted,
                   justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)'
-=======
-                  background: bg || 'rgba(255, 255, 255,0.03)', color: color || CL.textMuted,
-                  justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255, 255, 255,0.05)'
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                 }}>
                   <Icon size={18} strokeWidth={2.5} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-<<<<<<< HEAD
                     <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#fff' }}>{n.title}</h4>
-=======
-                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#ffffff' }}>{n.title}</h4>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '10px', color: CL.textMuted, fontWeight: 700 }}>
                       <Clock size={11} />
                       {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -2202,13 +1631,8 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
                     {!n.isRead && (
                       <button 
                         onClick={() => markAsRead(n._id)}
-<<<<<<< HEAD
                         style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-=======
-                        style={{ background: 'none', border: '1px solid rgba(255, 255, 255,0.1)', color: '#ffffff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255,0.05)'}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                         onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                       >
                         Mark as read
@@ -2249,17 +1673,12 @@ const DashboardView = ({ overview, claims, navigate }) => {
   return (
     <>
       {/* Overview stat cards */}
-<<<<<<< HEAD
       <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-=======
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 24 }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         {[
           { label: 'Total Claims', value: overview.totalClaims || claims.length, color: CL.text, icon: FileText },
           { label: 'In Progress', value: overview.inProgress || inProgress, color: '#F59E0B', icon: TrendingUp },
-          { label: 'Completed', value: overview.completed || 1, color: '#10B981', icon: CheckCircle2 },
+          { label: 'Completed', value: overview.completed || completedDocs, color: '#10B981', icon: CheckCircle2 },
           { label: 'Need Action', value: overview.needAction || 2, color: '#EF4444', icon: AlertTriangle },
-<<<<<<< HEAD
         ].map(s => (
           <div key={s.label} style={{
             flex: '1 1 140px',
@@ -2297,12 +1716,12 @@ const DashboardView = ({ overview, claims, navigate }) => {
                 backgroundColor: 'rgba(255,255,255,0.02)', border: `1px solid ${CL.border}`,
                 borderRadius: 12, padding: '14px 16px'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 11 }}>{initials}</div>
-                    <div style={{ fontWeight: 800, color: CL.text, fontSize: 13 }}>{claim.name}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1, minWidth: 0 }}>
+                    <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 11 }}>{initials}</div>
+                    <div style={{ fontWeight: 800, color: CL.text, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={claim.name}>{claim.name}</div>
                   </div>
-                  <div style={{ padding: '3px 8px', borderRadius: 999, background: badge.bg, color: badge.color, border: badge.border, fontSize: 9, fontWeight: 800 }}>
+                  <div style={{ flexShrink: 0, padding: '3px 8px', borderRadius: 999, background: badge.bg, color: badge.color, border: badge.border, fontSize: 9, fontWeight: 800 }}>
                     {claim.status}
                   </div>
                 </div>
@@ -2316,11 +1735,6 @@ const DashboardView = ({ overview, claims, navigate }) => {
             );
           })}
         </div>
-=======
-        ].map((s, idx) => (
-          <StatChip key={s.label} label={s.label} value={s.value} color={s.color === CL.text ? '#3B82F6' : s.color} barColor={s.color === CL.text ? '#3B82F6' : s.color} icon={s.icon} delay={idx * 50} />
-        ))} 
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       </div>
 
       {/* Pending Actions */}
@@ -2339,27 +1753,11 @@ const DashboardView = ({ overview, claims, navigate }) => {
           </div>
         </div>
         <div style={{ display: 'grid', gap: 10 }}>
-<<<<<<< HEAD
           {[{ title: 'Upload Documents', subtitle: '2 documents pending' }, { title: 'Verify Identity', subtitle: 'Pending verification' }].map(item => (
             <div key={item.title} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
               padding: '12px 16px', borderRadius: 12,
               background: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.12)', flexWrap: 'wrap'
-=======
-          {[{ title: 'Upload Documents', subtitle: '2 documents pending' }, { title: 'Verify Identity', subtitle: 'Pending verification' }].map((item, idx) => (
-            <div key={item.title} className="cursor-spotlight-card" onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-                e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(16,185,129,0.15)'; e.currentTarget.style.borderColor='rgba(16,185,129,0.3)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='rgba(16,185,129,0.12)'; }}
-              style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
-              padding: '12px 16px', borderRadius: 12,
-              background: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.12)', flexWrap: 'wrap',
-              animation: `fadeSlideUp 0.3s ease ${idx * 50 + 100}ms both`, transition: 'all 0.3s cubic-bezier(.34,1.56,.64,1)'
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
@@ -2371,16 +1769,8 @@ const DashboardView = ({ overview, claims, navigate }) => {
                 </div>
               </div>
               <button 
-<<<<<<< HEAD
                 onClick={() => navigate('/client?tab=documents')}
                 style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
-=======
-                className="liquid-btn"
-                onClick={(e) => { handleRipple(e); navigate('/client?tab=documents'); }}
-                style={{ background: CL.accent, border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer', transition: 'transform 0.2s' }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               >
                 Upload
               </button>
@@ -2397,43 +1787,18 @@ const DashboardView = ({ overview, claims, navigate }) => {
             { label: 'Upload Document', icon: Upload },
             { label: 'Support', icon: MessageSquare },
             { label: 'Document Hub', icon: Folder }
-<<<<<<< HEAD
           ].map(a => (
             <div key={a.label} 
               onClick={() => {
                 if (a.label === 'Document Hub' || a.label === 'Upload Document') navigate('/client?tab=documents');
                 else if (a.label === 'Support') navigate('/client?tab=service-hub');
-=======
-          ].map((a, idx) => (
-            <div key={a.label} 
-              className="cursor-spotlight-card"
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-                e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform='translateY(-6px) scale(1.02)'; e.currentTarget.style.boxShadow='0 12px 30px rgba(0,0,0,0.3)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform='translateY(0) scale(1)'; e.currentTarget.style.boxShadow='none'; }}
-              onClick={(e) => {
-                handleRipple(e);
-                setTimeout(() => {
-                  if (a.label === 'Document Hub' || a.label === 'Upload Document') navigate('/client?tab=documents');
-                  else if (a.label === 'Support') navigate('/client?tab=service-hub');
-                }, 200);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               }}
               style={{
                 backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
                 backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                 border: `1px solid ${CL.border}`, borderRadius: 14, padding: '20px 14px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-<<<<<<< HEAD
                 justifyContent: 'center', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s'
-=======
-                justifyContent: 'center', textAlign: 'center', cursor: 'pointer', 
-                transition: 'all 0.4s cubic-bezier(.34,1.56,.64,1)',
-                animation: `statPop 0.35s cubic-bezier(.34,1.56,.64,1) ${idx * 50 + 100}ms both`
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               }}
             >
               <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', display: 'grid', placeItems: 'center', color: CL.accent, marginBottom: 12 }}>
@@ -2446,31 +1811,12 @@ const DashboardView = ({ overview, claims, navigate }) => {
       </div>
 
       {/* Refer & Earn */}
-<<<<<<< HEAD
       <div style={{
-=======
-      <div 
-        className="cursor-spotlight-card"
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-          e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 30px rgba(16,185,129,0.2)'; e.currentTarget.style.borderColor='rgba(16,185,129,0.3)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='rgba(16,185,129,0.15)'; }}
-        style={{
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         backgroundColor: CL.card, backgroundImage: CL.cardBgImage,
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         border: '1px solid rgba(16,185,129,0.15)',
         borderRadius: 14, padding: '18px 24px',
-<<<<<<< HEAD
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14
-=======
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14,
-        transition: 'all 0.4s cubic-bezier(.34,1.56,.64,1)',
-        animation: 'cardRise 0.4s cubic-bezier(.34,1.56,.64,1) 150ms both'
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
@@ -2481,11 +1827,7 @@ const DashboardView = ({ overview, claims, navigate }) => {
             <div style={{ color: CL.textMuted, fontSize: 11, marginTop: 2 }}>For every friend who completes their claim recovery through RM Legal</div>
           </div>
         </div>
-<<<<<<< HEAD
         <button style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>
-=======
-        <button className="liquid-btn" onClick={handleRipple} style={{ background: CL.accent, border: 'none', color: '#ffffff', padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform='scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform='scale(1)'}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           Refer Now
         </button>
       </div>
@@ -2497,11 +1839,6 @@ const DashboardView = ({ overview, claims, navigate }) => {
    MAIN COMPONENT
 ═══════════════════════════════════════════════ */
 const ClientDashboard = ({ user: propUser }) => {
-<<<<<<< HEAD
-=======
-  useClientTheme();
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
   const location = useLocation();
@@ -2521,10 +1858,6 @@ const ClientDashboard = ({ user: propUser }) => {
   const [familyMembers, setFamilyMembers] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
-<<<<<<< HEAD
-=======
-  const [editingFamilyMember, setEditingFamilyMember] = useState(null);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const [loading, setLoading] = useState(true);
   const [notifHovered, setNotifHovered] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -2592,6 +1925,11 @@ const ClientDashboard = ({ user: propUser }) => {
       } finally { setLoading(false); }
     };
     initData();
+
+    // Listen to real-time notification events from Layout's socket listener
+    const handleNewNotif = () => fetchClientNotifications();
+    window.addEventListener('newNotificationEvent', handleNewNotif);
+    return () => window.removeEventListener('newNotificationEvent', handleNewNotif);
   }, [user]);
 
   const overview = dashboard?.overview || { totalClaims: 3, inProgress: 2, completed: 1, needAction: 2 };
@@ -2632,17 +1970,7 @@ const ClientDashboard = ({ user: propUser }) => {
     @keyframes orb2        { 0%,100%{ transform:translate(0,0) scale(1); } 33%{ transform:translate(-25px,15px) scale(0.9); } 66%{ transform:translate(20px,-20px) scale(1.1); } }
 
     .header-title-shimmer {
-<<<<<<< HEAD
       color: var(--dashboard-text);
-=======
-      color: #ffffff;
-      background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.4) 50%, #ffffff 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: textShimmer 3.5s linear infinite;
-      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     }
     .notif-btn {
       position: relative; overflow: visible;
@@ -2651,11 +1979,7 @@ const ClientDashboard = ({ user: propUser }) => {
       cursor: pointer; font-weight: 800; font-size: 13px;
       border: 1px solid rgba(16,185,129,0.35);
       background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(129,140,248,0.08));
-<<<<<<< HEAD
       color: var(--dashboard-text);
-=======
-      color: #ffffff;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       backdrop-filter: blur(12px);
       transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease, border-color 0.2s ease;
       animation: headerSlide 0.6s ease 0.4s both;
@@ -2667,20 +1991,10 @@ const ClientDashboard = ({ user: propUser }) => {
     }
     .notif-btn:active { transform: scale(0.97); }
     .notif-btn .bell-icon {
-<<<<<<< HEAD
       transition: transform 0.3s ease;
     }
     .notif-btn:hover .bell-icon {
       animation: bellShake 0.5s ease;
-=======
-      display: inline-block;
-      transition: transform 0.3s ease;
-      animation: bellRing 3s ease-in-out infinite;
-      transform-origin: top center;
-    }
-    .notif-btn:hover .bell-icon {
-      animation: bellRing 1s ease-in-out infinite; /* rings faster on hover */
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     }
     .notif-ring {
       position: absolute; inset: -4px;
@@ -2706,13 +2020,8 @@ const ClientDashboard = ({ user: propUser }) => {
       margin-bottom: 36px;
       padding: 28px 32px;
       border-radius: 20px;
-<<<<<<< HEAD
       background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(129,140,248,0.05) 50%, rgba(255,255,255,0.02) 100%);
       border: 1px solid rgba(255,255,255,0.07);
-=======
-      background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(129,140,248,0.05) 50%, rgba(255, 255, 255,0.02) 100%);
-      border: 1px solid rgba(255, 255, 255,0.07);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       backdrop-filter: blur(8px);
       overflow: hidden;
       animation: headerSlide 0.5s ease both;
@@ -2746,11 +2055,7 @@ const ClientDashboard = ({ user: propUser }) => {
     }
     .header-subtitle {
       font-size: 14px; font-weight: 600;
-<<<<<<< HEAD
       color: var(--dashboard-text-muted);
-=======
-      color: #4a586e;
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       animation: subtitleIn 0.5s ease 0.3s both;
     }
     .header-tag {
@@ -2840,41 +2145,18 @@ const ClientDashboard = ({ user: propUser }) => {
       {showClaims ? (
         <MyClaimsView claims={claims} navigate={navigate} />
       ) : showFamilyTree ? (
-<<<<<<< HEAD
-        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddFamily={() => setIsAddFamilyModalOpen(true)} />
-=======
-        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddFamily={() => setIsAddFamilyModalOpen(true)} onEditFamily={(member) => { setEditingFamilyMember(member); setIsAddFamilyModalOpen(true); }} />
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
+        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onNotificationClick={() => navigate('/client?tab=notifications')} />
       ) : showDocuments ? (
         <ClientDocumentsHub documents={documents} clientProfile={clientProfile} user={user} onRefresh={fetchDocuments} />
       ) : showNotifications ? (
         <ClientNotificationsView notifications={notifications} onRefresh={fetchClientNotifications} user={user} />
       ) : showServices ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
-          <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🚀</div>
-          <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>My Services</h2>
-<<<<<<< HEAD
-          <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
-=======
-          <p style={{ fontSize: '16px', color: '#4a586e', maxWidth: '400px', lineHeight: 1.6 }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
-            We are working hard to bring you this feature. Stay tuned for exciting updates!
-          </p>
-          <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite' }} />
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.2s' }} />
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.4s' }} />
-          </div>
-        </div>
+        <ClientMyServices user={user} />
       ) : showIEPFSearch ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🔍</div>
           <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>IEPF Search</h2>
-<<<<<<< HEAD
           <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
-=======
-          <p style={{ fontSize: '16px', color: '#4a586e', maxWidth: '400px', lineHeight: 1.6 }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             The advanced IEPF search engine is coming soon. Get ready to uncover unclaimed wealth easily!
           </p>
           <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -2891,16 +2173,9 @@ const ClientDashboard = ({ user: propUser }) => {
       {isAddFamilyModalOpen && (
         <AddFamilyMemberModal
           isOpen={isAddFamilyModalOpen}
-<<<<<<< HEAD
           onClose={() => setIsAddFamilyModalOpen(false)}
           clientId={user?._id || user?.id}
           onSuccess={fetchFamilyData}
-=======
-          onClose={() => { setIsAddFamilyModalOpen(false); setEditingFamilyMember(null); }}
-          clientId={user?._id || user?.id}
-          onSuccess={fetchFamilyData}
-          initialData={editingFamilyMember}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         />
       )}
 

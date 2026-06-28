@@ -611,18 +611,12 @@ const Sidebar = ({ isOpen = false, onClose }) => {
           style={{
             display: 'flex', alignItems: 'center', gap: '12px', width: 'calc(100% - 24px)',
             margin: '4px 12px', padding: '10px 16px', borderRadius: '12px',
-<<<<<<< HEAD
             background: isActive ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
             color: isActive ? 'var(--accent-green)' : 'var(--text-secondary)',
-=======
-            background: isActive ? 'linear-gradient(135deg, #662549, #AE445A)' : 'transparent',
-            color: isActive ? '#ffffff' : 'var(--text-primary)',
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             cursor: 'pointer',
             transition: isPressed ? 'none' : 'all 0.3s ease',
             textAlign: 'left',
             position: 'relative', overflow: 'hidden',
-<<<<<<< HEAD
             border: isActive ? '1px solid rgba(34, 197, 94, 0.15)' : '1px solid transparent',
           }}
         >
@@ -636,21 +630,6 @@ const Sidebar = ({ isOpen = false, onClose }) => {
               marginLeft: 'auto', fontSize: '10px', fontWeight: 800, 
               background: isActive ? 'var(--accent-green)' : 'rgba(34, 197, 94, 0.1)', 
               color: isActive ? '#000' : 'var(--accent-green)', 
-=======
-            border: isActive ? 'none' : '1px solid transparent',
-            boxShadow: isActive ? '0 4px 15px rgba(174, 68, 90, 0.3)' : 'none',
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? '#ffffff' : 'rgba(255,255,255,0.9)', fontSize: typeof Icon === 'string' ? '16px' : 'inherit' }}>
-            {typeof Icon === 'string' ? Icon : <Icon size={18} strokeWidth={isActive ? 2.5 : 2.5} />}
-          </span>
-          <span style={{ fontSize: '13.5px', fontWeight: isActive ? 800 : 700, letterSpacing: '0.01em', color: isActive ? '#ffffff' : 'rgba(255,255,255,0.95)' }}>{item.label}</span>
-          {badge && (
-            <span style={{ 
-              marginLeft: 'auto', fontSize: '10px', fontWeight: 800, 
-              background: isActive ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)', 
-              color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.9)', 
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               padding: '2px 6px', borderRadius: '6px' 
             }}>
               {badge}
@@ -717,34 +696,10 @@ const Sidebar = ({ isOpen = false, onClose }) => {
     return grouped;
   }, [user]);
 
-<<<<<<< HEAD
-=======
-  const AnimatedDivider = () => (
-    <div style={{ padding: '0 20px', margin: '12px 0 20px' }}>
-      <div style={{
-        height: '1px',
-        width: '100%',
-        background: 'rgba(255, 255, 255, 0.05)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, bottom: 0,
-          width: '50%',
-          background: 'linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.8), transparent)',
-          animation: 'sidebarLineScan 3s cubic-bezier(0.4, 0, 0.2, 1) infinite'
-        }} />
-      </div>
-    </div>
-  );
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   return (
     <nav className={`sidebar ${isOpen ? 'open' : ''}`} style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--glass-border)', boxShadow: '4px 0 24px rgba(0,0,0,0.2)' }}>
       <div className="sidebar-logo" style={{ padding: '32px 24px', borderBottom: '1px solid var(--glass-border)' }}>
         <div style={{ marginRight: '14px' }}>
-<<<<<<< HEAD
           <div style={{ width: 44, height: 44, background: 'rgba(34, 197, 94, 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
             <Shield size={24} color="var(--accent-green)" />
           </div>
@@ -752,15 +707,6 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         <div>
           <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em' }}>{user?.role === 'client' ? 'RM LEGAL' : 'IEPF CLAIMS'}</div>
           <div className="sidebar-logo-sub" style={{ color: 'var(--accent-green)', fontWeight: 800, fontSize: '9px', letterSpacing: '0.1em' }}>
-=======
-          <div style={{ width: 44, height: 44, background: 'rgba(255, 255, 255, 0.15)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <Shield size={24} color="#ffffff" strokeWidth={2.5} />
-          </div>
-        </div>
-        <div>
-          <div className="sidebar-logo-text" style={{ color: '#ffffff', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.02em', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>{user?.role === 'client' ? 'RM LEGAL' : 'IEPF CLAIMS'}</div>
-          <div className="sidebar-logo-sub" style={{ color: '#ffffff', fontWeight: 800, fontSize: '10px', letterSpacing: '0.15em', opacity: 0.9 }}>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             {user?.role === 'client' ? 'CLIENT PORTAL' : `${user?.role?.replace('_', ' ').toUpperCase()} PORTAL`}
           </div>
         </div>
@@ -780,11 +726,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
             })}
           </div>
 
-<<<<<<< HEAD
           <div style={{ height: 10 }} />
-=======
-          <AnimatedDivider />
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
           <div className="sidebar-section">
             <div className="sidebar-section-label">TOOLS</div>
@@ -795,11 +737,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
             })}
           </div>
 
-<<<<<<< HEAD
           <div style={{ height: 10 }} />
-=======
-          <AnimatedDivider />
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
           <div className="sidebar-section">
             <div className="sidebar-section-label">ACCOUNT</div>
@@ -811,7 +749,6 @@ const Sidebar = ({ isOpen = false, onClose }) => {
           </div>
         </>
       ) : (
-<<<<<<< HEAD
         SECTIONS.map((section) => {
           const sectionItems = itemsBySection[section.id] || [];
           if (!sectionItems.length) return null;
@@ -822,21 +759,6 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                 <SidebarItem key={item.id} item={item} />
               ))}
             </div>
-=======
-        SECTIONS.map((section, index) => {
-          const sectionItems = itemsBySection[section.id] || [];
-          if (!sectionItems.length) return null;
-          return (
-            <React.Fragment key={section.id}>
-              <div className="sidebar-section">
-                <div className="sidebar-section-label">{section.label}</div>
-                {sectionItems.map((item) => (
-                  <SidebarItem key={item.id} item={item} />
-                ))}
-              </div>
-              {index < SECTIONS.length - 1 && <AnimatedDivider />}
-            </React.Fragment>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           );
         })
       )}

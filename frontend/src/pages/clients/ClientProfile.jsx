@@ -27,10 +27,6 @@ const ClientProfile = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
-<<<<<<< HEAD
-=======
-  const [editingFamilyMember, setEditingFamilyMember] = useState(null);
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const [editSection, setEditSection] = useState(null);
 
   useEffect(() => {
@@ -188,11 +184,7 @@ const ClientProfile = () => {
         {activeTab === 'profile' && <ProfileView client={client} onEdit={(section) => { setEditSection(section); setIsEditModalOpen(true); }} />}
         {activeTab === 'overview' && <OverviewView client={client} claims={claims} tickets={tickets} documents={documents} />}
         {activeTab === 'documents' && <DocumentsView documents={documents} client={client} onRefresh={fetchData} setIsUploadModalOpen={setIsUploadModalOpen} />}
-<<<<<<< HEAD
         {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => setIsAddFamilyModalOpen(true)} />}
-=======
-        {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => setIsAddFamilyModalOpen(true)} onEditFamily={(member) => { setEditingFamilyMember(member); setIsAddFamilyModalOpen(true); }} />}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
         {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} onRefresh={fetchData} />}
         {activeTab === 'tickets' && <TicketsView tickets={tickets} />}
@@ -231,16 +223,9 @@ const ClientProfile = () => {
       {/* 👨‍👩‍👧 ADD FAMILY MEMBER MODAL */}
       <AddFamilyMemberModal
         isOpen={isAddFamilyModalOpen}
-<<<<<<< HEAD
         onClose={() => setIsAddFamilyModalOpen(false)}
         clientId={id}
         onSuccess={fetchData}
-=======
-        onClose={() => { setIsAddFamilyModalOpen(false); setEditingFamilyMember(null); }}
-        clientId={id}
-        onSuccess={fetchData}
-        initialData={editingFamilyMember}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       />
     </div>
   );
@@ -439,11 +424,7 @@ const StatBox = ({ title, data, meta }) => (
   </div>
 );
 
-<<<<<<< HEAD
 const FamilyTreeNode = ({ name, role, isClient }) => (
-=======
-const FamilyTreeNode = ({ member, name, role, isClient, onEditFamily }) => (
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   <div style={{ 
     background: isClient ? '#2563eb' : '#fff', 
     border: `2px solid ${isClient ? '#1d4ed8' : '#e2e8f0'}`,
@@ -456,27 +437,12 @@ const FamilyTreeNode = ({ member, name, role, isClient, onEditFamily }) => (
     position: 'relative',
     zIndex: 2
   }}>
-<<<<<<< HEAD
-=======
-    {!isClient && onEditFamily && member && (
-      <button 
-        onClick={() => onEditFamily(member)} 
-        style={{ position: 'absolute', top: '4px', right: '4px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-      >
-        <Edit2 size={12} />
-      </button>
-    )}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
     <div style={{ fontWeight: 800, fontSize: '14px' }}>{name}</div>
     <div style={{ fontSize: '10px', color: isClient ? '#bfdbfe' : '#64748b', fontWeight: 800, marginTop: 4, textTransform: 'uppercase' }}>{role}</div>
   </div>
 );
 
-<<<<<<< HEAD
 const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
-=======
-const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily, onEditFamily }) => {
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
   const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
   const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
@@ -500,11 +466,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily, onEditF
         {/* Ancestors Level */}
         {ancestors.length > 0 && (
           <div style={{ display: 'flex', gap: '30px', marginBottom: '40px', position: 'relative' }}>
-<<<<<<< HEAD
             {ancestors.map((m, i) => <FamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-            {ancestors.map((m, i) => <FamilyTreeNode key={`anc-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
             {ancestors.length > 1 && (
               <div style={{ position: 'absolute', bottom: '-20px', left: '10%', right: '10%', height: '2px', background: '#cbd5e1', zIndex: 1 }} />
@@ -517,11 +479,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily, onEditF
           
           {/* Siblings (Left) */}
           <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-end' }}>
-<<<<<<< HEAD
             {siblings.map((m, i) => <FamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-            {siblings.map((m, i) => <FamilyTreeNode key={`sib-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             {siblings.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', right: '-40px', width: '40px', height: '2px', background: '#cbd5e1', zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
@@ -540,11 +498,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily, onEditF
             {spouse.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', left: '-40px', width: '40px', height: '2px', background: '#cbd5e1', zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
-<<<<<<< HEAD
             {spouse.map((m, i) => <FamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-            {spouse.map((m, i) => <FamilyTreeNode key={`sp-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           </div>
         </div>
 
@@ -557,11 +511,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily, onEditF
             {children.map((m, i) => (
               <div key={`child-${i}`} style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '-20px', left: '50%', width: '2px', height: '20px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
-<<<<<<< HEAD
                 <FamilyTreeNode name={m.name} role={m.relationWithHolder} />
-=======
-                <FamilyTreeNode member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
               </div>
             ))}
           </div>
@@ -573,11 +523,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily, onEditF
             <div style={{ height: '1px', background: '#e2e8f0', margin: '0 0 20px' }} />
             <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#64748b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Other Relatives</h4>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-<<<<<<< HEAD
               {others.map((m, i) => <FamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} />)}
-=======
-              {others.map((m, i) => <FamilyTreeNode key={`oth-${i}`} member={m} name={m.name} role={m.relationWithHolder} onEditFamily={onEditFamily} />)}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             </div>
           </div>
         )}

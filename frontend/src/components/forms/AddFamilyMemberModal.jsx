@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { X, User, Phone, Mail, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 
-<<<<<<< HEAD
 const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess }) => {
-=======
-const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess, initialData = null }) => {
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -20,33 +16,6 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess, initialDat
     aadharNo: ''
   });
 
-<<<<<<< HEAD
-=======
-  React.useEffect(() => {
-    if (initialData) {
-      setForm({
-        name: initialData.name || '',
-        relationWithHolder: initialData.relationWithHolder || '',
-        phone: initialData.phone || '',
-        email: initialData.email || '',
-        dob: initialData.dob || '',
-        panNo: initialData.panNo || '',
-        aadharNo: initialData.aadharNo || ''
-      });
-    } else {
-      setForm({
-        name: '',
-        relationWithHolder: '',
-        phone: '',
-        email: '',
-        dob: '',
-        panNo: '',
-        aadharNo: ''
-      });
-    }
-  }, [initialData, isOpen]);
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   const handleChange = (e) => {
     let { name, value } = e.target;
     
@@ -97,16 +66,7 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess, initialDat
         aadharNo: form.aadharNo
       };
 
-<<<<<<< HEAD
       await api.post(`/users/${clientId}/family`, payload);
-=======
-      if (initialData && initialData._id) {
-        await api.put(`/users/${clientId}/family/${initialData._id}`, payload);
-      } else {
-        await api.post(`/users/${clientId}/family`, payload);
-      }
-
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
       setForm({
         name: '',
         relationWithHolder: '',
@@ -131,11 +91,7 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess, initialDat
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
       <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '500px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
-<<<<<<< HEAD
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>Add Family Member</h3>
-=======
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>{initialData ? 'Edit Family Member' : 'Add Family Member'}</h3>
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
         </div>
 
@@ -203,11 +159,7 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess, initialDat
             </button>
             <button type="submit" disabled={loading} style={{ padding: '10px 20px', background: '#10b981', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
               {loading ? <Loader2 size={16} className="animate-spin" /> : <User size={16} />}
-<<<<<<< HEAD
               {loading ? 'Adding...' : 'Add Member'}
-=======
-              {loading ? (initialData ? 'Saving...' : 'Adding...') : (initialData ? 'Save Changes' : 'Add Member')}
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
             </button>
           </div>
         </form>

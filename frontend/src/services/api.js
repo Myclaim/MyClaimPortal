@@ -1,10 +1,6 @@
 import axios from 'axios';
 
-<<<<<<< HEAD
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://myclaimportal.onrender.com/api');
-=======
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://myclaimportal.onrender.com/api');
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 
 const api = axios.create({
   baseURL: API_URL,

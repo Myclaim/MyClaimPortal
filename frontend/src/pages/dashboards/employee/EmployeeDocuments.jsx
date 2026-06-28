@@ -240,11 +240,7 @@ const EmployeeDocuments = () => {
                       <td>
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                           <a 
-<<<<<<< HEAD
                             href={`https://myclaimportal.onrender.com${doc.file_url}`} 
-=======
-                            href={`http://localhost:5005${doc.file_url}`} 
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
                             download 
                             target="_blank" 
                             rel="noreferrer"

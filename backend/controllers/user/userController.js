@@ -689,8 +689,6 @@ const addFamilyMember = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 const updateFamilyMember = async (req, res) => {
   try {
     const { id, memberId } = req.params;
@@ -741,7 +739,6 @@ const updateFamilyMember = async (req, res) => {
   }
 };
 
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
 // @desc    Add a custom folder for a client
 // @route   POST /api/users/:id/folders
 // @access  Private (Admin/Partner)
@@ -859,10 +856,7 @@ module.exports = {
   getClientProfile,
   updateClientProfile,
   addFamilyMember,
-<<<<<<< HEAD
-=======
   updateFamilyMember,
->>>>>>> 9cb87025bea4640e9ef29ca9ba9501c3bb704586
   addClientFolder,
   renameClientFolder,
   deleteClientFolder,

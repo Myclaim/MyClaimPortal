@@ -5,13 +5,14 @@ import useAuth from '../../hooks/useAuth';
 
 const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId }) => {
   const { user } = useAuth();
+  const isClient = user?.role === 'client';
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState(initialClients || []);
   const [users, setUsers] = useState([]);
   
   const [form, setForm] = useState({
     hubType: 'Service Hub',
-    client: defaultClientId || '',
+    client: defaultClientId || (isClient ? user._id : ''),
     companyName: '',
     service: '',
     assignedTo: '',
@@ -51,7 +52,8 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.client || !form.service) {
+    const effectiveClientId = isClient ? user._id : form.client;
+    if (!effectiveClientId || !form.service) {
       alert('Client and Service Category are required');
       return;
     }
@@ -59,12 +61,12 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
     try {
       setLoading(true);
       const payload = {
-        clientId: form.client,
+        clientId: effectiveClientId,
         service: form.service,
         companyName: form.companyName,
         hubType: form.hubType,
         priority: form.priority,
-        assignedTo: form.assignedTo || undefined,
+        assignedTo: isClient ? undefined : (form.assignedTo || undefined),
         notes: form.notes
       };
 
@@ -115,7 +117,7 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
         <div style={{ padding: '32px', overflowY: 'auto' }}>
           <form id="create-ticket-form" onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: isClient ? 'span 2' : 'span 1' }}>
               <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Hub Type</label>
               <select 
                 name="hubType"
@@ -133,21 +135,23 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
               </select>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Client</label>
-              <select 
-                name="client"
-                value={form.client} 
-                onChange={handleChange}
-                style={{
-                  padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', 
-                  borderRadius: '10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', outline: 'none'
-                }}
-              >
-                <option value="">Select Client</option>
-                {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
-            </div>
+            {!isClient && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Client</label>
+                <select 
+                  name="client"
+                  value={form.client} 
+                  onChange={handleChange}
+                  style={{
+                    padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', 
+                    borderRadius: '10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', outline: 'none'
+                  }}
+                >
+                  <option value="">Select Client</option>
+                  {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                </select>
+              </div>
+            )}
 
             {form.hubType === 'Claim Hub' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: 'span 2' }}>
@@ -181,23 +185,25 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Assigned To</label>
-              <select 
-                name="assignedTo"
-                value={form.assignedTo} 
-                onChange={handleChange}
-                style={{
-                  padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', 
-                  borderRadius: '10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', outline: 'none'
-                }}
-              >
-                <option value="">Unassigned</option>
-                {users.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
-              </select>
-            </div>
+            {!isClient && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Assigned To</label>
+                <select 
+                  name="assignedTo"
+                  value={form.assignedTo} 
+                  onChange={handleChange}
+                  style={{
+                    padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', 
+                    borderRadius: '10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', outline: 'none'
+                  }}
+                >
+                  <option value="">Unassigned</option>
+                  {users.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
+                </select>
+              </div>
+            )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: isClient ? 'span 2' : 'span 1' }}>
               <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Priority</label>
               <select 
                 name="priority"
