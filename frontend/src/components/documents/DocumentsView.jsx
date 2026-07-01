@@ -83,7 +83,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
 
   useEffect(() => {
     fetchFolders();
-  }, [currentFolderId, client._id]);
+  }, [currentFolderId, client?._id]);
 
   const fetchFolders = async () => {
     if (currentFolderId === 'Profile Form Uploads') return; // Virtual folder

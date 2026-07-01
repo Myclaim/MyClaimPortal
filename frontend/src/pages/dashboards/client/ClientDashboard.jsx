@@ -1955,7 +1955,7 @@ const ClientDashboard = ({ user: propUser }) => {
     ? 'All company claims linked to your account'
     : "Here's your CLIENT command center.";
 
-  const firstName = user?.name?.split(' ')[0] || 'Kunal';
+  const firstName = user?.name?.split(' ')[0] || 'Client';
 
   const HEADER_CSS = `
     @keyframes wave        { 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(20deg); } 75%{ transform:rotate(-10deg); } }
@@ -2183,4 +2183,5 @@ const ClientDashboard = ({ user: propUser }) => {
   );
 };
 
+export { ClientDocumentsHub };
 export default ClientDashboard;

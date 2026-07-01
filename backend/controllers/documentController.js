@@ -34,6 +34,8 @@ const uploadDocument = async (req, res) => {
     const uploadsIndex = fullPath.indexOf('uploads');
     const fileUrl = '/' + fullPath.substring(uploadsIndex).replace(/\\/g, '/');
 
+    const isAdmin = ['admin', 'super_admin'].includes(req.user.role);
+
     const document = await Document.create({
       name: name || req.file.originalname,
       file_url: fileUrl,
@@ -46,6 +48,9 @@ const uploadDocument = async (req, res) => {
       ticket_id: linked_to === 'ticket' ? ticket_id : undefined,
       client_id: linked_to === 'client' ? targetClientId : undefined,
       uploaded_by: req.user._id,
+      verification_status: isAdmin ? 'verified' : 'pending',
+      verified_by: isAdmin ? req.user._id : undefined,
+      verifiedAt: isAdmin ? Date.now() : undefined,
     });
 
 
