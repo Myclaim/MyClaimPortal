@@ -1134,6 +1134,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
 
 /* ── DOCUMENTS HUB COMPONENT ── */
 const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
+  const BASE_URL = import.meta.env.DEV ? 'http://localhost:5005' : 'https://myclaimportal.onrender.com';
   const [activeSubTab, setActiveSubTab] = useState('My Documents');
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
