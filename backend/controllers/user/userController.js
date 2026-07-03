@@ -689,6 +689,56 @@ const addFamilyMember = async (req, res) => {
   }
 };
 
+const updateFamilyMember = async (req, res) => {
+  try {
+    const { id, memberId } = req.params;
+    const { name, relationWithHolder, phone, email, dob, aadharNo, panNo } = req.body;
+
+    // Security check: Clients can only modify their own family members
+    if (req.user.role === 'client' && req.user._id.toString() !== id.toString()) {
+      return res.status(403).json({ message: "Not authorized to modify another user's family tree" });
+    }
+
+    let user = await Admin.findById(id);
+    if (!user) user = await Partner.findById(id);
+    if (!user) user = await Client.findById(id);
+    if (!user) user = await Employee.findById(id);
+    if (!user) user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.familyMembers) {
+      return res.status(404).json({ message: 'Family member not found' });
+    }
+
+    const memberIndex = user.familyMembers.findIndex(m => m._id.toString() === memberId.toString());
+    if (memberIndex === -1) {
+      return res.status(404).json({ message: 'Family member not found' });
+    }
+
+    user.familyMembers[memberIndex] = {
+      ...user.familyMembers[memberIndex].toObject ? user.familyMembers[memberIndex].toObject() : user.familyMembers[memberIndex],
+      name: name || user.familyMembers[memberIndex].name,
+      relationWithHolder: relationWithHolder || user.familyMembers[memberIndex].relationWithHolder,
+      phone: phone || user.familyMembers[memberIndex].phone,
+      email: email !== undefined ? email : user.familyMembers[memberIndex].email,
+      dob: dob !== undefined ? dob : user.familyMembers[memberIndex].dob,
+      aadharNo: aadharNo !== undefined ? aadharNo : user.familyMembers[memberIndex].aadharNo,
+      panNo: panNo !== undefined ? panNo : user.familyMembers[memberIndex].panNo,
+    };
+
+    await user.save();
+    bustCache();
+
+    res.status(200).json({ message: 'Family member updated successfully', familyMembers: user.familyMembers });
+  } catch (error) {
+    console.error('Error updating family member:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 // @desc    Add a custom folder for a client
 // @route   POST /api/users/:id/folders
 // @access  Private (Admin/Partner)
@@ -806,6 +856,7 @@ module.exports = {
   getClientProfile,
   updateClientProfile,
   addFamilyMember,
+  updateFamilyMember,
   addClientFolder,
   renameClientFolder,
   deleteClientFolder,

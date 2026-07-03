@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { Menu, X, Bell } from 'lucide-react';
 import CommandPalette from '../CommandPalette';
 import { useSocket } from '../../hooks/useSocket';
+import useAuth from '../../hooks/useAuth';
 
 const Toast = ({ message, onClose }) => (
   <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: '16px', zIndex: 10000, animation: 'slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
@@ -36,23 +37,38 @@ const Layout = () => {
 
   const { socket } = useSocket();
   const [toast, setToast] = useState(null);
+  
+  const { user } = useAuth();
 
   React.useEffect(() => {
     if (!socket) return;
 
+    const isRelevant = (ticketOrClientId) => {
+      if (!user) return false;
+      if (['super_admin', 'admin', 'employee', 'partner', 'super_partner'].includes(user.role)) return true;
+      const clientId = typeof ticketOrClientId === 'object' ? ticketOrClientId._id : ticketOrClientId;
+      return String(clientId) === String(user._id) || String(clientId) === String(user.id);
+    };
+
     const handleTicketCreated = (ticket) => {
+      if (!isRelevant(ticket.client)) return;
       setToast(`New ticket created: #${ticket._id.slice(-6).toUpperCase()} (${ticket.service})`);
       setTimeout(() => setToast(null), 5000);
+      window.dispatchEvent(new CustomEvent('newNotificationEvent'));
     };
 
     const handleTicketUpdated = (ticket) => {
+      if (!isRelevant(ticket.client)) return;
       setToast(`Ticket #${ticket._id.slice(-6).toUpperCase()} updated to ${ticket.status}`);
       setTimeout(() => setToast(null), 5000);
+      window.dispatchEvent(new CustomEvent('newNotificationEvent'));
     };
 
-    const handleTicketComment = ({ ticketId, comment }) => {
-      setToast(`New comment on ticket #${ticketId.slice(-6).toUpperCase()}: "${comment.text.slice(0, 20)}..."`);
+    const handleTicketComment = ({ ticketId, comment, clientId }) => {
+      if (clientId && !isRelevant(clientId)) return;
+      setToast(`New comment on ticket #${ticketId.slice(-6).toUpperCase()}`);
       setTimeout(() => setToast(null), 5000);
+      window.dispatchEvent(new CustomEvent('newNotificationEvent'));
     };
 
     socket.on('ticket_created', handleTicketCreated);
@@ -64,7 +80,7 @@ const Layout = () => {
       socket.off('ticket_updated', handleTicketUpdated);
       socket.off('ticket_comment', handleTicketComment);
     };
-  }, [socket]);
+  }, [socket, user]);
 
   return (
     <>

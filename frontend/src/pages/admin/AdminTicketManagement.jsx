@@ -715,20 +715,56 @@ const AdminTicketManagement = () => {
       {previewDoc && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(4px)' }}>
           <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card)', borderBottom: '1px solid var(--border)' }}>
-             <div>
-               <h3 style={{ margin: 0, fontSize: 16, color: 'var(--text)' }}>{previewDoc.name}</h3>
-               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{previewDoc.file_type?.toUpperCase()}</span>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+               <div>
+                 <h3 style={{ margin: 0, fontSize: 16, color: 'var(--text)' }}>{previewDoc.name}</h3>
+                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{previewDoc.file_type?.toUpperCase()}</span>
+                 {previewDoc.verification_status && (
+                   <span style={{ marginLeft: 12, fontSize: 11, padding: '2px 8px', borderRadius: 12, background: previewDoc.verification_status === 'verified' ? 'rgba(34,197,94,0.1)' : previewDoc.verification_status === 'rejected' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)', color: previewDoc.verification_status === 'verified' ? '#22c55e' : previewDoc.verification_status === 'rejected' ? '#ef4444' : '#f59e0b', fontWeight: 600, textTransform: 'uppercase' }}>
+                     {previewDoc.verification_status}
+                   </span>
+                 )}
+               </div>
              </div>
-             <button onClick={() => setPreviewDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={24} /></button>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               {['admin', 'super_admin'].includes(user?.role) && (
+                 <>
+                   <button 
+                     onClick={async () => {
+                       try {
+                         await api.patch(`/documents/${previewDoc._id}/verify`, { status: 'verified' });
+                         setPreviewDoc({ ...previewDoc, verification_status: 'verified' });
+                         fetchTickets(); // Refresh tickets to update documents list
+                       } catch (e) { alert('Failed to verify document'); }
+                     }}
+                     style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                   ><CheckCircle2 size={16} /> Verify</button>
+                   <button 
+                     onClick={async () => {
+                       try {
+                         await api.patch(`/documents/${previewDoc._id}/verify`, { status: 'rejected' });
+                         setPreviewDoc({ ...previewDoc, verification_status: 'rejected' });
+                         fetchTickets(); // Refresh tickets to update documents list
+                       } catch (e) { alert('Failed to reject document'); }
+                     }}
+                     style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                   ><X size={16} /> Reject</button>
+                 </>
+               )}
+               <button onClick={() => setPreviewDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginLeft: 16 }}><X size={24} /></button>
+             </div>
           </div>
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
-            {previewDoc.file_type?.toLowerCase() === 'pdf' ? (
-              <iframe src={`https://myclaimportal.onrender.com${previewDoc.file_url}`} style={{ width: '100%', maxWidth: 900, height: '100%', border: 'none', background: '#fff', borderRadius: 12 }} title="PDF Preview" />
-            ) : ['jpg', 'jpeg', 'png', 'webp'].includes((previewDoc.file_type || '').toLowerCase()) ? (
-              <img src={`https://myclaimportal.onrender.com${previewDoc.file_url}`} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }} />
-            ) : (
-               <div style={{ color: '#fff', fontSize: 14 }}>Preview not available for this file type. Please <a href={`https://myclaimportal.onrender.com${previewDoc.file_url}`} download style={{ color: 'var(--blue)' }}>download</a> to view.</div>
-            )}
+            {(() => {
+              const url = `${api.defaults.baseURL.replace('/api', '')}${previewDoc.file_url}`;
+              if (previewDoc.file_type?.toLowerCase() === 'pdf') {
+                return <iframe src={url} style={{ width: '100%', maxWidth: 900, height: '100%', border: 'none', background: '#fff', borderRadius: 12 }} title="PDF Preview" />;
+              } else if (['jpg', 'jpeg', 'png', 'webp'].includes((previewDoc.file_type || '').toLowerCase())) {
+                return <img src={url} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }} />;
+              } else {
+                return <div style={{ color: '#fff', fontSize: 14 }}>Preview not available for this file type. Please <a href={url} download style={{ color: 'var(--blue)' }}>download</a> to view.</div>;
+              }
+            })()}
           </div>
         </div>
       )}

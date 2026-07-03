@@ -4,6 +4,10 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
+const Admin = require('../models/admin/Admin');
+const Partner = require('../models/partner/Partner');
+const Client = require('../models/client/Client');
+const Employee = require('../models/employee/Employee');
 
 // @desc    Upload document
 // @route   POST /api/documents/upload
@@ -30,6 +34,8 @@ const uploadDocument = async (req, res) => {
     const uploadsIndex = fullPath.indexOf('uploads');
     const fileUrl = '/' + fullPath.substring(uploadsIndex).replace(/\\/g, '/');
 
+    const isAdmin = ['admin', 'super_admin'].includes(req.user.role);
+
     const document = await Document.create({
       name: name || req.file.originalname,
       file_url: fileUrl,
@@ -42,6 +48,9 @@ const uploadDocument = async (req, res) => {
       ticket_id: linked_to === 'ticket' ? ticket_id : undefined,
       client_id: linked_to === 'client' ? targetClientId : undefined,
       uploaded_by: req.user._id,
+      verification_status: isAdmin ? 'verified' : 'pending',
+      verified_by: isAdmin ? req.user._id : undefined,
+      verifiedAt: isAdmin ? Date.now() : undefined,
     });
 
 
@@ -82,10 +91,22 @@ const getDocuments = async (req, res) => {
     // Admin/Super Admin see all (query remains as is or filtered by client_id/ticket_id if provided)
 
     const documents = await Document.find(query)
-      .populate('uploaded_by', 'name role')
       .populate('client_id', 'name email')
       .populate('ticket_id')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Manually populate uploaded_by because users are split across multiple collections
+    for (let doc of documents) {
+      if (doc.uploaded_by) {
+        let uploader = await User.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Client.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Admin.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Partner.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Employee.findById(doc.uploaded_by).select('name role').lean();
+        doc.uploaded_by = uploader || null;
+      }
+    }
 
     res.json(documents);
   } catch (error) {
@@ -98,16 +119,25 @@ const getDocuments = async (req, res) => {
 // @access  Private
 const getDocumentById = async (req, res) => {
   try {
-    const document = await Document.findById(req.params.id)
-      .populate('uploaded_by', 'name role')
-      .populate('client_id', 'name email');
+    let document = await Document.findById(req.params.id)
+      .populate('client_id', 'name email')
+      .lean();
 
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
     }
 
+    if (document.uploaded_by) {
+      let uploader = await User.findById(document.uploaded_by).select('name role').lean();
+      if (!uploader) uploader = await Client.findById(document.uploaded_by).select('name role').lean();
+      if (!uploader) uploader = await Admin.findById(document.uploaded_by).select('name role').lean();
+      if (!uploader) uploader = await Partner.findById(document.uploaded_by).select('name role').lean();
+      if (!uploader) uploader = await Employee.findById(document.uploaded_by).select('name role').lean();
+      document.uploaded_by = uploader || null;
+    }
+
     // RBAC
-    if (req.user.role === 'client' && document.client_id.toString() !== req.user._id.toString()) {
+    if (req.user.role === 'client' && document.client_id && document.client_id._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
     // Partner check could be more complex here, but usually list filtering is enough.

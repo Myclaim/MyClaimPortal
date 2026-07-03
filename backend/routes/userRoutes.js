@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getUsers, createUser, enrolClient, updateUser, getUserById, deleteUser, uploadKycDocs, updateEmployeeProfile, getEmployeeProfile, updateClientProfile, getClientProfile, addFamilyMember, addClientFolder, renameClientFolder, deleteClientFolder } = require('../controllers/user/userController');
+const { getUsers, createUser, enrolClient, updateUser, getUserById, deleteUser, uploadKycDocs, updateEmployeeProfile, getEmployeeProfile, updateClientProfile, getClientProfile, addFamilyMember, addClientFolder, renameClientFolder, deleteClientFolder, updateFamilyMember } = require('../controllers/user/userController');
 const { protect, admin, adminOrSuperPartner } = require('../middleware/authMiddleware');
 const uploadDocs = require('../middleware/docsUploadMiddleware');
 
@@ -22,6 +22,7 @@ router.route('/:id')
   .delete(protect, admin, deleteUser);
 
 router.post('/:id/family', protect, addFamilyMember);
+router.put('/:id/family/:memberId', protect, updateFamilyMember);
 router.post('/:id/folders', protect, adminOrSuperPartner, addClientFolder);
 router.put('/:id/folders/rename', protect, adminOrSuperPartner, renameClientFolder);
 router.delete('/:id/folders/:folderName', protect, adminOrSuperPartner, deleteClientFolder);

@@ -6,9 +6,10 @@ import {
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
-  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket
+  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
+import ClientMyServices from './ClientMyServices';
 import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../../hooks/useAuth';
@@ -817,7 +818,7 @@ const MyClaimsView = ({ claims, navigate }) => {
   const [activeTab, setActiveTab] = useState('All Companies');
   const [tabKey, setTabKey] = useState(0);
 
-  const tabs = ['All Companies', 'Active', 'In Progress', 'Pending', 'Claim Hub'];
+  const tabs = ['All Companies', 'Active', 'In Progress', 'Completed', 'Claim Hub'];
   const { refs: tabRefs, indicator } = useTabIndicator(tabs, activeTab);
 
   if (selectedClaim) return <ClaimDetailView claim={selectedClaim} onBack={() => setSelectedClaim(null)} />;
@@ -826,13 +827,13 @@ const MyClaimsView = ({ claims, navigate }) => {
 
   const totalCompanies = new Set(claims.map(c => c.name)).size;
   const totalShares = claims.reduce((s, c) => s + (Number(c.shares) || 0), 0);
-  const pendingDocs = claims.filter(c => c.status?.toLowerCase().includes('pending')).length;
+  const completedDocs = claims.filter(c => c.status?.toLowerCase().includes('completed') || c.status?.toLowerCase() === 'closed').length;
 
   const filtered = claims.filter(c => {
     if (activeTab === 'All Companies') return true;
     if (activeTab === 'Active') return c.status?.toLowerCase() === 'active';
     if (activeTab === 'In Progress') return c.status?.toLowerCase().includes('progress');
-    if (activeTab === 'Pending') return c.status?.toLowerCase().includes('pending');
+    if (activeTab === 'Completed') return c.status?.toLowerCase().includes('completed') || c.status?.toLowerCase() === 'closed';
     return true;
   });
 
@@ -863,7 +864,7 @@ const MyClaimsView = ({ claims, navigate }) => {
         <StatChip label="Total Companies" value={totalCompanies}   color="#3B82F6" barColor="#3B82F6" icon={FileText}     delay={0}   />
         <StatChip label="Total Shares"    value={totalShares}      color="#818CF8"  barColor="#818CF8"              icon={TrendingUp}   delay={90}  />
         <StatChip label="Recovery Value"  value="₹3.45L"           color="#10B981"  barColor="#10B981"              icon={CheckCircle2} delay={180} />
-        <StatChip label="Pending Docs"    value={pendingDocs}      color="#F59E0B"  barColor="#F59E0B"              icon={AlertTriangle} delay={270} />
+        <StatChip label="Completed"       value={completedDocs}    color="#10B981"  barColor="#10B981"              icon={CheckCircle2} delay={270} />
       </div>
 
       {/* ── Tabs row ── */}
@@ -977,7 +978,7 @@ const ClientFamilyTreeNode = ({ name, role, isClient }) => (
   </div>
 );
 
-const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
+const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) => {
   const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
   const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
   const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
@@ -1012,7 +1013,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text }}>Family Tree &amp; Hierarchy</h3>
         <button 
-          onClick={onAddFamily}
+          onClick={onNotificationClick}
           style={{ 
             padding: '10px 20px', 
             background: 'linear-gradient(135deg, #10B981, #059669)', 
@@ -1037,7 +1038,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
             e.currentTarget.style.boxShadow = '0 8px 20px rgba(16,185,129,0.35)';
           }}
         >
-          <Plus size={16} /> Add Member
+          <Bell size={16} /> Notifications
         </button>
       </div>
       
@@ -1109,21 +1110,12 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddFamily }) => {
         )}
 
         {familyMembers.length === 0 && (
-          <div style={{ 
-            color: CL.textMuted, 
-            padding: '40px', 
-            border: `2px dashed ${CL.border}`, 
-            borderRadius: '16px', 
-            width: '100%', 
-            maxWidth: '400px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center',
-            background: 'rgba(255,255,255,0.01)'
-          }}>
-            <GitBranch size={32} style={{ marginBottom: '12px', opacity: 0.5, color: CL.accent }} />
+          <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: `1px dashed rgba(255,255,255,0.1)`, marginTop: '20px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: CL.textMuted }}>
+              <Users size={24} />
+            </div>
             <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
-            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Click "Add Member" to start building your family tree.</p>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Contact your partner to build your family tree.</p>
           </div>
         )}
 
@@ -1184,7 +1176,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
     formData.append('client_id', clientProfile?._id || clientProfile?.id || user?._id || user?.id);
 
     try {
-      await axios.post('https://myclaimportal.onrender.com/api/documents/upload', formData, {
+      await axios.post(`${BASE_URL}/api/documents/upload`, formData, {
         headers: {
           Authorization: `Bearer ${user.token}`,
           'Content-Type': 'multipart/form-data'
@@ -1249,12 +1241,19 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
     }
   };
 
-  const cardItems = [
-    { name: 'PAN Card', type: 'pan' },
-    { name: 'Aadhaar Card', type: 'aadhaar' },
-    { name: 'Bank Cancelled Cheque', type: 'cheque' },
-    { name: 'Death Certificate', type: 'death' },
-  ];
+  // Generate dynamic cards based on primary documents uploaded
+  const primaryDocs = documents.filter(d => d.doc_category === 'primary');
+  const uniquePrimaryNames = [...new Set(primaryDocs.map(d => d.name))];
+  
+  const cardItems = uniquePrimaryNames.map(name => ({ name, type: 'dynamic' }));
+  
+  // Ensure basic KYC docs are always present to prompt upload
+  if (!cardItems.find(c => c.name.toLowerCase() === 'aadhaar card')) {
+    cardItems.unshift({ name: 'Aadhaar Card', type: 'aadhaar' });
+  }
+  if (!cardItems.find(c => c.name.toLowerCase() === 'pan card')) {
+    cardItems.unshift({ name: 'PAN Card', type: 'pan' });
+  }
 
   return (
     <div style={{ position: 'relative' }}>
@@ -1265,19 +1264,24 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
             <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#fff' }}>{previewDoc.name}</h3>
-                <a 
-                  href={`https://myclaimportal.onrender.com${previewDoc.url}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
-                ><Download size={14} /> View Original</a>
+                {previewDoc.url && (
+                  <a 
+                    href={`${BASE_URL}${previewDoc.url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+                  ><Download size={14} /> View Original</a>
+                )}
               </div>
               <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
             </div>
             <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
-                const fullUrl = `https://myclaimportal.onrender.com${previewDoc.url}`;
-                const ext = previewDoc.url.split('.').pop().toLowerCase();
+                if (!previewDoc.url) {
+                  return <div style={{ color: '#fff', fontSize: '16px' }}>No file uploaded yet.</div>;
+                }
+                const fullUrl = `${BASE_URL}${previewDoc.url}`;
+                const ext = previewDoc.url.includes('.') ? previewDoc.url.split('.').pop().toLowerCase() : '';
                 const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                 
                 if (isImage) {
@@ -1673,7 +1677,7 @@ const DashboardView = ({ overview, claims, navigate }) => {
         {[
           { label: 'Total Claims', value: overview.totalClaims || claims.length, color: CL.text, icon: FileText },
           { label: 'In Progress', value: overview.inProgress || inProgress, color: '#F59E0B', icon: TrendingUp },
-          { label: 'Completed', value: overview.completed || 1, color: '#10B981', icon: CheckCircle2 },
+          { label: 'Completed', value: overview.completed || completedDocs, color: '#10B981', icon: CheckCircle2 },
           { label: 'Need Action', value: overview.needAction || 2, color: '#EF4444', icon: AlertTriangle },
         ].map(s => (
           <div key={s.label} style={{
@@ -1712,12 +1716,12 @@ const DashboardView = ({ overview, claims, navigate }) => {
                 backgroundColor: 'rgba(255,255,255,0.02)', border: `1px solid ${CL.border}`,
                 borderRadius: 12, padding: '14px 16px'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 11 }}>{initials}</div>
-                    <div style={{ fontWeight: 800, color: CL.text, fontSize: 13 }}>{claim.name}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1, minWidth: 0 }}>
+                    <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 11 }}>{initials}</div>
+                    <div style={{ fontWeight: 800, color: CL.text, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={claim.name}>{claim.name}</div>
                   </div>
-                  <div style={{ padding: '3px 8px', borderRadius: 999, background: badge.bg, color: badge.color, border: badge.border, fontSize: 9, fontWeight: 800 }}>
+                  <div style={{ flexShrink: 0, padding: '3px 8px', borderRadius: 999, background: badge.bg, color: badge.color, border: badge.border, fontSize: 9, fontWeight: 800 }}>
                     {claim.status}
                   </div>
                 </div>
@@ -1921,6 +1925,11 @@ const ClientDashboard = ({ user: propUser }) => {
       } finally { setLoading(false); }
     };
     initData();
+
+    // Listen to real-time notification events from Layout's socket listener
+    const handleNewNotif = () => fetchClientNotifications();
+    window.addEventListener('newNotificationEvent', handleNewNotif);
+    return () => window.removeEventListener('newNotificationEvent', handleNewNotif);
   }, [user]);
 
   const overview = dashboard?.overview || { totalClaims: 3, inProgress: 2, completed: 1, needAction: 2 };
@@ -1946,7 +1955,7 @@ const ClientDashboard = ({ user: propUser }) => {
     ? 'All company claims linked to your account'
     : "Here's your CLIENT command center.";
 
-  const firstName = user?.name?.split(' ')[0] || 'Kunal';
+  const firstName = user?.name?.split(' ')[0] || 'Client';
 
   const HEADER_CSS = `
     @keyframes wave        { 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(20deg); } 75%{ transform:rotate(-10deg); } }
@@ -2136,24 +2145,13 @@ const ClientDashboard = ({ user: propUser }) => {
       {showClaims ? (
         <MyClaimsView claims={claims} navigate={navigate} />
       ) : showFamilyTree ? (
-        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddFamily={() => setIsAddFamilyModalOpen(true)} />
+        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onNotificationClick={() => navigate('/client?tab=notifications')} />
       ) : showDocuments ? (
         <ClientDocumentsHub documents={documents} clientProfile={clientProfile} user={user} onRefresh={fetchDocuments} />
       ) : showNotifications ? (
         <ClientNotificationsView notifications={notifications} onRefresh={fetchClientNotifications} user={user} />
       ) : showServices ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
-          <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🚀</div>
-          <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>My Services</h2>
-          <p style={{ fontSize: '16px', color: 'var(--dashboard-text-muted)', maxWidth: '400px', lineHeight: 1.6 }}>
-            We are working hard to bring you this feature. Stay tuned for exciting updates!
-          </p>
-          <div style={{ marginTop: '32px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite' }} />
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.2s' }} />
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'ringPulse 1.5s infinite 0.4s' }} />
-          </div>
-        </div>
+        <ClientMyServices user={user} />
       ) : showIEPFSearch ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🔍</div>
@@ -2185,4 +2183,5 @@ const ClientDashboard = ({ user: propUser }) => {
   );
 };
 
+export { ClientDocumentsHub };
 export default ClientDashboard;

@@ -197,6 +197,16 @@ const updateTicketStatus = async (req, res) => {
     ticket: updated._id,
   });
 
+  if (req.user._id.toString() !== ticket.client.toString()) {
+    await Notification.create({
+      user: ticket.client,
+      type: 'ticket_updated',
+      title: 'Ticket Status Updated',
+      message: `Your ticket for ${ticket.service} was updated to ${updated.status}`,
+      link: `?tab=services`
+    });
+  }
+
   const io = req.app.get('io');
   if (io) {
     io.emit('ticket_updated', updated);
@@ -338,10 +348,20 @@ const addTicketComment = async (req, res) => {
       link: `?tab=ticket-detail&id=${ticket._id}`
     });
   }
+
+  if (req.user._id.toString() !== ticket.client.toString()) {
+    await Notification.create({
+      user: ticket.client,
+      type: 'comment_added',
+      title: 'New Comment on Ticket',
+      message: `A new comment was added to your ticket for ${ticket.service}.`,
+      link: `?tab=services`
+    });
+  }
   
   const io = req.app.get('io');
   if (io) {
-    io.emit('ticket_comment', { ticketId: ticket._id, comment: ticket.comments[ticket.comments.length - 1] });
+    io.emit('ticket_comment', { ticketId: ticket._id, comment: ticket.comments[ticket.comments.length - 1], clientId: ticket.client });
   }
 
   res.json(ticket);
@@ -470,6 +490,16 @@ const updateTicketStages = async (req, res) => {
       title: `Ticket "${updated.service}" stages updated`,
       message: `Client ${clientName}'s ticket stages were updated. Progress: ${updated.progress}%`,
       type: 'ticket'
+    });
+  }
+
+  if (req.user._id.toString() !== updated.client.toString()) {
+    await Notification.create({
+      user: updated.client,
+      title: `Ticket "${updated.service}" stages updated`,
+      message: `Your ticket stages were updated. Progress: ${updated.progress}%`,
+      type: 'ticket',
+      link: `?tab=services`
     });
   }
 
