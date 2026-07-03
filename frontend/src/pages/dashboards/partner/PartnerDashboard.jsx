@@ -17,7 +17,7 @@ import CreateTicketModal from '../../../components/forms/CreateTicketModal';
 
 /* ─── Inline badge styles (avoids missing CSS-var errors) ────── */
 const BADGE_STYLES = {
-  'New':           { bg: 'rgba(59,130,246,0.12)',  color: '#1d4ed8', dot: '#3b82f6'  },
+  'New':           { bg: 'rgba(34, 197, 94,0.12)',  color: '#15803d', dot: '#22c55e'  },
   'In Discussion': { bg: 'rgba(245,158,11,0.12)',  color: '#b45309', dot: '#f59e0b'  },
   'Not Interested':{ bg: 'rgba(239,68,68,0.12)',   color: '#b91c1c', dot: '#ef4444'  },
   'Converted':     { bg: 'rgba(34,197,94,0.12)',   color: '#15803d', dot: '#22c55e'  },
@@ -86,7 +86,7 @@ const MOCK_TICKETS = [
 
 const ACTIVITY_FEED = [
   { Icon: CheckCircle2, color: '#22c55e', text: 'Lead "Vikram Singh" marked as New by Super Admin', time: '30 MIN AGO' },
-  { Icon: RefreshCw,    color: '#3b82f6', text: 'Ticket TK-501 moved to "In Process"',              time: '2 HRS AGO'  },
+  { Icon: RefreshCw,    color: '#22c55e', text: 'Ticket TK-501 moved to "In Process"',              time: '2 HRS AGO'  },
   { Icon: UserPlus,     color: '#7c3aed', text: 'Lead "Ramesh Agarwal" converted to client',        time: '1 DAY AGO'  },
   { Icon: AlertCircle,  color: '#f59e0b', text: 'Lead "Pooja Desai" marked Not Interested',         time: '2 DAYS AGO' },
   { Icon: CheckCircle2, color: '#22c55e', text: 'Ticket TK-503 completed by admin team',            time: '5 DAYS AGO' },
@@ -104,7 +104,7 @@ function HomeIcon({ size = 16 }) {
 }
 
 /* ─── Avatar helper ─────────────────────────────────────────── */
-function Avatar({ name, size = 36, gradient = ['#1d4ed8', '#3b82f6'], fontSize = 13 }) {
+function Avatar({ name, size = 36, gradient = ['#15803d', '#22c55e'], fontSize = 13 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.27),
@@ -217,7 +217,7 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <ActionBtn label="New Lead" icon={Plus} color="#8b5cf6" onClick={() => onNavigate('leads')} />
             <ActionBtn label="My Clients" icon={Users} color="#22c55e" onClick={() => onNavigate('clients')} />
-            <ActionBtn label="Invoice" icon={FileText} color="#3b82f6" onClick={() => {}} />
+            <ActionBtn label="Invoice" icon={FileText} color="#22c55e" onClick={() => {}} />
             <ActionBtn label="New Task" icon={CheckSquare} color="#f59e0b" onClick={() => {}} />
           </div>
         </div>
@@ -254,7 +254,7 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Total Tickets</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }}></div>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }}></div>
                     <span style={{ fontWeight: 700, color: 'var(--text)' }}>142</span> New Tickets
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -477,7 +477,7 @@ function AddLeadModal({ onClose, onAdd }) {
           
           <div className="modal-footer" style={{ background: 'transparent', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
             <button type="button" onClick={onClose} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
-            <button type="submit" style={{ padding: '12px 24px', background: '#6366f1', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }}>Submit Lead</button>
+            <button type="submit" style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>Submit Lead</button>
           </div>
         </form>
       </div>
@@ -548,7 +548,7 @@ function LeadsTab() {
           <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Lead Centre</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Manage leads and proposals</p>
         </div>
-        <button className="topbar-btn" style={{ background: '#6366f1', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setShowModal(true)}>
+        <button className="topbar-btn" style={{ background: '#22c55e', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setShowModal(true)}>
           <Plus size={16} /> Add Lead
         </button>
       </div>
@@ -556,7 +556,7 @@ function LeadsTab() {
       {/* KPI CARDS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
             <User size={24} />
           </div>
           <div>
@@ -602,10 +602,10 @@ function LeadsTab() {
 
       {/* TABS */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-        <button onClick={() => setActiveSubTab('leads')} style={{ padding: '8px 16px', background: activeSubTab === 'leads' ? '#6366f1' : 'var(--card)', border: activeSubTab === 'leads' ? 'none' : '1px solid var(--border)', borderRadius: '8px', color: activeSubTab === 'leads' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+        <button onClick={() => setActiveSubTab('leads')} style={{ padding: '8px 16px', background: activeSubTab === 'leads' ? '#22c55e' : 'var(--card)', border: activeSubTab === 'leads' ? 'none' : '1px solid var(--border)', borderRadius: '8px', color: activeSubTab === 'leads' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
           <FileText size={16} /> View Leads <span style={{ background: activeSubTab === 'leads' ? 'rgba(255,255,255,0.2)' : 'var(--bg)', padding: '2px 6px', borderRadius: '10px', fontSize: '11px' }}>10</span>
         </button>
-        <button onClick={() => setActiveSubTab('proposals')} style={{ padding: '8px 16px', background: activeSubTab === 'proposals' ? '#6366f1' : 'var(--card)', border: activeSubTab === 'proposals' ? 'none' : '1px solid var(--border)', borderRadius: '8px', color: activeSubTab === 'proposals' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+        <button onClick={() => setActiveSubTab('proposals')} style={{ padding: '8px 16px', background: activeSubTab === 'proposals' ? '#22c55e' : 'var(--card)', border: activeSubTab === 'proposals' ? 'none' : '1px solid var(--border)', borderRadius: '8px', color: activeSubTab === 'proposals' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
           <FileText size={16} /> Proposals <span style={{ background: activeSubTab === 'proposals' ? 'rgba(255,255,255,0.2)' : 'var(--bg)', padding: '2px 6px', borderRadius: '10px', fontSize: '11px' }}>5</span>
         </button>
       </div>
@@ -636,7 +636,7 @@ function LeadsTab() {
               ].map(row => (
                 <tr key={row.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '16px 24px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(99,102,241,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -706,7 +706,7 @@ function LeadsTab() {
                     <td><span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'monospace' }}>{lead.id}</span></td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Avatar name={lead.name} size={32} gradient={['#1d4ed8', '#3b82f6']} fontSize={11} />
+                        <Avatar name={lead.name} size={32} gradient={['#15803d', '#22c55e']} fontSize={11} />
                         <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{lead.name}</span>
                       </div>
                     </td>
@@ -901,7 +901,7 @@ function ClientsTab() {
         </div>
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '12px', padding: '4px' }}>
           {['All', 'Active', 'In Progress', 'Enrolled'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: '8px 16px', background: filter === f ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderRadius: '8px', color: filter === f ? '#fff' : 'var(--text-muted)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: '0.2s' }}>
+            <button key={f} onClick={() => setFilter(f)} style={{ padding: '8px 16px', background: filter === f ? 'rgba(34, 197, 94,0.1)' : 'transparent', border: 'none', borderRadius: '8px', color: filter === f ? '#fff' : 'var(--text-muted)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: '0.2s' }}>
               {f}
             </button>
           ))}
@@ -910,7 +910,7 @@ function ClientsTab() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(34, 197, 94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80' }}>
             <User size={24} />
           </div>
           <div>
@@ -936,7 +936,7 @@ function ClientsTab() {
         </div>
 
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(34, 197, 94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
             <Clock size={24} />
           </div>
           <div>
@@ -990,11 +990,11 @@ function ClientsTab() {
             ) : filtered.map((client, idx) => (
               <tr key={client.id} style={{ borderBottom: '1px solid var(--border)', background: idx === 1 ? 'rgba(255,255,255,0.9)' : 'transparent', transition: '0.2s' }}>
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ background: 'rgba(99,102,241,0.1)', color: idx === 1 ? '#6366f1' : '#818cf8', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>{client.id}</span>
+                  <span style={{ background: 'rgba(34, 197, 94,0.1)', color: idx === 1 ? '#22c55e' : '#4ade80', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>{client.id}</span>
                 </td>
                 <td style={{ padding: '16px 24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Avatar name={client.name} size={36} gradient={idx % 2 === 0 ? ['#f97316', '#ea580c'] : idx === 1 ? ['#0ea5e9', '#0284c7'] : ['#a855f7', '#7e22ce']} fontSize={13} />
+                    <Avatar name={client.name} size={36} gradient={idx % 2 === 0 ? ['#86efac', '#22c55e'] : idx === 1 ? ['#22c55e', '#15803d'] : ['#4ade80', '#16a34a']} fontSize={13} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: idx === 1 ? '#000' : 'var(--text)' }}>{client.name}</span>
                       <span style={{ fontSize: '12px', color: idx === 1 ? '#475569' : 'var(--text-muted)' }}>{client.email}</span>
@@ -1005,7 +1005,7 @@ function ClientsTab() {
                   {client.phone}
                 </td>
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ background: 'rgba(99,102,241,0.1)', color: idx === 1 ? '#6366f1' : '#a5b4fc', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>{client.category}</span>
+                  <span style={{ background: 'rgba(34, 197, 94,0.1)', color: idx === 1 ? '#22c55e' : '#a5b4fc', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>{client.category}</span>
                 </td>
                 <td style={{ padding: '16px 24px', fontSize: '13px', color: idx === 1 ? '#475569' : 'var(--text-muted)' }}>
                   {client.services}
@@ -1098,7 +1098,7 @@ function ServiceHubTab() {
               cursor: 'pointer', 
               padding: '0 0 12px 0',
               marginBottom: '-1px',
-              borderBottom: activeCategory === tab ? '2px solid #6366f1' : '2px solid transparent',
+              borderBottom: activeCategory === tab ? '2px solid #22c55e' : '2px solid transparent',
               transition: 'all 0.2s'
             }}
           >
@@ -1117,8 +1117,8 @@ function ServiceHubTab() {
             <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '16px' }}>
               {POPULAR_SERVICES.map(srv => (
                 <div key={srv.id} style={{ flexShrink: 0, width: '220px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(59, 130, 246, 1)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>POPULAR</div>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa', marginBottom: '20px', marginTop: '16px' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(34, 197, 94, 1)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>POPULAR</div>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80', marginBottom: '20px', marginTop: '16px' }}>
                     <srv.icon size={24} />
                   </div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '24px', lineHeight: 1.4, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1139,7 +1139,7 @@ function ServiceHubTab() {
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
               {CATEGORIES.map(cat => (
-                <div key={cat.id} onClick={() => setActiveCategory(cat.title)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                <div key={cat.id} onClick={() => setActiveCategory(cat.title)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', marginBottom: '16px' }}>
                     <cat.icon size={20} />
                   </div>
@@ -1156,7 +1156,7 @@ function ServiceHubTab() {
         </>
       ) : (
         <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#6366f1' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#22c55e' }}>
             <FileText size={32} />
           </div>
           <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>{activeCategory}</h3>
@@ -1173,7 +1173,7 @@ function ServiceHubTab() {
 function ComingSoonTab({ title = 'Module Loading...' }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--text-muted)' }}>
-      <div style={{ width: '48px', height: '48px', border: '3px solid rgba(99, 102, 241, 0.1)', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '24px' }}></div>
+      <div style={{ width: '48px', height: '48px', border: '3px solid rgba(34, 197, 94, 0.1)', borderTopColor: '#22c55e', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '24px' }}></div>
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
@@ -1205,8 +1205,8 @@ function AcademyTab() {
   ];
 
   const VideoCard = ({ title, dur }) => (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
-      <div style={{ height: '160px', background: 'rgba(59, 130, 246, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
+      <div style={{ height: '160px', background: 'rgba(34, 197, 94, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" color="#fff" style={{ marginLeft: '4px' }}>
             <path d="M5 3l14 9-14 9V3z" />
@@ -1239,7 +1239,7 @@ function AcademyTab() {
               <div style={{ padding: '24px' }}>
                 <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1.4, minHeight: '40px' }}>{ev.title}</div>
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>{ev.time}</div>
-                <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '11px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.5px' }}>REGISTER</button>
+                <button style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '11px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.5px' }}>REGISTER</button>
               </div>
             </div>
           ))}
@@ -1276,7 +1276,7 @@ function CalculatorTab() {
   const [timePeriod, setTimePeriod] = useState(10);
 
   const CALCULATORS = [
-    { title: 'SIP & Step-Up SIP', desc: 'Invest monthly to grow your wealth steadily.', bg: 'rgba(59, 130, 246, 0.15)' },
+    { title: 'SIP & Step-Up SIP', desc: 'Invest monthly to grow your wealth steadily.', bg: 'rgba(34, 197, 94, 0.15)' },
     { title: 'Lumpsum', desc: 'Invest once, watch it grow over time.', bg: 'rgba(234, 179, 8, 0.15)' },
     { title: 'SWP', desc: 'Withdraw monthly to meet cash flow needs.', bg: 'rgba(168, 85, 247, 0.15)' },
     { title: 'SIP + SWP', desc: 'Invest regularly, withdraw smartly.', bg: 'rgba(236, 72, 153, 0.15)' },
@@ -1364,7 +1364,7 @@ function CalculatorTab() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
         {CALCULATORS.map((calc, i) => (
-          <div key={i} onClick={() => setActiveCalc(calc.title)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px 24px', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)' }} onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)' }}>
+          <div key={i} onClick={() => setActiveCalc(calc.title)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px 24px', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, background: calc.bg, zIndex: 0 }} />
               <div style={{ position: 'relative', zIndex: 1, display: 'flex' }}>
@@ -1419,7 +1419,7 @@ function DocumentTab() {
         <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }}>
           {AGREEMENTS.map((agr, i) => (
             <div key={i} style={{ flexShrink: 0, width: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(34, 197, 94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80' }}>
                 <FileText size={20} />
               </div>
               <div>
@@ -1433,7 +1433,7 @@ function DocumentTab() {
 
       {/* Navigation Tabs */}
       <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
-        <button style={{ background: 'transparent', border: 'none', borderBottom: '2px solid #6366f1', color: '#fff', fontSize: '14px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer' }}>
+        <button style={{ background: 'transparent', border: 'none', borderBottom: '2px solid #22c55e', color: '#fff', fontSize: '14px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer' }}>
           Documents
         </button>
         <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '14px', fontWeight: 600, padding: '0 0 12px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1447,8 +1447,8 @@ function DocumentTab() {
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Select a folder to view your compliance documents, bills, and related files</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
           {FOLDERS.map((f, i) => (
-            <div key={i} style={{ background: 'var(--card)', border: `1px solid ${f.active ? '#6366f1' : 'var(--border)'}`, borderRadius: '16px', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-              <div style={{ color: '#6366f1', marginBottom: '16px' }}>
+            <div key={i} style={{ background: 'var(--card)', border: `1px solid ${f.active ? '#22c55e' : 'var(--border)'}`, borderRadius: '16px', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+              <div style={{ color: '#22c55e', marginBottom: '16px' }}>
                 <Folder size={48} strokeWidth={1.5} />
               </div>
               <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{f.title}</div>
@@ -1521,15 +1521,15 @@ function CalendarTab() {
           
           {/* Tabs */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-            <button onClick={() => setActiveLeftTab('needs_action')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'needs_action' ? '#6366f1' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'needs_action' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'needs_action' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'needs_action' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+            <button onClick={() => setActiveLeftTab('needs_action')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'needs_action' ? '#22c55e' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'needs_action' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'needs_action' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'needs_action' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
               Needs action
               <span style={{ fontSize: '11px', fontWeight: activeLeftTab === 'needs_action' ? 600 : 500 }}>{currentMonthDeadlines.filter(d => d.status === 'needs_action').length}</span>
             </button>
-            <button onClick={() => setActiveLeftTab('pending')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'pending' ? '#6366f1' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'pending' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'pending' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'pending' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+            <button onClick={() => setActiveLeftTab('pending')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'pending' ? '#22c55e' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'pending' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'pending' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'pending' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
               Pending
               <span style={{ fontSize: '11px', fontWeight: activeLeftTab === 'pending' ? 600 : 500 }}>{currentMonthDeadlines.filter(d => d.status === 'pending').length}</span>
             </button>
-            <button onClick={() => setActiveLeftTab('upcoming')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'upcoming' ? '#6366f1' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'upcoming' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'upcoming' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'upcoming' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+            <button onClick={() => setActiveLeftTab('upcoming')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'upcoming' ? '#22c55e' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'upcoming' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'upcoming' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'upcoming' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
               Upcoming
               <span style={{ fontSize: '11px', fontWeight: activeLeftTab === 'upcoming' ? 600 : 500 }}>{currentMonthDeadlines.filter(d => d.status === 'upcoming').length}</span>
             </button>
@@ -1542,7 +1542,7 @@ function CalendarTab() {
             ) : displayedDeadlines.map((d, i) => {
               const isEventDay = parseInt(d.date.split('-')[2]) === selectedDate;
               return (
-                <div key={i} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderLeft: `3px solid ${isEventDay ? '#ea580c' : '#6366f1'}`, borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.2s', boxShadow: isEventDay ? '0 4px 12px rgba(0,0,0,0.2)' : 'none' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = isEventDay ? '#ea580c' : 'var(--border)'}>
+                <div key={i} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderLeft: `3px solid ${isEventDay ? '#ea580c' : '#22c55e'}`, borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.2s', boxShadow: isEventDay ? '0 4px 12px rgba(0,0,0,0.2)' : 'none' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = isEventDay ? '#ea580c' : 'var(--border)'}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                     <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>Last date: {d.date}</span>
                     <span style={{ background: '#ea580c', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>{d.type}</span>
@@ -1593,7 +1593,7 @@ function CalendarTab() {
                 <div key={date} onClick={() => setSelectedDate(date)} style={{ 
                   aspectRatio: '1.2', 
                   borderRadius: '12px',
-                  background: isSelected ? '#6366f1' : 'transparent',
+                  background: isSelected ? '#22c55e' : 'transparent',
                   color: isSelected ? '#fff' : 'var(--text)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -1676,7 +1676,7 @@ function TaskTab() {
 
   const getAvatarColor = (init) => {
     const sum = init.charCodeAt(0) + (init.charCodeAt(1) || 0);
-    const colors = ['#6366f1', '#f97316', '#22c55e', '#06b6d4', '#d946ef'];
+    const colors = ['#22c55e', '#f97316', '#22c55e', '#06b6d4', '#d946ef'];
     return colors[sum % colors.length];
   };
 
@@ -1697,7 +1697,7 @@ function TaskTab() {
               return updated;
             });
           }
-        }} style={{ padding: '10px 20px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}>
+        }} style={{ padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}>
           <Plus size={14} /> Add Task
         </button>
       </div>
@@ -1762,7 +1762,7 @@ function StoreTab() {
     <div style={{ paddingBottom: '40px' }}>
       {/* Search Header */}
       <div style={{ background: 'linear-gradient(135deg, rgba(30,41,59,0.8), rgba(15,23,42,0.9))', borderRadius: '24px', padding: '48px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '32px', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '150px', height: '150px', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '50%' }}></div>
+        <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '150px', height: '150px', background: 'rgba(34, 197, 94, 0.05)', borderRadius: '50%' }}></div>
         <div style={{ position: 'absolute', bottom: '-20%', right: '-5%', width: '250px', height: '250px', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '50%' }}></div>
         
         <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', marginBottom: '24px', position: 'relative', zIndex: 1 }}>Zolvit Store</h2>
@@ -1774,13 +1774,13 @@ function StoreTab() {
 
       {/* Navigation Pills */}
       <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '32px' }}>
-        <button onClick={() => setActiveCategory('Home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: activeCategory === 'Home' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', border: `1px solid ${activeCategory === 'Home' ? '#3b82f6' : 'rgba(255,255,255,0.1)'}`, borderRadius: '24px', color: activeCategory === 'Home' ? '#60a5fa' : 'var(--text-muted)', fontSize: '13px', fontWeight: activeCategory === 'Home' ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button onClick={() => setActiveCategory('Home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: activeCategory === 'Home' ? 'rgba(34, 197, 94, 0.1)' : 'transparent', border: `1px solid ${activeCategory === 'Home' ? '#22c55e' : 'rgba(255,255,255,0.1)'}`, borderRadius: '24px', color: activeCategory === 'Home' ? '#4ade80' : 'var(--text-muted)', fontSize: '13px', fontWeight: activeCategory === 'Home' ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           <Home size={16} /> Home
         </button>
         {['Mutual Funds', 'Insurance', 'Pre IPOs', 'Debentures', 'PMS', 'Fixed Deposits', 'Demat', 'SIF'].map((tab, i) => {
           const isActive = activeCategory === tab;
           return (
-            <button key={i} onClick={() => setActiveCategory(tab)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent', border: `1px solid ${isActive ? '#3b82f6' : 'rgba(255,255,255,0.1)'}`, borderRadius: '24px', color: isActive ? '#60a5fa' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <button key={i} onClick={() => setActiveCategory(tab)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: isActive ? 'rgba(34, 197, 94, 0.1)' : 'transparent', border: `1px solid ${isActive ? '#22c55e' : 'rgba(255,255,255,0.1)'}`, borderRadius: '24px', color: isActive ? '#4ade80' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {tab === 'Mutual Funds' ? <TrendingUp size={14} /> : tab === 'Insurance' ? <Shield size={14} /> : tab === 'Pre IPOs' ? <BarChart3 size={14} /> : tab === 'Debentures' ? <Briefcase size={14} /> : tab === 'PMS' ? <CheckCircle2 size={14} /> : tab === 'Fixed Deposits' ? <Layout size={14} /> : tab === 'Demat' ? <FileText size={14} /> : <CheckSquare size={14} />} {tab}
             </button>
           );
@@ -1797,7 +1797,7 @@ function StoreTab() {
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {PORTFOLIOS.map(port => (
-            <div key={port.id} style={{ background: 'var(--card)', border: `1px solid ${port.active ? '#6366f1' : 'var(--border)'}`, borderRadius: '16px', padding: '24px', position: 'relative' }}>
+            <div key={port.id} style={{ background: 'var(--card)', border: `1px solid ${port.active ? '#22c55e' : 'var(--border)'}`, borderRadius: '16px', padding: '24px', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
                 <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: port.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: port.iconColor, flexShrink: 0 }}>
                   <TrendingUp size={24} />
@@ -1972,7 +1972,7 @@ function AddEmployeeModal({ onClose, onAdd }) {
           
           <div className="modal-footer" style={{ background: 'transparent', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
             <button type="button" onClick={onClose} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
-            <button type="submit" style={{ padding: '12px 24px', background: '#6366f1', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }}>Submit for Approval</button>
+            <button type="submit" style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>Submit for Approval</button>
           </div>
         </form>
       </div>
@@ -1981,192 +1981,182 @@ function AddEmployeeModal({ onClose, onAdd }) {
 }
 
 function EmployeesTab() {
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [search, setSearch] = useState('');
-  const [employees, setEmployees] = useState(MOCK_EMPLOYEES);
-  const [showModal, setShowModal] = useState(false);
+  const [filterStatus, setFilterStatus] = React.useState('All');
+  const [search, setSearch] = React.useState('');
+  const [employees, setEmployees] = React.useState(MOCK_EMPLOYEES);
+  const [showModal, setShowModal] = React.useState(false);
+  const [hoveredRow, setHoveredRow] = React.useState(null);
 
-  useEffect(() => {
-    fetchEmployees();
+  React.useEffect(() => {
+    // In a real app, fetch from API here.
+    // For now we just use the mock data.
+    setEmployees(MOCK_EMPLOYEES);
   }, []);
 
-  const fetchEmployees = async () => {
-    try {
-      const res = await fetch('/api/users', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Filter out employees created by this partner (the API returns users this partner has access to)
-        const myEmployees = data.filter(u => u.role === 'employee');
-        if (myEmployees.length > 0) {
-          const formatted = myEmployees.map(emp => ({
-            id: emp.client_id_ref || `EMP-${emp._id.substring(0, 4).toUpperCase()}`,
-            name: emp.name,
-            email: emp.email,
-            role: emp.designation || 'Employee',
-            dept: emp.department || 'General',
-            status: emp.is_active === false ? 'On Leave' : 'Active',
-            joined: new Date(emp.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-          }));
-          setEmployees(formatted);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleAddEmployee = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newEmp = {
+      id: `E-${Math.floor(Math.random() * 9000) + 1000}`,
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      role: formData.get('role'),
+      status: 'Active',
+      joined: new Date().toLocaleDateString('en-GB')
+    };
+    setEmployees(prev => [newEmp, ...prev]);
+    setShowModal(false);
   };
 
-  const filtered = employees.filter(emp => {
+  const filtered = employees.filter(e => {
     const q = search.toLowerCase();
-    const matchesSearch = emp.name.toLowerCase().includes(q) || emp.email.toLowerCase().includes(q) || emp.id.toLowerCase().includes(q);
-    const matchesFilter = filterStatus === 'All' || emp.status === filterStatus;
+    const matchesSearch = e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q) || e.phone.includes(q);
+    const matchesFilter = filterStatus === 'All' || e.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
   return (
-    <>
+    <div style={{ paddingBottom: '40px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
           <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>My Employees</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Manage your team</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Manage your team members and their roles</p>
         </div>
+        <button onClick={() => setShowModal(true)} style={{ background: '#22c55e', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+          <Plus size={16} /> Add Employee
+        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
-              <User size={20} />
+        {[
+          { title: 'Total Employees', value: employees.length, icon: Users, color: '#22c55e', bg: 'rgba(34, 197, 94,0.1)' },
+          { title: 'Active', value: employees.filter(e => e.status === 'Active').length, icon: CheckCircle2, color: '#22c55e', bg: 'rgba(34,197,94,0.1)' },
+          { title: 'Pending Onboarding', value: employees.filter(e => e.status === 'Pending').length, icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+          { title: 'On Leave', value: employees.filter(e => e.status === 'On Leave').length, icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' }
+        ].map((stat, i) => (
+          <div key={i} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', alignItems: 'flex-start', gap: '16px', transition: '0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+              <stat.icon size={24} />
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{stat.title}</div>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{stat.value}</div>
             </div>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Total Employees</div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>12</div>
-        </div>
-        
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
-              <Check size={20} />
-            </div>
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Active</div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>9</div>
-        </div>
-
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
-              <Plus size={20} />
-            </div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#22c55e', background: 'rgba(34, 197, 94, 0.15)', padding: '4px 8px', borderRadius: '20px' }}>↑ 15%</div>
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Added (Pending)</div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>5</div>
-        </div>
-
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-              <Clock size={20} />
-            </div>
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>On Leave</div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>2</div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
-        <button style={{ padding: '12px 24px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}>
-          <span style={{ fontSize: '16px' }}>📁</span> My Employees <span style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{employees.length}</span>
-        </button>
-        <button onClick={() => setShowModal(true)} style={{ padding: '12px 24px', background: 'var(--card)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-          <Plus size={16} /> Add Employee <span style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{employees.filter(e => e.status === 'Pending').length}</span>
-        </button>
+        ))}
       </div>
 
       <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 24px', display: 'flex', gap: '24px', borderBottom: '1px solid var(--border)', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: '24px' }}>
-            {['All', 'Active', 'On Leave', 'Probation'].map(s => {
-              const isActive = filterStatus === s;
-              return (
-                <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '8px 0', background: 'transparent', border: 'none', color: isActive ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, cursor: 'pointer' }}>
-                  {s}
-                </button>
-              );
-            })}
-          </div>
-          <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '12px', width: '280px' }}>
+        <div style={{ padding: '20px 24px', display: 'flex', gap: '24px', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ flex: 1, maxWidth: '300px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Search size={16} color="var(--text-muted)" />
             <input placeholder="Search employees..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'transparent', border: 'none', color: 'var(--text)', width: '100%', outline: 'none', fontSize: '13px' }} />
           </div>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '12px', padding: '4px' }}>
+            {['All', 'Active', 'Pending', 'On Leave'].map(f => (
+              <button key={f} onClick={() => setFilterStatus(f)} style={{ padding: '8px 16px', background: filterStatus === f ? 'rgba(34, 197, 94,0.1)' : 'transparent', border: 'none', borderRadius: '8px', color: filterStatus === f ? '#fff' : 'var(--text-muted)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: '0.2s' }}>
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
-        
+
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>EMP ID</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>EMPLOYEE NAME</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>ROLE</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>DEPARTMENT</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>JOINED</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>ACTION</th>
+            <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE ID</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>ROLE</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CONTACT</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>STATUS</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>JOINED</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No employees found.</td></tr>
-            ) : filtered.map(emp => (
-              <tr key={emp.id} style={{ borderBottom: '1px solid var(--border)' }}>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: '14px' }}>No employees found.</td></tr>
+            ) : filtered.map((emp) => (
+              <tr 
+                key={emp.id} 
+                onMouseEnter={() => setHoveredRow(emp.id)} 
+                onMouseLeave={() => setHoveredRow(null)}
+                style={{ 
+                  borderBottom: '1px solid var(--border)', 
+                  background: hoveredRow === emp.id ? 'rgba(255,255,255,0.03)' : 'transparent', 
+                  transition: 'background 0.2s',
+                  cursor: 'pointer'
+                }}
+              >
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-flex', padding: '6px 12px', background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
-                    {emp.id}
-                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{emp.id}</span>
                 </td>
                 <td style={{ padding: '16px 24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Avatar name={emp.name} size={36} gradient={emp.status === 'Active' ? ['#f97316', '#ea580c'] : (emp.id === 'EMP-101' ? ['#06b6d4', '#0891b2'] : ['#22c55e', '#16a34a'])} fontSize={13} />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{emp.name}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{emp.email}</span>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
+                      {emp.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{emp.name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{emp.email}</div>
                     </div>
                   </div>
                 </td>
+                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{emp.role}</td>
+                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{emp.phone}</td>
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{emp.role}</span>
+                  <StatusBadge status={emp.status} />
                 </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{emp.dept}</span>
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: emp.status === 'Active' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: emp.status === 'Active' ? '#22c55e' : '#f59e0b', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                    {emp.status}
-                  </span>
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{emp.joined}</span>
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <button type="button" title="View" style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '50%', cursor: 'pointer' }}>
-                    <Eye size={14} />
-                  </button>
-                </td>
+                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>{emp.joined}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
       {showModal && (
-        <AddEmployeeModal 
-          onClose={() => setShowModal(false)} 
-          onAdd={() => fetchEmployees()} 
-        />
+        <div className="modal-overlay open" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal" style={{ maxWidth: '500px', background: 'var(--card)' }}>
+            <div className="modal-header">
+              <div className="modal-title">Add New Employee</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleAddEmployee}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Full Name</label>
+                  <input name="name" className="form-input" style={{ width: '100%', background: '#050B14' }} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Email Address</label>
+                  <input type="email" name="email" className="form-input" style={{ width: '100%', background: '#050B14' }} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Phone Number</label>
+                  <input name="phone" className="form-input" style={{ width: '100%', background: '#050B14' }} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Role</label>
+                  <select name="role" className="form-select" style={{ width: '100%', background: '#050B14' }} required>
+                    <option value="Consultant">Consultant</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Support Staff">Support Staff</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" onClick={() => setShowModal(false)} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" style={{ padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Add Employee</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    TAB: MY TICKETS
@@ -2174,6 +2164,7 @@ function EmployeesTab() {
 const STATUS_FILTERS_TICKET = ['All', 'Active', 'In Process', 'Completed'];
 
 function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) {
+  const [hoveredRow, setHoveredRow] = React.useState(null);
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [search, setSearch] = useState('');
@@ -2278,7 +2269,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           <button className="topbar-btn secondary" style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--border)', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--card)' }}>
             <Download size={16} /> Export
           </button>
-          <button className="topbar-btn" style={{ background: '#6366f1', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => onNavigate ? onNavigate('tickets') : setShowModal(true)}>
+          <button className="topbar-btn" style={{ background: '#22c55e', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => onNavigate ? onNavigate('tickets') : setShowModal(true)}>
             <Plus size={16} /> New Ticket
           </button>
         </div>
@@ -2287,7 +2278,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
               <FileText size={20} />
             </div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: '#fff', padding: '4px 8px', borderRadius: '20px' }}>+12%</div>
@@ -2332,8 +2323,8 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
 
       <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', padding: '0 24px' }}>
-          <button style={{ padding: '20px 0', background: 'transparent', border: 'none', borderBottom: '2px solid #6366f1', color: '#fff', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <Home size={16} /> All <span style={{ background: 'rgba(99,102,241,0.2)', color: '#818cf8', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{tickets.length}</span>
+          <button style={{ padding: '20px 0', background: 'transparent', border: 'none', borderBottom: '2px solid #22c55e', color: '#fff', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <Home size={16} /> All <span style={{ background: 'rgba(34, 197, 94,0.2)', color: '#4ade80', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{tickets.length}</span>
           </button>
           <button style={{ padding: '20px 0', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <Clock size={16} /> Service Hub <span style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{tickets.length}</span>
@@ -2357,8 +2348,8 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           {STATUS_FILTERS_TICKET.map(s => {
              const isActive = filterStatus === s;
              return (
-               <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '16px 0', background: 'transparent', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', color: isActive ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                 {s} <span style={{ background: isActive ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: isActive ? '#818cf8' : 'var(--text-muted)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{ticketCounts[s] || 0}</span>
+               <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '16px 0', background: 'transparent', border: 'none', borderBottom: isActive ? '2px solid #22c55e' : '2px solid transparent', color: isActive ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                 {s} <span style={{ background: isActive ? 'rgba(34, 197, 94,0.2)' : 'rgba(255,255,255,0.05)', color: isActive ? '#4ade80' : 'var(--text-muted)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{ticketCounts[s] || 0}</span>
                </button>
              );
           })}
@@ -2381,57 +2372,68 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
-                  No tickets found. <span style={{ color: '#6366f1', cursor: 'pointer' }} onClick={() => setShowModal(true)}>Create one</span>
+                  No tickets found. <span style={{ color: '#22c55e', cursor: 'pointer' }} onClick={() => setShowModal(true)}>Create one</span>
                 </td>
               </tr>
-            ) : filtered.map((ticket, idx) => {
-              const isFirst = idx === 0;
+            ) : filtered.map((ticket) => {
+              const isHovered = hoveredRow === ticket.id;
               return (
-                <tr key={ticket.id} style={{ borderBottom: '1px solid var(--border)', background: isFirst ? '#ffffff' : 'transparent', transition: '0.2s' }}>
+                <tr 
+                  key={ticket.id} 
+                  onMouseEnter={() => setHoveredRow(ticket.id)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                  style={{ 
+                    borderBottom: '1px solid var(--border)', 
+                    background: isHovered ? 'rgba(255,255,255,0.03)' : 'transparent', 
+                    transition: 'background 0.2s',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setSelectedTicket(ticket)}
+                >
                   <td style={{ padding: '16px 24px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: isFirst ? '#cbd5e1' : '#e2e8f0' }}>#{ticket.id}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0' }}>#{ticket.id}</span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Avatar name={ticket.client} size={36} gradient={ticket.status === 'Active' ? ['#3b82f6', '#2563eb'] : ['#22c55e', '#16a34a']} fontSize={13} />
+                      <Avatar name={ticket.client} size={36} gradient={ticket.status === 'Active' ? ['#22c55e', '#16a34a'] : ['#22c55e', '#16a34a']} fontSize={13} />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: isFirst ? '#1e293b' : 'var(--text)' }}>{ticket.client}</span>
-                        <span style={{ fontSize: '12px', color: isFirst ? '#64748b' : 'var(--text-muted)' }}>{ticket.client.toLowerCase().replace(' ','')}@email.com</span>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.client}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.client.toLowerCase().replace(' ','')}@email.com</span>
                       </div>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: isFirst ? '#1e293b' : 'var(--text)' }}>{ticket.service}</span>
-                      <span style={{ fontSize: '12px', color: isFirst ? '#64748b' : 'var(--text-muted)' }}>{ticket.vertical === 'service' ? 'Licenses & Registrations' : 'New Business / Closure'}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.service}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.vertical === 'service' ? 'Licenses & Registrations' : 'New Business / Closure'}</span>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: isFirst ? 'rgba(59,130,246,0.1)' : (ticket.status === 'Active' ? '#fff' : 'rgba(254, 243, 199, 1)'), color: isFirst ? '#2563eb' : (ticket.status === 'Active' ? '#1e40af' : '#b45309'), padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isFirst ? '#2563eb' : (ticket.status === 'Active' ? '#3b82f6' : '#f59e0b') }} />
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: ticket.status === 'Active' ? 'rgba(34, 197, 94,0.1)' : 'rgba(254, 243, 199, 0.1)', color: ticket.status === 'Active' ? '#22c55e' : '#f59e0b', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: ticket.status === 'Active' ? '#22c55e' : '#f59e0b' }} />
                       {ticket.status === 'In Process' ? 'Pending' : ticket.status}
                     </span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
-                    <span style={{ background: isFirst ? 'rgba(99,102,241,0.1)' : (ticket.status === 'Active' ? 'rgba(99,102,241,0.1)' : 'rgba(236,72,153,0.1)'), color: isFirst ? '#6366f1' : (ticket.status === 'Active' ? '#818cf8' : '#f472b6'), padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                      {ticket.status === 'Active' ? 'Partner' : 'Client'}
+                    <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                      Partner
                     </span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: isFirst ? '#1e293b' : 'var(--text)' }}>{ticket.created}</span>
-                      <span style={{ fontSize: '11px', color: isFirst ? '#64748b' : 'var(--text-muted)' }}>10:34 AM</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.created}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>10:34 AM</span>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: isFirst ? '#1e293b' : 'var(--text)' }}>{ticket.lastUpdate}</span>
-                      <span style={{ fontSize: '11px', color: isFirst ? '#64748b' : 'var(--text-muted)' }}>2:15 PM</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.lastUpdate}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>2:15 PM</span>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                    <button type="button" title="More" onClick={() => setSelectedTicket(ticket.rawTicket)} style={{ background: 'transparent', border: 'none', color: isFirst ? '#94a3b8' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%' }}>
-                      <MoreVertical size={18} />
+                    <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
+                      <MoreVertical size={16} />
                     </button>
                   </td>
                 </tr>
@@ -2547,7 +2549,7 @@ function AnalyticsTab({ leads = [], tickets = [] }) {
   const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
   
   const funnelData = [
-    { label: 'New',            val: leads.filter(l => l.status === 'new' || !l.status).length, color: '#3b82f6' },
+    { label: 'New',            val: leads.filter(l => l.status === 'new' || !l.status).length, color: '#22c55e' },
     { label: 'In Discussion',  val: leads.filter(l => l.status === 'in_discussion').length, color: '#f59e0b' },
     { label: 'Converted',      val: convertedLeads, color: '#22c55e' },
     { label: 'Not Interested', val: leads.filter(l => l.status === 'not_interested').length, color: '#ef4444' },
@@ -2576,7 +2578,7 @@ function AnalyticsTab({ leads = [], tickets = [] }) {
       />
 
       <div className="stats-row cols-4" style={{ marginBottom: 28 }}>
-        <StatCard label="Total Leads"       value={MOCK_LEADS.length}   icon={<Target size={18} />}        trend="↑ 3 this month"       color="#3b82f6" delay={0.05} />
+        <StatCard label="Total Leads"       value={MOCK_LEADS.length}   icon={<Target size={18} />}        trend="↑ 3 this month"       color="#22c55e" delay={0.05} />
         <StatCard label="Conversion Rate"   value={`${conversionRate}%`} icon={<TrendingUp size={18} />}  trend="2 of 6 leads"         color="#22c55e" delay={0.1}  />
         <StatCard label="Total Tickets"     value={total}                icon={<ClipboardCheck size={18} />} trend="3 verticals"        color="#7c3aed" delay={0.15} />
         <StatCard label="Completed Tickets" value="2"                    icon={<CheckCircle2 size={18} />} trend="33% completion rate"  color="#f59e0b" delay={0.2}  />
@@ -2762,7 +2764,7 @@ const PartnerSidebar = ({ activePage, setPage, user, onLogout, stats }) => {
                     <Icon size={17} style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
                     {item.badge !== undefined && (
-                      <span className="badge" style={{ fontSize: '10px', fontWeight: 700, background: item.badgeBg || (isActive ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.8)'), color: item.badgeColor || (isActive ? '#6366f1' : '#fff'), border: 'none', padding: '3px 8px', borderRadius: '12px', minWidth: '24px', textAlign: 'center' }}>
+                      <span className="badge" style={{ fontSize: '10px', fontWeight: 700, background: item.badgeBg || (isActive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.8)'), color: item.badgeColor || (isActive ? '#22c55e' : '#fff'), border: 'none', padding: '3px 8px', borderRadius: '12px', minWidth: '24px', textAlign: 'center' }}>
                         {item.badge}
                       </span>
                     )}
@@ -3019,14 +3021,14 @@ export default function PartnerDashboard() {
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
         {[
           { size: 6, color: 'rgba(34, 197, 94, 0.2)', x: '10%', delay: '0s', dur: '8s' },
-          { size: 4, color: 'rgba(59, 130, 246, 0.15)', x: '25%', delay: '1.5s', dur: '10s' },
+          { size: 4, color: 'rgba(34, 197, 94, 0.15)', x: '25%', delay: '1.5s', dur: '10s' },
           { size: 8, color: 'rgba(124, 58, 237, 0.2)', x: '45%', delay: '3s', dur: '7s' },
           { size: 5, color: 'rgba(34, 197, 94, 0.25)', x: '65%', delay: '0.5s', dur: '9s' },
           { size: 3, color: 'rgba(245, 158, 11, 0.15)', x: '80%', delay: '2s', dur: '6s' },
-          { size: 7, color: 'rgba(59, 130, 246, 0.2)', x: '90%', delay: '4s', dur: '11s' },
+          { size: 7, color: 'rgba(34, 197, 94, 0.2)', x: '90%', delay: '4s', dur: '11s' },
           { size: 9, color: 'rgba(16, 185, 129, 0.15)', x: '15%', delay: '5s', dur: '12s' },
           { size: 5, color: 'rgba(139, 92, 246, 0.2)', x: '55%', delay: '2.5s', dur: '8.5s' },
-          { size: 12, color: 'rgba(59, 130, 246, 0.1)', x: '75%', delay: '1s', dur: '14s' }
+          { size: 12, color: 'rgba(34, 197, 94, 0.1)', x: '75%', delay: '1s', dur: '14s' }
         ].map((p, i) => (
           <div key={i} className="particle" style={{
             width: p.size * 6, height: p.size * 6, background: p.color,

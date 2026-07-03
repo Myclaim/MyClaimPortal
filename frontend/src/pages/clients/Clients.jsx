@@ -304,6 +304,7 @@ const Clients = () => {
   };
 
   const ClientRow = ({ client }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const serviceType = client.serviceType || client.service_type;
     const category = client.category;
     const department = client.department;
@@ -313,7 +314,12 @@ const Clients = () => {
     const createdBy = client.createdBy || client.created_by;
 
     return (
-      <tr style={{ cursor: 'pointer' }} onClick={() => navigate(`/clients/${client.client_id_ref || client._id}`)}>
+      <tr 
+        style={{ cursor: 'pointer', background: isHovered ? 'rgba(255,255,255,0.03)' : 'transparent', transition: 'background 0.2s' }} 
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => navigate(`/clients/${client.client_id_ref || client._id}`)}
+      >
         <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
           <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '13px', color: 'var(--blue)', fontWeight: 700 }}>
             {client.client_id_ref || String(client._id).slice(-6).toUpperCase()}
