@@ -1,0 +1,1 @@
+const mongoose = require('mongoose'); mongoose.connect('mongodb+srv://pratham:pYOfJk9aQ14UvN5X@cluster0.k2eov.mongodb.net/My_Claim?retryWrites=true&w=majority').then(() => { const Proposal = require('./models/Proposal'); Proposal.find().lean().then(p => { console.log(JSON.stringify(p, null, 2)); process.exit(0); }); });

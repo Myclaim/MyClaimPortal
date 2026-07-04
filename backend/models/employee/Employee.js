@@ -17,7 +17,8 @@ const employeeSchema = mongoose.Schema({
   /** Comma-separated skills from the employee form */
   skills: { type: String },
   specialization: { type: String },
-  is_active: { type: Boolean, default: true }
+  is_active: { type: Boolean, default: true },
+  parent_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', index: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Employee', employeeSchema);

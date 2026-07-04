@@ -39,6 +39,7 @@ const Proposals = () => {
     priority: 'Medium',
     sendToUserType: 'Admin',
     assignedTo: '',
+    assignUserName: '',
     superPartner: '',
     partner: '',
     admin: '',
@@ -73,7 +74,7 @@ const Proposals = () => {
       setRealProposals([data, ...realProposals]);
       setFormData({ 
         clientName: '', serviceRequest: '', category: '', priority: 'Medium', 
-        sendToUserType: 'Admin', assignedTo: '', superPartner: '', 
+        sendToUserType: 'Admin', assignedTo: '', assignUserName: '', superPartner: '', 
         partner: '', admin: '', status: 'Draft', notes: '' 
       });
       setSelectedFile(null);
@@ -482,7 +483,20 @@ const Proposals = () => {
                   <select 
                     className="form-select" 
                     value={formData.assignedTo} 
-                    onChange={e => setFormData({...formData, assignedTo: e.target.value})}
+                    onChange={e => {
+                      const selectedUserId = e.target.value;
+                      const selectedUser = users.find(u => String(u._id) === String(selectedUserId));
+                      const selectedName = selectedUser ? selectedUser.name : '';
+                      
+                      setFormData({
+                        ...formData, 
+                        assignedTo: selectedUserId,
+                        assignUserName: selectedName,
+                        partner: formData.sendToUserType === 'Partner' ? selectedName : formData.partner,
+                        superPartner: formData.sendToUserType === 'Super Partner' ? selectedName : formData.superPartner,
+                        admin: formData.sendToUserType === 'Admin' ? selectedName : formData.admin
+                      });
+                    }}
                     style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
                   >
                     <option value="">Select user to send proposal</option>

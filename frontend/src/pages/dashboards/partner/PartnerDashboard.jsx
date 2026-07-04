@@ -12,8 +12,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import StatCard from '../../../components/ui/StatCard';
 import useAuth from '../../../hooks/useAuth';
+import ClientProfile from '../../clients/ClientProfile';
 import api from '../../../services/api';
 import CreateTicketModal from '../../../components/forms/CreateTicketModal';
+import ServiceStore from '../../store/ServiceStore';
 
 /* ─── Inline badge styles (avoids missing CSS-var errors) ────── */
 const BADGE_STYLES = {
@@ -525,7 +527,44 @@ function LeadsTab() {
         setLoadingLeads(false);
       }
     };
-    if (user?.token) fetchLeads();
+    const fetchProposals = async () => {
+      try {
+        const { data: propData } = await api.get('/proposals');
+        console.log('Fetched Proposals:', propData, 'Current User:', user);
+        
+        const userName = user?.name ? user.name.toLowerCase().trim() : '';
+        const myProposals = propData.filter(p => {
+          if (!userName) return false;
+          const pPartner = p.partner ? p.partner.toLowerCase().trim() : '';
+          const pAssign = p.assignUserName ? p.assignUserName.toLowerCase().trim() : '';
+          return pPartner === userName || pAssign === userName || String(p.assignedTo?._id || p.assignedTo) === String(user?._id);
+        });
+        
+        const formattedProps = myProposals.map(p => ({
+          id: String(p._id).substring(String(p._id).length - 6).toUpperCase(),
+          client: p.clientName || 'Unknown',
+          initials: (p.clientName || 'U').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase(),
+          color: ['#f97316', '#06b6d4', '#22c55e', '#8b5cf6'][Math.floor(Math.random() * 4)],
+          service: p.serviceRequest || 'N/A',
+          amount: '—',
+          date: new Date(p.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          status: p.status || 'Draft',
+          statusBg: p.status === 'Accepted' ? 'rgba(16,185,129,0.1)' : (p.status === 'Sent' || p.status === 'Active') ? 'rgba(6,182,212,0.1)' : 'rgba(245,158,11,0.1)',
+          statusCol: p.status === 'Accepted' ? '#10b981' : (p.status === 'Sent' || p.status === 'Active') ? '#06b6d4' : '#f59e0b',
+          attachment: p.attachmentPath ? p.attachmentPath.split('/').pop() : '+ Attach',
+          isAttach: !p.attachmentPath
+        }));
+        
+        setProposals(formattedProps);
+      } catch (err) {
+        console.error('Error fetching proposals:', err);
+      }
+    };
+
+    if (user?.token) {
+      fetchLeads();
+      fetchProposals();
+    }
   }, [user]);
 
   const [search, setSearch] = useState('');
@@ -533,6 +572,8 @@ function LeadsTab() {
   const [showModal, setShowModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState('proposals');
+
+  const [proposals, setProposals] = useState([]);
 
   const filtered = leads.filter(l => {
     const q = search.toLowerCase();
@@ -561,7 +602,7 @@ function LeadsTab() {
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Total Leads</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>4,350</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>{leads.length}</div>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 6px', borderRadius: '4px' }}>↑ 18%</span>
           </div>
         </div>
@@ -572,7 +613,7 @@ function LeadsTab() {
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>New Leads</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>47</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>{leads.filter(l => l.status === 'New').length}</div>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 6px', borderRadius: '4px' }}>↑ 24.5%</span>
           </div>
         </div>
@@ -583,7 +624,7 @@ function LeadsTab() {
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Open Leads</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>128</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>{leads.filter(l => l.status === 'In Discussion').length}</div>
             <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--bg)', padding: '2px 6px', borderRadius: '4px' }}>Awaiting</span>
           </div>
         </div>
@@ -594,7 +635,7 @@ function LeadsTab() {
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Proposals Sent</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>5</div>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', lineHeight: 1 }}>{proposals.length}</div>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 6px', borderRadius: '4px' }}>↑ 12%</span>
           </div>
         </div>
@@ -603,10 +644,10 @@ function LeadsTab() {
       {/* TABS */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
         <button onClick={() => setActiveSubTab('leads')} style={{ padding: '8px 16px', background: activeSubTab === 'leads' ? '#22c55e' : 'var(--card)', border: activeSubTab === 'leads' ? 'none' : '1px solid var(--border)', borderRadius: '8px', color: activeSubTab === 'leads' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-          <FileText size={16} /> View Leads <span style={{ background: activeSubTab === 'leads' ? 'rgba(255,255,255,0.2)' : 'var(--bg)', padding: '2px 6px', borderRadius: '10px', fontSize: '11px' }}>10</span>
+          <FileText size={16} /> View Leads <span style={{ background: activeSubTab === 'leads' ? 'rgba(255,255,255,0.2)' : 'var(--bg)', padding: '2px 6px', borderRadius: '10px', fontSize: '11px' }}>{leads.length}</span>
         </button>
         <button onClick={() => setActiveSubTab('proposals')} style={{ padding: '8px 16px', background: activeSubTab === 'proposals' ? '#22c55e' : 'var(--card)', border: activeSubTab === 'proposals' ? 'none' : '1px solid var(--border)', borderRadius: '8px', color: activeSubTab === 'proposals' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-          <FileText size={16} /> Proposals <span style={{ background: activeSubTab === 'proposals' ? 'rgba(255,255,255,0.2)' : 'var(--bg)', padding: '2px 6px', borderRadius: '10px', fontSize: '11px' }}>5</span>
+          <FileText size={16} /> Proposals <span style={{ background: activeSubTab === 'proposals' ? 'rgba(255,255,255,0.2)' : 'var(--bg)', padding: '2px 6px', borderRadius: '10px', fontSize: '11px' }}>{proposals.length}</span>
         </button>
       </div>
 
@@ -628,12 +669,7 @@ function LeadsTab() {
               </tr>
             </thead>
             <tbody>
-              {[
-                { id: 'PR-001', client: 'Priya Mehta', initials: 'PM', color: '#f97316', service: 'IEPF Claim', amount: '₹2,499', date: '10 Mar 2026', status: 'Sent', statusBg: 'rgba(6,182,212,0.1)', statusCol: '#06b6d4', attachment: 'proposal_priya.pdf' },
-                { id: 'PR-002', client: 'Amit Patel', initials: 'AP', color: '#06b6d4', service: 'Pvt Ltd Registration', amount: '₹2,499', date: '08 Mar 2026', status: 'Accepted', statusBg: 'rgba(16,185,129,0.1)', statusCol: '#10b981', attachment: 'proposal_amit.pdf' },
-                { id: 'PR-003', client: 'Neha Gupta', initials: 'NG', color: '#f97316', service: 'NDA', amount: '₹1,999', date: '05 Mar 2026', status: 'Pending', statusBg: 'rgba(245,158,11,0.1)', statusCol: '#f59e0b', attachment: '+ Attach', isAttach: true },
-                { id: 'PR-004', client: 'Ravi Sharma', initials: 'RS', color: '#22c55e', service: 'Trademark Registration', amount: '₹1,349', date: '01 Mar 2026', status: 'Sent', statusBg: 'rgba(6,182,212,0.1)', statusCol: '#06b6d4', attachment: 'proposal_ravi.pdf' },
-              ].map(row => (
+              {proposals.map(row => (
                 <tr key={row.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '16px 24px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
@@ -835,10 +871,9 @@ function LeadsTab() {
 /* ═══════════════════════════════════════════════════════════════
    TAB: MY CLIENTS
 ════════════════════════════════════════════════════════════════ */
-function ClientsTab() {
+function ClientsTab({ onNavigateToClient }) {
   const { user } = useAuth();
   const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
 
@@ -861,6 +896,7 @@ function ClientsTab() {
 
         const formatted = myClients.map((c, i) => ({
           id: `CL-00${i}`,
+          dbId: c._id,
           name: c.name,
           email: c.email || `${c.name.toLowerCase().replace(' ', '.')}@email.com`,
           phone: c.phone || `98${Math.floor(10000000 + Math.random() * 90000000)}`,
@@ -871,16 +907,14 @@ function ClientsTab() {
         }));
         
         setClients(formatted.length > 0 ? formatted : [
-          { id: 'CL-000', name: 'Priya Mehta', email: 'priya.mehta@email.com', phone: '9876543210', category: 'Physical Shares & Documents', services: 'IEPF Claim', status: 'Active', since: '12 Jan 2025' },
-          { id: 'CL-001', name: 'Amit Patel', email: 'amit.patel@email.com', phone: '9845612378', category: 'Taxation & Compliance', services: 'Income Tax Return Filing', status: 'Active', since: '16 Nov 2024' },
-          { id: 'CL-002', name: 'Suresh Kumar', email: 'suresh.kumar@email.com', phone: '9734521890', category: 'Licenses & Registrations', services: 'GST Registration', status: 'In Progress', since: '08 Aug 2024' },
-          { id: 'CL-003', name: 'Neha Gupta', email: 'neha.g@email.com', phone: '9812345678', category: 'Agreements & Contracts', services: 'NDA, Legal Notice', status: 'Active', since: '08 Jan 2025' },
-          { id: 'CL-004', name: 'Vikram Joshi', email: 'vikram.j@email.com', phone: '9654321087', category: 'Company Changes', services: 'Appointment of a Director', status: 'Doc Verification', since: '17 Feb 2025' },
+          { id: 'CL-000', dbId: '0', name: 'Priya Mehta', email: 'priya.mehta@email.com', phone: '9876543210', category: 'Physical Shares & Documents', services: 'IEPF Claim', status: 'Active', since: '12 Jan 2025' },
+          { id: 'CL-001', dbId: '1', name: 'Amit Patel', email: 'amit.patel@email.com', phone: '9845612378', category: 'Taxation & Compliance', services: 'Income Tax Return Filing', status: 'Active', since: '16 Nov 2024' },
+          { id: 'CL-002', dbId: '2', name: 'Suresh Kumar', email: 'suresh.kumar@email.com', phone: '9734521890', category: 'Licenses & Registrations', services: 'GST Registration', status: 'In Progress', since: '08 Aug 2024' },
+          { id: 'CL-003', dbId: '3', name: 'Neha Gupta', email: 'neha.g@email.com', phone: '9812345678', category: 'Agreements & Contracts', services: 'NDA, Legal Notice', status: 'Active', since: '08 Jan 2025' },
+          { id: 'CL-004', dbId: '4', name: 'Vikram Joshi', email: 'vikram.j@email.com', phone: '9654321087', category: 'Company Changes', services: 'Appointment of a Director', status: 'Doc Verification', since: '17 Feb 2025' },
         ]);
       } catch (err) {
         console.error('Error fetching clients:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchClients();
@@ -916,7 +950,7 @@ function ClientsTab() {
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Total Clients</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>248</span>
+              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{clients.length}</span>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '4px 8px', borderRadius: '6px' }}>↑ 8%</span>
             </div>
           </div>
@@ -929,7 +963,7 @@ function ClientsTab() {
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Active</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>186</span>
+              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{clients.filter(c => c.status === 'Active').length}</span>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '4px 8px', borderRadius: '6px' }}>↑ 12%</span>
             </div>
           </div>
@@ -942,7 +976,7 @@ function ClientsTab() {
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>In Progress</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>34</span>
+              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{clients.filter(c => c.status === 'In Progress' || c.status === 'Doc Verification').length}</span>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', background: 'rgba(148,163,184,0.1)', padding: '4px 8px', borderRadius: '6px' }}>Running</span>
             </div>
           </div>
@@ -955,7 +989,7 @@ function ClientsTab() {
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>New This Month</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>28</span>
+              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{clients.filter(c => c.dbId && c.dbId.length === 24).length}</span>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '4px 8px', borderRadius: '6px' }}>↑ 19%</span>
             </div>
           </div>
@@ -988,26 +1022,26 @@ function ClientsTab() {
             {filtered.length === 0 ? (
               <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No clients found.</td></tr>
             ) : filtered.map((client, idx) => (
-              <tr key={client.id} style={{ borderBottom: '1px solid var(--border)', background: idx === 1 ? 'rgba(255,255,255,0.9)' : 'transparent', transition: '0.2s' }}>
+              <tr key={client.id} style={{ borderBottom: '1px solid var(--border)', background: 'transparent', transition: '0.2s' }}>
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ background: 'rgba(34, 197, 94,0.1)', color: idx === 1 ? '#22c55e' : '#4ade80', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>{client.id}</span>
+                  <span style={{ background: 'rgba(34, 197, 94,0.1)', color: '#4ade80', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>{client.id}</span>
                 </td>
                 <td style={{ padding: '16px 24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Avatar name={client.name} size={36} gradient={idx % 2 === 0 ? ['#86efac', '#22c55e'] : idx === 1 ? ['#22c55e', '#15803d'] : ['#4ade80', '#16a34a']} fontSize={13} />
+                    <Avatar name={client.name} size={36} gradient={idx % 2 === 0 ? ['#86efac', '#22c55e'] : ['#4ade80', '#16a34a']} fontSize={13} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: idx === 1 ? '#000' : 'var(--text)' }}>{client.name}</span>
-                      <span style={{ fontSize: '12px', color: idx === 1 ? '#475569' : 'var(--text-muted)' }}>{client.email}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{client.name}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{client.email}</span>
                     </div>
                   </div>
                 </td>
-                <td style={{ padding: '16px 24px', fontSize: '13px', color: idx === 1 ? '#475569' : 'var(--text-muted)' }}>
+                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>
                   {client.phone}
                 </td>
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ background: 'rgba(34, 197, 94,0.1)', color: idx === 1 ? '#22c55e' : '#a5b4fc', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>{client.category}</span>
+                  <span style={{ background: 'rgba(34, 197, 94,0.1)', color: '#4ade80', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>{client.category}</span>
                 </td>
-                <td style={{ padding: '16px 24px', fontSize: '13px', color: idx === 1 ? '#475569' : 'var(--text-muted)' }}>
+                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>
                   {client.services}
                 </td>
                 <td style={{ padding: '16px 24px' }}>
@@ -1015,15 +1049,15 @@ function ClientsTab() {
                     {client.status}
                   </span>
                 </td>
-                <td style={{ padding: '16px 24px', fontSize: '13px', color: idx === 1 ? '#475569' : 'var(--text-muted)' }}>
+                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>
                   {client.since}
                 </td>
                 <td style={{ padding: '16px 24px' }}>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button style={{ width: '32px', height: '32px', background: idx === 1 ? '#fff' : 'rgba(255,255,255,0.05)', border: idx === 1 ? '1px solid #cbd5e1' : '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: idx === 1 ? '#64748b' : 'var(--text-muted)', cursor: 'pointer' }}>
+                    <button onClick={() => client.dbId !== '0' && onNavigateToClient(client.dbId)} style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer' }}>
                       <Eye size={14} />
                     </button>
-                    <button style={{ width: '32px', height: '32px', background: idx === 1 ? '#fff' : 'rgba(255,255,255,0.05)', border: idx === 1 ? '1px solid #cbd5e1' : '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: idx === 1 ? '#64748b' : 'var(--text-muted)', cursor: 'pointer' }}>
+                    <button onClick={() => client.dbId !== '0' && onNavigateToClient(client.dbId)} style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer' }}>
                       <Edit size={14} />
                     </button>
                   </div>
@@ -1047,25 +1081,28 @@ function ClientsTab() {
 ════════════════════════════════════════════════════════════════ */
 function ServiceHubTab() {
   const [activeCategory, setActiveCategory] = useState('Popular');
-  
-  const POPULAR_SERVICES = [
-    { id: 1, title: 'Lost Shares Search', icon: FileText },
-    { id: 2, title: 'Duplicate Share Certificate', icon: FileText },
-    { id: 3, title: 'Demat of Physical Shares', icon: FileText },
-    { id: 4, title: 'IEPF Claim', icon: FileText },
-    { id: 5, title: 'Pedigree Certificate', icon: FileText },
-    { id: 6, title: 'Succession Certificate', icon: FileText },
-  ];
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState(null);
 
-  const CATEGORIES = [
-    { id: 1, title: 'Physical Shares & Documents', count: 14, icon: FileText },
-    { id: 2, title: 'Licenses & Registrations', count: 13, icon: CheckSquare },
-    { id: 3, title: 'Trademark & IP', count: 10, icon: Shield },
-    { id: 4, title: 'Company Changes', count: 11, icon: User },
-    { id: 5, title: 'Taxation & Compliance', count: 12, icon: FileText },
-    { id: 6, title: 'New Business / Closure', count: 13, icon: Home },
-    { id: 7, title: 'Agreements & Contracts', count: 8, icon: FileText },
-  ];
+  React.useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const res = await api.get('/department-services');
+        // Only active services, including store type
+        setServices(res.data.filter(s => s.status !== false));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadServices();
+  }, []);
+
+  const popularServices = services.slice(0, 6);
+  const dbCategories = [...new Set(services.map(s => s.category).filter(Boolean))];
+  const tabs = ['Popular', ...dbCategories];
 
   return (
     <div style={{ paddingBottom: '40px' }}>
@@ -1085,7 +1122,7 @@ function ServiceHubTab() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '0px', marginBottom: '32px', overflowX: 'auto', whiteSpace: 'nowrap' }}>
-        {['Popular', 'Physical Shares & Documents', 'Licenses & Registrations', 'Trademark & IP', 'Company Changes', 'Taxation & Compliance', 'New Business / Closure', 'Agreements & Contracts'].map(tab => (
+        {tabs.map(tab => (
           <button 
             key={tab}
             onClick={() => setActiveCategory(tab)}
@@ -1107,7 +1144,11 @@ function ServiceHubTab() {
         ))}
       </div>
 
-      {activeCategory === 'Popular' ? (
+      {loading ? (
+        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+          Loading services from Super Admin Service Hub...
+        </div>
+      ) : activeCategory === 'Popular' ? (
         <>
           {/* Popular Services */}
           <div style={{ marginBottom: '40px' }}>
@@ -1115,20 +1156,26 @@ function ServiceHubTab() {
               ⭐ Most Popular Services
             </h3>
             <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '16px' }}>
-              {POPULAR_SERVICES.map(srv => (
-                <div key={srv.id} style={{ flexShrink: 0, width: '220px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              {popularServices.map(srv => (
+                <div key={srv._id} style={{ flexShrink: 0, width: '240px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                   <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(34, 197, 94, 1)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>POPULAR</div>
                   <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80', marginBottom: '20px', marginTop: '16px' }}>
-                    <srv.icon size={24} />
+                    <FileText size={24} />
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '24px', lineHeight: 1.4, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {srv.title}
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px', lineHeight: 1.4, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {srv.name}
                   </div>
-                  <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#22c55e', marginBottom: '16px' }}>
+                    ₹{srv.price?.toLocaleString('en-IN') || 0}
+                  </div>
+                  <button onClick={() => setSelectedService(srv)} style={{ background: 'transparent', border: 'none', color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     View Details →
                   </button>
                 </div>
               ))}
+              {popularServices.length === 0 && (
+                <div style={{ color: 'var(--text-muted)', padding: '20px' }}>No active services found.</div>
+              )}
             </div>
           </div>
 
@@ -1138,29 +1185,116 @@ function ServiceHubTab() {
               Browse by Category
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-              {CATEGORIES.map(cat => (
-                <div key={cat.id} onClick={() => setActiveCategory(cat.title)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', marginBottom: '16px' }}>
-                    <cat.icon size={20} />
+              {dbCategories.map(cat => {
+                const count = services.filter(s => s.category === cat).length;
+                return (
+                  <div key={cat} onClick={() => setActiveCategory(cat)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', marginBottom: '16px' }}>
+                      <FileText size={20} />
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px', lineHeight: 1.4 }}>
+                      {cat}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      {count} services
+                    </div>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px', lineHeight: 1.4 }}>
-                    {cat.title}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {cat.count} services
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </>
       ) : (
-        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#22c55e' }}>
-            <FileText size={32} />
+        /* Services under Category */
+        <div>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '24px' }}>
+            {activeCategory} Services
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            {services.filter(s => s.category === activeCategory).map(srv => (
+              <div key={srv._id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>{srv.name}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: '12px' }}>{srv.code}</div>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '20px', flex: 1 }}>{srv.description || 'No description available.'}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Base Price</div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#22c55e' }}>₹{srv.price?.toLocaleString('en-IN') || 0}</div>
+                  </div>
+                  <button onClick={() => setSelectedService(srv)} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: '0.2s' }}>
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>{activeCategory}</h3>
-          <p style={{ fontSize: '14px', maxWidth: '400px', margin: '0 auto' }}>Service listings for this category are currently being populated. Check back soon for updates.</p>
+        </div>
+      )}
+
+      {/* Service Details Modal */}
+      {selectedService && (
+        <div className="modal-overlay open" onClick={() => setSelectedService(null)}>
+          <div className="modal" style={{ maxWidth: 540, background: 'var(--card)', border: '1px solid rgba(255,255,255,0.05)', animation: 'scaleIn 0.2s ease-out' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header" style={{ borderBottom: 'none', padding: '24px 32px 16px' }}>
+              <div className="modal-title" style={{ fontSize: '20px', fontWeight: 800 }}>Service Details</div>
+              <button className="modal-close" onClick={() => setSelectedService(null)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>✕</button>
+            </div>
+            <div className="modal-body" style={{ padding: '16px 32px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '20px' }}>
+                  ⚖️
+                </div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>{selectedService.name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{selectedService.code}</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Category</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>{selectedService.category}</span>
+                </div>
+                {selectedService.subCategory && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Sub Category</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>{selectedService.subCategory}</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Base Price</span>
+                  <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 800 }}>₹{selectedService.price?.toLocaleString('en-IN') || 0}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px 0' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Description</span>
+                  <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>{selectedService.description || 'No description available.'}</p>
+                </div>
+              </div>
+
+              {selectedService.tracking && selectedService.tracking.length > 0 && (
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>TRACKING STAGES</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {selectedService.tracking.map((stage, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#22c55e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
+                          {idx + 1}
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>{stage}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+            <div className="modal-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
+              <button onClick={() => setSelectedService(null)} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text)', fontWeight: 700, fontSize: '14px', cursor: 'pointer', width: '100%' }}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1868,8 +2002,8 @@ const MOCK_EMPLOYEES = [
   { id: 'EMP-103', name: 'Neha Gupta', email: 'nehagupta@company.com', role: 'Client Relations', dept: 'Support', status: 'On Leave', joined: '17 Aug 2026' },
 ];
 
-function AddEmployeeModal({ onClose, onAdd }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'Operations Mgr', department: 'Operations', aadhar: '' });
+function AddEmployeeModal({ onClose, onAdd, clients = [] }) {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'Operations Mgr', department: 'Operations', aadhar: '', parent_id: '' });
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
@@ -1877,34 +2011,26 @@ function AddEmployeeModal({ onClose, onAdd }) {
     if (!form.name || !form.email || !form.phone) return;
     
     try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          password: 'Password123!',
-          role: 'employee',
-          department: form.department,
-          designation: form.role,
-          // Aadhar can be mapped to a custom field or kyc_data if needed
-        })
+      const res = await api.post('/users', {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        password: 'Password123!',
+        role: 'employee',
+        department: form.department,
+        designation: form.role,
+        parent_id: form.parent_id || undefined
       });
 
-      if (res.ok) {
+      if (res.status === 201 || res.status === 200) {
         onAdd(); // Refresh list from server
         onClose();
       } else {
-        const data = await res.json();
-        alert(data.message || 'Failed to add employee');
+        alert('Failed to add employee');
       }
     } catch (err) {
       console.error(err);
-      alert('Network error while adding employee');
+      alert(err.response?.data?.message || 'Error while adding employee');
     }
   };
 
@@ -1980,34 +2106,45 @@ function AddEmployeeModal({ onClose, onAdd }) {
   );
 }
 
-function EmployeesTab() {
+function EmployeesTab({ clients = [] }) {
   const [filterStatus, setFilterStatus] = React.useState('All');
   const [search, setSearch] = React.useState('');
-  const [employees, setEmployees] = React.useState(MOCK_EMPLOYEES);
+  const [employees, setEmployees] = React.useState([]);
   const [showModal, setShowModal] = React.useState(false);
   const [hoveredRow, setHoveredRow] = React.useState(null);
+  const [selectedEmp, setSelectedEmp] = React.useState(null);
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await api.get('/users');
+      const data = res.data;
+      const emps = data.filter(u => u.role === 'employee');
+      
+      const formatted = emps.map((emp, i) => ({
+        id: emp.id || `EMP-${Math.floor(100 + i)}`,
+        dbId: emp._id,
+        name: emp.name,
+        email: emp.email,
+        phone: emp.phone || '—',
+        role: emp.designation || emp.role || 'Employee',
+        status: emp.is_active !== false ? 'Active' : 'On Leave',
+        joined: new Date(emp.createdAt || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        clientName: emp.clientName || '',
+        department: emp.department || '—',
+        specialization: emp.specialization || '—',
+        skills: emp.skills || ''
+      }));
+      
+      setEmployees(formatted.length > 0 ? formatted : MOCK_EMPLOYEES);
+    } catch (err) {
+      console.error(err);
+      setEmployees(MOCK_EMPLOYEES);
+    }
+  };
 
   React.useEffect(() => {
-    // In a real app, fetch from API here.
-    // For now we just use the mock data.
-    setEmployees(MOCK_EMPLOYEES);
+    fetchEmployees();
   }, []);
-
-  const handleAddEmployee = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newEmp = {
-      id: `E-${Math.floor(Math.random() * 9000) + 1000}`,
-      name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      role: formData.get('role'),
-      status: 'Active',
-      joined: new Date().toLocaleDateString('en-GB')
-    };
-    setEmployees(prev => [newEmp, ...prev]);
-    setShowModal(false);
-  };
 
   const filtered = employees.filter(e => {
     const q = search.toLowerCase();
@@ -2081,6 +2218,7 @@ function EmployeesTab() {
                 key={emp.id} 
                 onMouseEnter={() => setHoveredRow(emp.id)} 
                 onMouseLeave={() => setHoveredRow(null)}
+                onClick={() => setSelectedEmp(emp)}
                 style={{ 
                   borderBottom: '1px solid var(--border)', 
                   background: hoveredRow === emp.id ? 'rgba(255,255,255,0.03)' : 'transparent', 
@@ -2098,7 +2236,9 @@ function EmployeesTab() {
                     </div>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{emp.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{emp.email}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {emp.email}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -2115,41 +2255,67 @@ function EmployeesTab() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay open" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal" style={{ maxWidth: '500px', background: 'var(--card)' }}>
-            <div className="modal-header">
-              <div className="modal-title">Add New Employee</div>
-              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+        <AddEmployeeModal clients={clients} onClose={() => setShowModal(false)} onAdd={fetchEmployees} />
+      )}
+
+      {selectedEmp && (
+        <div className="modal-overlay open" onClick={() => setSelectedEmp(null)}>
+          <div className="modal" style={{ maxWidth: 520, background: 'var(--card)', border: '1px solid rgba(255,255,255,0.05)', animation: 'scaleIn 0.2s ease-out' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header" style={{ borderBottom: 'none', padding: '24px 32px 16px' }}>
+              <div className="modal-title" style={{ fontSize: '20px', fontWeight: 800 }}>Employee Details</div>
+              <button className="modal-close" onClick={() => setSelectedEmp(null)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>✕</button>
             </div>
-            <form onSubmit={handleAddEmployee}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Full Name</label>
-                  <input name="name" className="form-input" style={{ width: '100%', background: '#050B14' }} required />
+            <div className="modal-body" style={{ padding: '16px 32px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Profile Header Card */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 800 }}>
+                  {selectedEmp.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Email Address</label>
-                  <input type="email" name="email" className="form-input" style={{ width: '100%', background: '#050B14' }} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Phone Number</label>
-                  <input name="phone" className="form-input" style={{ width: '100%', background: '#050B14' }} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>Role</label>
-                  <select name="role" className="form-select" style={{ width: '100%', background: '#050B14' }} required>
-                    <option value="Consultant">Consultant</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Support Staff">Support Staff</option>
-                    <option value="Admin">Admin</option>
-                  </select>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>{selectedEmp.name}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{selectedEmp.email}</div>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button type="button" onClick={() => setShowModal(false)} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" style={{ padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Add Employee</button>
+
+              {/* Grid Details */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[
+                  ['Employee ID', selectedEmp.id],
+                  ['Access Role', selectedEmp.role],
+                  ['Department', selectedEmp.department],
+                  ['Contact Phone', selectedEmp.phone],
+                  ['Specialization', selectedEmp.specialization],
+                  ['Date Joined', selectedEmp.joined],
+                  ['Status', selectedEmp.status]
+                ].map(([label, value]) => (
+                  <div key={label} style={{ display: 'flex', justifycontent: 'space-between', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>{label}</span>
+                    <span style={{ fontSize: '13px', color: label === 'Status' ? (value === 'Active' ? '#22c55e' : '#f59e0b') : 'var(--text)', fontWeight: 600 }}>{value}</span>
+                  </div>
+                ))}
               </div>
-            </form>
+
+              {/* Skills Tags */}
+              {selectedEmp.skills && (
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>SKILLS</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {selectedEmp.skills.split(',').map(s => s.trim()).filter(Boolean).map(skill => (
+                      <span key={skill} style={{ fontSize: '11px', fontWeight: 700, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '4px 8px', borderRadius: '6px' }}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+            <div className="modal-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
+              <button onClick={() => setSelectedEmp(null)} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text)', fontWeight: 700, fontSize: '14px', cursor: 'pointer', width: '100%' }}>
+                Close Details
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2547,6 +2713,7 @@ function AnalyticsTab({ leads = [], tickets = [] }) {
   const totalLeads = leads.length;
   const convertedLeads = leads.filter(l => l.status === 'converted').length;
   const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+  const total = tickets.length || 0;
   
   const funnelData = [
     { label: 'New',            val: leads.filter(l => l.status === 'new' || !l.status).length, color: '#22c55e' },
@@ -2688,8 +2855,8 @@ const getNavItems = (stats) => [
   { id: 'leads',      label: 'Lead Centre',  icon: Layout,        section: 'DASHBOARD' },
   { id: 'activity',   label: 'Activity Log', icon: Activity,      section: 'DASHBOARD' },
 
-  { id: 'clients',    label: 'My Client',    icon: Users,         section: 'PEOPLE',    badge: stats?.clients || 248 },
-  { id: 'employees',  label: 'My Employee',  icon: UserPlus,      section: 'PEOPLE',    badge: 12 },
+  { id: 'clients',    label: 'My Client',    icon: Users,         section: 'PEOPLE',    badge: stats?.clients !== undefined ? stats.clients : 0 },
+  { id: 'employees',  label: 'My Employee',  icon: UserPlus,      section: 'PEOPLE',    badge: stats?.employees !== undefined ? stats.employees : 0 },
 
   { id: 'tickets',    label: 'Service Hub',  icon: Settings,      section: 'OPERATIONS', badge: 5 },
   { id: 'store',      label: 'Store',        icon: ShoppingBag,   section: 'OPERATIONS' },
@@ -2911,12 +3078,14 @@ const PartnerTopbar = ({ page }) => {
 ════════════════════════════════════════════════════════════════ */
 export default function PartnerDashboard() {
   const [page, setPage] = useState(() => sessionStorage.getItem('MyClaim_PartnerTab') || 'overview');
+  const [selectedClientId, setSelectedClientId] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [dbData, setDbData] = useState({
     leads: [],
     clients: [],
+    employees: [],
     tickets: [],
     loading: true
   });
@@ -2936,12 +3105,14 @@ export default function PartnerDashboard() {
         ]);
 
         const myLeads = leadsRes.data.filter(l => String(l.sourceUserId?._id || l.sourceUserId) === String(user._id));
-        const myClients = usersRes.data;
+        const myClients = usersRes.data.filter(u => u.role === 'client');
+        const myEmployees = usersRes.data.filter(u => u.role === 'employee');
         const myTickets = ticketsRes.data; // Filtered by backend already based on role logic updated
 
         setDbData({
           leads: myLeads,
           clients: myClients,
+          employees: myEmployees,
           tickets: myTickets,
           loading: false
         });
@@ -2962,6 +3133,7 @@ export default function PartnerDashboard() {
     leads: dbData.leads.length,
     converted: dbData.leads.filter(l => l.status === 'converted').length,
     clients: dbData.clients.length,
+    employees: dbData.employees.length,
     tickets: dbData.tickets.length
   };
 
@@ -2978,8 +3150,9 @@ export default function PartnerDashboard() {
     switch (page) {
       case 'overview':  return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
       case 'leads':     return <LeadsTab />;
-      case 'clients':   return <ClientsTab />;
-      case 'employees': return <EmployeesTab />;
+      case 'clients':   return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} />;
+      case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
+      case 'employees': return <EmployeesTab clients={dbData.clients} />;
       case 'store':     return <StoreTab />;
       case 'task':      return <TaskTab />;
       case 'calendar':  return <CalendarTab />;

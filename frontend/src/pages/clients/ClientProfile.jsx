@@ -12,10 +12,13 @@ import DocumentUploadModal from '../../components/documents/DocumentUploadModal'
 import DocumentsView from '../../components/documents/DocumentsView';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
 import AddFamilyMemberModal from '../../components/forms/AddFamilyMemberModal';
+import useAuth from '../../hooks/useAuth';
 
-const ClientProfile = () => {
+const ClientProfile = ({ idProp, onClose }) => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id: urlId } = useParams();
+  const id = idProp || urlId;
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [client, setClient] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -92,11 +95,11 @@ const ClientProfile = () => {
   );
 
   return (
-    <div className="page active" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#f8fafc' }}>
+    <div className={idProp ? "" : "page active"} style={{ display: 'flex', flexDirection: 'column', height: idProp ? 'auto' : '100vh', overflow: idProp ? 'visible' : 'hidden', background: '#f8fafc' }}>
       {/* 🚀 COMPACT HEADER */}
       <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
         <button 
-          onClick={() => navigate(-1)} 
+          onClick={onClose ? onClose : () => navigate(-1)} 
           style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569' }}
         >
           ← Back
@@ -131,21 +134,25 @@ const ClientProfile = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={() => setIsTicketModalOpen(true)}
-            style={{ padding: '8px 16px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}
-          >
-            <Ticket size={16} color="#eab308" /> Create Ticket
-          </button>
+          {!(idProp || user?.role === 'partner' || user?.role === 'super_partner') && (
+            <button 
+              onClick={() => setIsTicketModalOpen(true)}
+              style={{ padding: '8px 16px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}
+            >
+              <Ticket size={16} color="#eab308" /> Create Ticket
+            </button>
+          )}
           <button 
             onClick={() => setIsUploadModalOpen(true)}
             style={{ padding: '8px 16px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}
           >
             <Upload size={16} color="#3b82f6" /> Upload Doc
           </button>
-          <button style={{ padding: '8px 16px', background: '#2563eb', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#fff', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)' }}>
-            <FileText size={16} /> Create Proposal
-          </button>
+          {!(idProp || user?.role === 'partner' || user?.role === 'super_partner') && (
+            <button style={{ padding: '8px 16px', background: '#2563eb', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#fff', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)' }}>
+              <FileText size={16} /> Create Proposal
+            </button>
+          )}
         </div>
       </div>
 

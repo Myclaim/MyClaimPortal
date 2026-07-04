@@ -97,7 +97,7 @@ function App() {
             <Route path="super-admin/ai-workspace" element={<ProtectedRoute superAdminOnly={true}><MyClaimAI /></ProtectedRoute>} />
             <Route path="clients" element={<ProtectedRoute superAdminOnly={true}><Clients /></ProtectedRoute>} />
             <Route path="clients/add" element={<ProtectedRoute superAdminOnly={true}><ClientForm /></ProtectedRoute>} />
-            <Route path="clients/:id" element={<ProtectedRoute superAdminOnly={true}><ClientProfile /></ProtectedRoute>} />
+            <Route path="clients/:id" element={<ProtectedRoute superAdminOnly={true} partnerAllowed={true}><ClientProfile /></ProtectedRoute>} />
             <Route path="proposals" element={<ProtectedRoute superAdminOnly={true}><Proposals /></ProtectedRoute>} />
             <Route path="proposal-centre" element={<ProtectedRoute superAdminOnly={true}><Proposals /></ProtectedRoute>} />
             <Route path="employees" element={<ProtectedRoute superAdminOnly={true}><Employees /></ProtectedRoute>} />

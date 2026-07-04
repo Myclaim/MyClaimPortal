@@ -5,6 +5,7 @@ const Admin = require('../../models/admin/Admin');
 const Partner = require('../../models/partner/Partner');
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
+const { bustCache: bustUserCache } = require('../user/userController');
 
 // ─────────────────────────────────────────────
 // SERVER-SIDE CACHE for Leads
@@ -48,7 +49,7 @@ const _populateLeads = async (leads) => {
 // Helper to auto-convert a lead into a Client
 const handleLeadConversion = async (lead, customPassword) => {
   if (lead.status === 'converted') {
-    const generatedEmail = lead.email || `client_${lead._id.toString().substring(0,8)}@example.com`;
+    const generatedEmail = lead.email || `client_${lead._id.toString().substring(0, 8)}@example.com`;
     if (!lead.convertedClientId) {
       const existingClient = await Client.findOne({ email: generatedEmail.toLowerCase() });
       if (existingClient) throw new Error(`A client account with email ${generatedEmail} already exists.`);
@@ -71,6 +72,8 @@ const handleLeadConversion = async (lead, customPassword) => {
         kyc_data: { address: lead.city }
       });
       lead.convertedClientId = newClient._id;
+      // Invalidate the user cache so the newly created client appears in the partner's client list
+      if (typeof bustUserCache === 'function') bustUserCache();
     } else if (customPassword) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(customPassword, salt);

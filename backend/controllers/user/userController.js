@@ -42,7 +42,10 @@ const _fetchAndCache = async (cacheKey, role, userId) => {
       Client.find({ parent_id: { $in: ids } }, CACHE_FIELDS).lean(),
     ]);
   } else if (role === 'partner') {
-    clients = await Client.find({ parent_id: userId }, CACHE_FIELDS).lean();
+    [clients, employees] = await Promise.all([
+      Client.find({ parent_id: userId }, CACHE_FIELDS).lean(),
+      Employee.find({ parent_id: userId }, CACHE_FIELDS).lean()
+    ]);
   }
 
   const allRaw = [...admins, ...partners, ...clients, ...employees, ...others];
@@ -139,158 +142,169 @@ const getUsers = async (req, res) => {
 // @route   POST /api/users
 // @access  Private/Admin
 const createUser = async (req, res) => {
-  const { name, username, email, phone, password, role, parent_id, client_id_ref } = req.body;
+  try {
+    const { name, username, email, phone, password, role, parent_id, client_id_ref } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Please provide name, email and password' });
-  }
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Please provide name, email and password' });
+    }
 
-  const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase();
 
-  // Prevent Super Partners from escalating privileges
-  if (req.user.role === 'super_partner' && !['partner', 'client'].includes(role)) {
-    return res.status(403).json({ message: 'Not authorized to create admin-level users.' });
-  }
+    // Prevent Super Partners from escalating privileges
+    if (req.user.role === 'super_partner' && !['partner', 'client'].includes(role)) {
+      return res.status(403).json({ message: 'Not authorized to create admin-level users.' });
+    }
 
-  // Check email or username uniqueness across all collections
-  const orConditions = [{ email: normalizedEmail }];
-  if (username) orConditions.push({ username });
-  if (client_id_ref) orConditions.push({ client_id_ref });
+    // Check email or username uniqueness across all collections
+    const orConditions = [{ email: normalizedEmail }];
+    if (username) orConditions.push({ username });
+    if (client_id_ref) orConditions.push({ client_id_ref });
 
-  const checks = await Promise.all([
-    Admin.findOne({ $or: orConditions }),
-    Partner.findOne({ $or: orConditions }),
-    Client.findOne({ $or: orConditions }),
-    Employee.findOne({ $or: orConditions }),
-    User.findOne({ $or: orConditions })
-  ]);
-  
-  const identifierExists = checks.find(u => u !== null);
-
-  if (identifierExists) {
-    return res.status(400).json({ message: 'A user with this email, username, or ID already exists' });
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  let newUser;
-  const payload = {
-    name,
-    username: username || normalizedEmail.split('@')[0],
-    email: normalizedEmail,
-    phone,
-    alternatePhone: req.body.alternatePhone,
-    myClaimEmail: req.body.myClaimEmail,
-    password: hashedPassword,
-    role: role || 'team',
-    parent_id,
-    client_id_ref,
-    address: req.body.address,
-    // Add all possible client fields
-    firstName: req.body.firstName,
-    middleName: req.body.middleName,
-    lastName: req.body.lastName,
-    dob: req.body.dob,
-    gender: req.body.gender,
-    maritalStatus: req.body.maritalStatus,
-    oldName: req.body.oldName,
-    newName: req.body.newName,
-    citizenship: req.body.citizenship,
-    state: req.body.state,
-    city: req.body.city,
-    pincode: req.body.pincode,
-    permanentAddress: req.body.permanentAddress,
-    stateOld: req.body.stateOld,
-    cityOld: req.body.cityOld,
-    pincodeOld: req.body.pincodeOld,
-    oldAddress: req.body.oldAddress,
-    kyc_data: req.body.kyc_data,
-    otherDocsDesc: req.body.otherDocsDesc,
-    relation: req.body.relation,
-    relationWithHolder: req.body.relationWithHolder,
-    reference: req.body.reference,
-    referenceName: req.body.referenceName,
-    referenceMobileNo: req.body.referenceMobileNo,
-    referredById: req.body.referredById,
+    const checks = await Promise.all([
+      Admin.findOne({ $or: orConditions }),
+      Partner.findOne({ $or: orConditions }),
+      Client.findOne({ $or: orConditions }),
+      Employee.findOne({ $or: orConditions }),
+      User.findOne({ $or: orConditions })
+    ]);
     
-    // Partner specific
-    profession: req.body.profession || req.body.currentProfession,
-    representative: req.body.representative,
-    entity: req.body.entity,
-    superPartner: req.body.superPartner,
-    category: req.body.category,
-    companyName: req.body.companyName,
-    partnerAgreementFile: req.body.partnerAgreementFile,
-    deadline: req.body.deadline,
-    dateOfCommencement: req.body.dateOfCommencement,
-    notes: req.body.notes,
-    department: req.body.department,
-    skills: req.body.skills,
-    specialization: req.body.specialization,
-    designation: req.body.designation ?? req.body.roles,
+    const identifierExists = checks.find(u => u !== null);
 
-    // Nominee
-    nomineeAge: req.body.nomineeAge,
-    nomineeName: req.body.nomineeName,
-    nomineeId: req.body.nomineeId,
-    nomineeDob: req.body.nomineeDob,
-    nomineeRelation: req.body.nomineeRelation,
-    nomineeAadharPath: req.body.nomineeAadharPath,
-    nomineePanPath: req.body.nomineePanPath,
-    nomineeNocPath: req.body.nomineeNocPath,
-    nomineeOtherDocsPath: req.body.nomineeOtherDocsPath,
-    preference: req.body.preference,
-    status: req.body.status,
-  };
+    if (identifierExists) {
+      return res.status(400).json({ message: 'A user with this email, username, or ID already exists' });
+    }
 
-  // Save to "different folder" (model) based on role
-  if (role === 'admin' || role === 'super_admin') {
-    newUser = await Admin.create(payload);
-  } else if (role === 'partner' || role === 'super_partner') {
-    newUser = await Partner.create(payload);
-  } else if (role === 'client') {
-    newUser = await Client.create(payload);
-  } else if (role === 'employee') {
-    newUser = await Employee.create(payload);
-  } else {
-    newUser = await User.create(payload);
-  }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-  if (newUser) {
-    bustCache(); // Bust server cache so next read reflects new user
-    await Activity.create({
-      action: `User ${name} (${role || 'team'}) created in ${role} collection`,
-      user: req.user._id,
-    });
-    
-    // Send welcome email with temporary password
-    // Use the generated username or email from payload, and original plain-text password
-    await sendWelcomeEmail(payload.email, payload.username, password);
+    // Normalize parent_id: replace empty string or null/undefined with undefined
+    let parsedParentId = (parent_id === '' || parent_id == null) ? undefined : parent_id;
+    if (!parsedParentId && (req.user.role === 'partner' || req.user.role === 'super_partner')) {
+      parsedParentId = req.user._id;
+    }
 
-    res.status(201).json({
-      _id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      username: newUser.username,
-      phone: newUser.phone,
-      department: newUser.department,
-      skills: newUser.skills,
-      designation: newUser.designation,
-      specialization: newUser.specialization,
-      companyName: newUser.companyName,
-      representative: newUser.representative,
-      profession: newUser.profession,
-      entity: newUser.entity,
-      category: newUser.category,
-      parent_id: newUser.parent_id,
-      client_id_ref: newUser.client_id_ref,
-      role: newUser.role,
-      is_active: newUser.is_active,
-      createdAt: newUser.createdAt,
-    });
-  } else {
-    res.status(400).json({ message: 'Invalid user data' });
+    let newUser;
+    const payload = {
+      name,
+      username: username || normalizedEmail.split('@')[0],
+      email: normalizedEmail,
+      phone,
+      alternatePhone: req.body.alternatePhone,
+      myClaimEmail: req.body.myClaimEmail,
+      password: hashedPassword,
+      role: role || 'team',
+      parent_id: parsedParentId,
+      client_id_ref,
+      address: req.body.address,
+      // Add all possible client fields
+      firstName: req.body.firstName,
+      middleName: req.body.middleName,
+      lastName: req.body.lastName,
+      dob: req.body.dob,
+      gender: req.body.gender,
+      maritalStatus: req.body.maritalStatus,
+      oldName: req.body.oldName,
+      newName: req.body.newName,
+      citizenship: req.body.citizenship,
+      state: req.body.state,
+      city: req.body.city,
+      pincode: req.body.pincode,
+      permanentAddress: req.body.permanentAddress,
+      stateOld: req.body.stateOld,
+      cityOld: req.body.cityOld,
+      pincodeOld: req.body.pincodeOld,
+      oldAddress: req.body.oldAddress,
+      kyc_data: req.body.kyc_data,
+      otherDocsDesc: req.body.otherDocsDesc,
+      relation: req.body.relation,
+      relationWithHolder: req.body.relationWithHolder,
+      reference: req.body.reference,
+      referenceName: req.body.referenceName,
+      referenceMobileNo: req.body.referenceMobileNo,
+      referredById: req.body.referredById,
+      
+      // Partner specific
+      profession: req.body.profession || req.body.currentProfession,
+      representative: req.body.representative,
+      entity: req.body.entity,
+      superPartner: req.body.superPartner,
+      category: req.body.category,
+      companyName: req.body.companyName,
+      partnerAgreementFile: req.body.partnerAgreementFile,
+      deadline: req.body.deadline,
+      dateOfCommencement: req.body.dateOfCommencement,
+      notes: req.body.notes,
+      department: req.body.department,
+      skills: req.body.skills,
+      specialization: req.body.specialization,
+      designation: req.body.designation ?? req.body.roles,
+
+      // Nominee
+      nomineeAge: req.body.nomineeAge,
+      nomineeName: req.body.nomineeName,
+      nomineeId: req.body.nomineeId,
+      nomineeDob: req.body.nomineeDob,
+      nomineeRelation: req.body.nomineeRelation,
+      nomineeAadharPath: req.body.nomineeAadharPath,
+      nomineePanPath: req.body.nomineePanPath,
+      nomineeNocPath: req.body.nomineeNocPath,
+      nomineeOtherDocsPath: req.body.nomineeOtherDocsPath,
+      preference: req.body.preference,
+      status: req.body.status,
+    };
+
+    // Save to "different folder" (model) based on role
+    if (role === 'admin' || role === 'super_admin') {
+      newUser = await Admin.create(payload);
+    } else if (role === 'partner' || role === 'super_partner') {
+      newUser = await Partner.create(payload);
+    } else if (role === 'client') {
+      newUser = await Client.create(payload);
+    } else if (role === 'employee') {
+      newUser = await Employee.create(payload);
+    } else {
+      newUser = await User.create(payload);
+    }
+
+    if (newUser) {
+      bustCache(); // Bust server cache so next read reflects new user
+      await Activity.create({
+        action: `User ${name} (${role || 'team'}) created in ${role} collection`,
+        user: req.user._id,
+      });
+      
+      // Send welcome email with temporary password
+      // Use the generated username or email from payload, and original plain-text password
+      await sendWelcomeEmail(payload.email, payload.username, password);
+
+      res.status(201).json({
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        username: newUser.username,
+        phone: newUser.phone,
+        department: newUser.department,
+        skills: newUser.skills,
+        designation: newUser.designation,
+        specialization: newUser.specialization,
+        companyName: newUser.companyName,
+        representative: newUser.representative,
+        profession: newUser.profession,
+        entity: newUser.entity,
+        category: newUser.category,
+        parent_id: newUser.parent_id,
+        client_id_ref: newUser.client_id_ref,
+        role: newUser.role,
+        is_active: newUser.is_active,
+        createdAt: newUser.createdAt,
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    console.error('Error in createUser:', error);
+    res.status(500).json({ message: error.message || 'Internal server error during user creation' });
   }
 };
 
@@ -860,4 +874,5 @@ module.exports = {
   addClientFolder,
   renameClientFolder,
   deleteClientFolder,
+  bustCache,
 };

@@ -28,40 +28,34 @@ const ServiceStore = () => {
   const [storeServices, setStoreServices] = useState([]);
 
   useEffect(() => {
-    const loadServices = () => {
-      let rawServices = JSON.parse(localStorage.getItem('serviceServices'));
-      if (!rawServices || rawServices.length === 0) {
-        rawServices = DEFAULT_SERVICE_SERVICES;
+    const loadServices = async () => {
+      try {
+        const res = await api.get('/department-services?type=service');
+        const data = res.data.length > 0 ? res.data : DEFAULT_SERVICE_SERVICES;
+        setStoreServices(data.filter(s => s.status !== false).map(s => ({
+          ...s,
+          title: s.name,
+          desc: s.description || s.desc || '',
+          icon: '📋',
+          tabs: ['Popular', s.category]
+        })));
+      } catch (err) {
+        console.error(err);
+        setStoreServices(DEFAULT_SERVICE_SERVICES.filter(s => s.status).map(s => ({
+          ...s,
+          title: s.name,
+          desc: s.description || s.desc || '',
+          icon: '📋',
+          tabs: ['Popular', s.category]
+        })));
       }
-      setStoreServices(rawServices.filter(s => s.status).map(s => ({
-        ...s,
-        title: s.name,
-        desc: s.description,
-        icon: '📋',
-        tabs: ['Popular', s.category]
-      })));
     };
 
     loadServices();
-
-    const handleStorageChange = (e) => {
-      if (e.key === 'serviceServices') {
-        loadServices();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const tabs = [
-    'Popular', 
-    'Physical Shares & Documents', 
-    'Licenses & Registrations', 
-    'Trademark & IP', 
-    'Taxation & Compliance', 
-    'New Business / Closure'
-  ];
+  const dbCategories = [...new Set(storeServices.map(s => s.category).filter(Boolean))];
+  const tabs = ['Popular', ...dbCategories];
 
   const clients = [
     { id: 1, initials: 'AK', bg: '#3b82f6', name: 'Arvind Kumar', phone: '+91 98210 33456', email: 'arvind.k@gmail.com', crn: 'CRN-2891' },
