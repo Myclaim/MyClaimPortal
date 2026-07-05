@@ -38,12 +38,10 @@ const authUser = async (req, res) => {
       action: `User ${user.name || email} logged in`,
       user: user._id,
     });
+    const userData = user.toObject();
+    delete userData.password;
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      department: user.department,
+      ...userData,
       token: generateToken(user._id),
     });
   } else {
