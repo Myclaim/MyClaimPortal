@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import {
   Users, User, ClipboardCheck, TrendingUp, Plus, Search,
   Eye, CheckCircle2, BarChart3,
   Zap, Target, RefreshCw, AlertCircle,
   ChevronRight, ChevronLeft, Briefcase, Download, Edit, Check, Clock,
-  UserPlus, Send, Star, MoreVertical, Shield,
+  UserPlus, Send, Star, MoreVertical, Shield, ShieldCheck,
   LogOut, LayoutDashboard, Network, Bell, Ticket, Settings,
   Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar, 
   FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale
@@ -16,6 +17,7 @@ import ClientProfile from '../../clients/ClientProfile';
 import api from '../../../services/api';
 import CreateTicketModal from '../../../components/forms/CreateTicketModal';
 import ServiceStore from '../../store/ServiceStore';
+import PartnerServiceHubTab from './PartnerServiceHubTab';
 
 /* ─── Inline badge styles (avoids missing CSS-var errors) ────── */
 const BADGE_STYLES = {
@@ -1079,228 +1081,6 @@ function ClientsTab({ onNavigateToClient }) {
 /* ═══════════════════════════════════════════════════════════════
    TAB: SERVICE HUB
 ════════════════════════════════════════════════════════════════ */
-function ServiceHubTab() {
-  const [activeCategory, setActiveCategory] = useState('Popular');
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState(null);
-
-  React.useEffect(() => {
-    const loadServices = async () => {
-      try {
-        const res = await api.get('/department-services');
-        // Only active services, including store type
-        setServices(res.data.filter(s => s.status !== false));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadServices();
-  }, []);
-
-  const popularServices = services.slice(0, 6);
-  const dbCategories = [...new Set(services.map(s => s.category).filter(Boolean))];
-  const tabs = ['Popular', ...dbCategories];
-
-  return (
-    <div style={{ paddingBottom: '40px' }}>
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '16px' }}>Service Hub</h2>
-        
-        {/* Promo Banner */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🎉 New Year Offer
-          </span>
-          <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(34, 197, 94, 0.3)', display: 'inline-flex', alignItems: 'center' }}>
-            <Check size={12} style={{ marginRight: 4 }} /> Additional 10% Off
-          </span>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '0px', marginBottom: '32px', overflowX: 'auto', whiteSpace: 'nowrap' }}>
-        {tabs.map(tab => (
-          <button 
-            key={tab}
-            onClick={() => setActiveCategory(tab)}
-            style={{ 
-              background: 'transparent', 
-              border: 'none', 
-              color: activeCategory === tab ? '#fff' : 'var(--text-muted)', 
-              fontSize: '13px', 
-              fontWeight: activeCategory === tab ? 700 : 600, 
-              cursor: 'pointer', 
-              padding: '0 0 12px 0',
-              marginBottom: '-1px',
-              borderBottom: activeCategory === tab ? '2px solid #22c55e' : '2px solid transparent',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
-          Loading services from Super Admin Service Hub...
-        </div>
-      ) : activeCategory === 'Popular' ? (
-        <>
-          {/* Popular Services */}
-          <div style={{ marginBottom: '40px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ⭐ Most Popular Services
-            </h3>
-            <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '16px' }}>
-              {popularServices.map(srv => (
-                <div key={srv._id} style={{ flexShrink: 0, width: '240px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(34, 197, 94, 1)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>POPULAR</div>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80', marginBottom: '20px', marginTop: '16px' }}>
-                    <FileText size={24} />
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px', lineHeight: 1.4, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {srv.name}
-                  </div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#22c55e', marginBottom: '16px' }}>
-                    ₹{srv.price?.toLocaleString('en-IN') || 0}
-                  </div>
-                  <button onClick={() => setSelectedService(srv)} style={{ background: 'transparent', border: 'none', color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    View Details →
-                  </button>
-                </div>
-              ))}
-              {popularServices.length === 0 && (
-                <div style={{ color: 'var(--text-muted)', padding: '20px' }}>No active services found.</div>
-              )}
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '24px' }}>
-              Browse by Category
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-              {dbCategories.map(cat => {
-                const count = services.filter(s => s.category === cat).length;
-                return (
-                  <div key={cat} onClick={() => setActiveCategory(cat)} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer', transition: '0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(34, 197, 94,0.5)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', marginBottom: '16px' }}>
-                      <FileText size={20} />
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px', lineHeight: 1.4 }}>
-                      {cat}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      {count} services
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      ) : (
-        /* Services under Category */
-        <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '24px' }}>
-            {activeCategory} Services
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {services.filter(s => s.category === activeCategory).map(srv => (
-              <div key={srv._id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>{srv.name}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: '12px' }}>{srv.code}</div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '20px', flex: 1 }}>{srv.description || 'No description available.'}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-                  <div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Base Price</div>
-                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#22c55e' }}>₹{srv.price?.toLocaleString('en-IN') || 0}</div>
-                  </div>
-                  <button onClick={() => setSelectedService(srv)} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: '0.2s' }}>
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Service Details Modal */}
-      {selectedService && (
-        <div className="modal-overlay open" onClick={() => setSelectedService(null)}>
-          <div className="modal" style={{ maxWidth: 540, background: 'var(--card)', border: '1px solid rgba(255,255,255,0.05)', animation: 'scaleIn 0.2s ease-out' }} onClick={e => e.stopPropagation()}>
-            <div className="modal-header" style={{ borderBottom: 'none', padding: '24px 32px 16px' }}>
-              <div className="modal-title" style={{ fontSize: '20px', fontWeight: 800 }}>Service Details</div>
-              <button className="modal-close" onClick={() => setSelectedService(null)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>✕</button>
-            </div>
-            <div className="modal-body" style={{ padding: '16px 32px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '20px' }}>
-                  ⚖️
-                </div>
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>{selectedService.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{selectedService.code}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Category</span>
-                  <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>{selectedService.category}</span>
-                </div>
-                {selectedService.subCategory && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Sub Category</span>
-                    <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>{selectedService.subCategory}</span>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Base Price</span>
-                  <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 800 }}>₹{selectedService.price?.toLocaleString('en-IN') || 0}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px 0' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Description</span>
-                  <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>{selectedService.description || 'No description available.'}</p>
-                </div>
-              </div>
-
-              {selectedService.tracking && selectedService.tracking.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>TRACKING STAGES</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {selectedService.tracking.map((stage, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#22c55e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
-                          {idx + 1}
-                        </div>
-                        <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>{stage}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-            </div>
-            <div className="modal-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
-              <button onClick={() => setSelectedService(null)} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text)', fontWeight: 700, fontSize: '14px', cursor: 'pointer', width: '100%' }}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ═══════════════════════════════════════════════════════════════
    TAB: COMING SOON / LOADING
 ════════════════════════════════════════════════════════════════ */
@@ -2335,6 +2115,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterHub, setFilterHub] = useState('All');
   const [showModal, setShowModal] = useState(false);
 
   const dbClients = clients;
@@ -2369,15 +2150,15 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
       const clientName = nameFromClient || clients.find(c => String(c._id) === clientId)?.name;
 
       return {
-        id: String(t._id).substring(0, 6).toUpperCase(),
+        id: String(t._id).substring(18, 24).toUpperCase(),
         clientId,
         client: clientName || 'Unknown',
         service: t.service,
-        vertical: 'service', // default
+        vertical: t.hubType || 'Service Hub',
         status: t.status === 'in_process' ? 'In Process' : t.status === 'completed' ? 'Completed' : 'Active',
         progress: t.progress || 0,
         created: new Date(t.createdAt).toLocaleDateString('en-GB'),
-        lastUpdate: 'Recently updated',
+        lastUpdate: new Date(t.updatedAt || t.createdAt).toLocaleDateString('en-GB'),
         rawTicket: t
       };
     }));
@@ -2387,14 +2168,16 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
     const q = search.toLowerCase();
     const clientLabel = String(t.client || 'Unknown').toLowerCase();
     return (clientLabel.includes(q) || t.service.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
-      && (filterStatus === 'All' || t.status === filterStatus);
+      && (filterStatus === 'All' || t.status === filterStatus)
+      && (filterHub === 'All' || t.vertical === filterHub);
   });
 
+  const hubFilteredTickets = tickets.filter(t => filterHub === 'All' || t.vertical === filterHub);
   const ticketCounts = {
-    All: tickets.length,
-    Active: tickets.filter(t => t.status === 'Active').length,
-    'In Process': tickets.filter(t => t.status === 'In Process').length,
-    Completed: tickets.filter(t => t.status === 'Completed').length,
+    All: hubFilteredTickets.length,
+    Active: hubFilteredTickets.filter(t => t.status === 'Active').length,
+    'In Process': hubFilteredTickets.filter(t => t.status === 'In Process').length,
+    Completed: hubFilteredTickets.filter(t => t.status === 'Completed').length,
   };
 
   // Resolve any tickets where client name is missing by fetching user by id
@@ -2449,7 +2232,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
             </div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: '#fff', padding: '4px 8px', borderRadius: '20px' }}>+12%</div>
           </div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{tickets.length > 0 ? tickets.length : 15}</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{hubFilteredTickets.length}</div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Tickets</div>
         </div>
         
@@ -2460,7 +2243,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
             </div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: '#fff', padding: '4px 8px', borderRadius: '20px' }}>+8%</div>
           </div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{ticketCounts['Active'] || 5}</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{ticketCounts['Active'] || 0}</div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Active</div>
         </div>
 
@@ -2471,7 +2254,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
             </div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#ef4444', background: '#fff', padding: '4px 8px', borderRadius: '20px' }}>-3%</div>
           </div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{ticketCounts['In Process'] || 5}</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{ticketCounts['In Process'] || 0}</div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Pending</div>
         </div>
 
@@ -2482,22 +2265,27 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
             </div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: '#fff', padding: '4px 8px', borderRadius: '20px' }}>+5%</div>
           </div>
-          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{ticketCounts['Completed'] || 3}</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{ticketCounts['Completed'] || 0}</div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Completed</div>
         </div>
       </div>
 
       <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', padding: '0 24px' }}>
-          <button style={{ padding: '20px 0', background: 'transparent', border: 'none', borderBottom: '2px solid #22c55e', color: '#fff', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <Home size={16} /> All <span style={{ background: 'rgba(34, 197, 94,0.2)', color: '#4ade80', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{tickets.length}</span>
+        <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', padding: '0 24px', overflowX: 'auto' }}>
+          <button onClick={() => setFilterHub('All')} style={{ padding: '20px 0', background: 'transparent', border: 'none', borderBottom: filterHub === 'All' ? '2px solid #22c55e' : '2px solid transparent', color: filterHub === 'All' ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: filterHub === 'All' ? 700 : 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s' }}>
+            <Home size={16} /> All <span style={{ background: filterHub === 'All' ? 'rgba(34, 197, 94,0.2)' : 'rgba(255,255,255,0.05)', color: filterHub === 'All' ? '#4ade80' : 'var(--text-muted)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{tickets.length}</span>
           </button>
-          <button style={{ padding: '20px 0', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <Clock size={16} /> Service Hub <span style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{tickets.length}</span>
-          </button>
-          <button style={{ padding: '20px 0', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <ShoppingBag size={16} /> Store <span style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>0</span>
-          </button>
+          {[...new Set(tickets.map(t => t.vertical).filter(Boolean))].map(hub => {
+            const count = tickets.filter(t => t.vertical === hub).length;
+            if (count === 0) return null;
+            const isActive = filterHub === hub;
+            const Icon = hub === 'Service Hub' ? Clock : hub === 'Store Hub' ? ShoppingBag : Box;
+            return (
+              <button key={hub} onClick={() => setFilterHub(hub)} style={{ padding: '20px 0', background: 'transparent', border: 'none', borderBottom: isActive ? '2px solid #22c55e' : '2px solid transparent', color: isActive ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s' }}>
+                <Icon size={16} /> {hub} <span style={{ background: isActive ? 'rgba(34, 197, 94,0.2)' : 'rgba(255,255,255,0.05)', color: isActive ? '#4ade80' : 'var(--text-muted)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{count}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div style={{ padding: '20px 24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -2505,8 +2293,8 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
             <Search size={16} color="var(--text-muted)" />
             <input placeholder="Search ticket, client, service..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'transparent', border: 'none', color: 'var(--text)', width: '100%', outline: 'none', fontSize: '13px' }} />
           </div>
-          <button style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 24px', color: 'var(--text)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
-            All
+          <button onClick={() => { setSearch(''); setFilterStatus('All'); setFilterHub('All'); }} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 24px', color: 'var(--text)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: '0.2s' }}>
+            Clear Filters
           </button>
         </div>
 
@@ -2564,14 +2352,14 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                       <Avatar name={ticket.client} size={36} gradient={ticket.status === 'Active' ? ['#22c55e', '#16a34a'] : ['#22c55e', '#16a34a']} fontSize={13} />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.client}</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.client.toLowerCase().replace(' ','')}@email.com</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.rawTicket?.client?.email || 'N/A'}</span>
                       </div>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.service}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.vertical === 'service' ? 'Licenses & Registrations' : 'New Business / Closure'}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.vertical}</span>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
@@ -2581,20 +2369,20 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                     </span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
-                    <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                      Partner
+                    <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'capitalize' }}>
+                      {ticket.rawTicket?.creatorRole === 'super_admin' || ticket.rawTicket?.creatorRole === 'admin' ? 'Admin' : (ticket.rawTicket?.creatorRole || 'Partner')}
                     </span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.created}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>10:34 AM</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(ticket.rawTicket?.createdAt || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.lastUpdate}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>2:15 PM</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(ticket.rawTicket?.updatedAt || ticket.rawTicket?.createdAt || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </td>
                   <td style={{ padding: '16px 24px', textAlign: 'right' }}>
@@ -2974,8 +2762,47 @@ const PAGE_META = {
 
 const PartnerTopbar = ({ page }) => {
   const meta = PAGE_META[page] || PAGE_META.overview;
-  const [showNotifications, setShowNotifications] = React.useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
+  const dropdownRef = useRef(null);
+
+  const fetchLogs = async () => {
+    try {
+      const { data } = await api.get('/activity');
+      setNotifications(data.slice(0, 5));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    const socket = io('https://myclaimportal.onrender.com');
+    socket.on('activity_created', () => {
+      setUnreadCount(prev => prev + 1);
+      fetchLogs();
+    });
+    return () => socket.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleBellClick = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications) {
+      setUnreadCount(0);
+    }
+  };
 
   return (
     <div style={{ minHeight: '80px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', background: 'var(--card)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50, backdropFilter: 'blur(12px)', boxSizing: 'border-box', gap: '16px', flexShrink: 0 }}>
@@ -3018,49 +2845,60 @@ const PartnerTopbar = ({ page }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '7px', background: 'var(--banner-badge-bg)', color: 'var(--banner-badge-text)', border: '1px solid var(--banner-border)', borderRadius: '10px', padding: '8px 14px', fontSize: '12px', fontWeight: 700 }}>
           <Star size={13} />Phase 1 Scope
         </div>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }} ref={dropdownRef}>
           <div 
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={handleBellClick}
             style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
           >
             <div className={showNotifications ? "" : "bell-animate"} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Bell size={16} style={{ color: 'var(--text-muted)' }} />
             </div>
-            <div style={{ position: 'absolute', top: '8px', right: '8px', width: '8px', height: '8px', borderRadius: '50%', background: '#15803d', border: '2px solid var(--card)', animation: 'ringPulse 2s infinite' }} />
+            {unreadCount > 0 && (
+              <div style={{ position: 'absolute', top: '-4px', right: '-4px', minWidth: '16px', height: '16px', borderRadius: '50%', background: '#15803d', border: '2px solid var(--card)', color: '#fff', fontSize: '9px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', animation: 'ringPulse 2s infinite' }}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </div>
+            )}
           </div>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
             <div className="animate-slide-up" style={{ 
-              position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: '320px', 
+              position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: '340px', 
               background: '#0f172a', border: '1px solid var(--border)', borderRadius: '16px', 
               boxShadow: '0 10px 40px rgba(0,0,0,0.5)', overflow: 'hidden', zIndex: 100 
             }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34, 197, 94, 0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Notifications</div>
-                <div style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700, cursor: 'pointer' }}>Mark all as read</div>
+                {unreadCount > 0 && (
+                  <div style={{ fontSize: '11px', color: '#000', background: '#22c55e', padding: '2px 8px', borderRadius: '10px', fontWeight: 700 }}>
+                    {unreadCount} New
+                  </div>
+                )}
               </div>
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {[
-                  { title: 'New Ticket Assigned', desc: 'Ticket TK-501 has been assigned to you.', time: '10 min ago', unread: true },
-                  { title: 'Lead Converted', desc: 'Ramesh Agarwal has successfully enrolled.', time: '1 hr ago', unread: true },
-                  { title: 'System Update', desc: 'The new dashboard layout is now active.', time: '2 hrs ago', unread: false },
-                ].map((notif, i) => (
-                  <div key={i} style={{ 
+              <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                {notifications.length > 0 ? notifications.map((notif) => (
+                  <div key={notif._id} style={{ 
                     padding: '16px 20px', 
                     borderBottom: '1px solid var(--border)', 
-                    background: notif.unread ? 'rgba(34, 197, 94, 0.02)' : 'transparent',
-                    cursor: 'pointer',
+                    background: 'transparent',
                     display: 'flex', gap: '12px', alignItems: 'flex-start'
                   }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.unread ? '#22c55e' : 'transparent', marginTop: '6px', flexShrink: 0 }} />
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {notif.action.toLowerCase().includes('create') ? <Clock size={16} /> : 
+                       notif.action.toLowerCase().includes('delete') ? <Activity size={16} /> :
+                       <ShieldCheck size={16} />}
+                    </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{notif.title}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', lineHeight: 1.4 }}>{notif.desc}</div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>{notif.time}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', marginBottom: '4px', lineHeight: 1.4 }}>{notif.action}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', gap: '8px' }}>
+                        <span>{new Date(notif.createdAt).toLocaleDateString()}</span>
+                        <span>{new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>No recent notifications</div>
+                )}
               </div>
               <div style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#22c55e', fontWeight: 700, cursor: 'pointer', borderTop: '1px solid var(--border)' }}>
                 View all notifications
@@ -3168,7 +3006,7 @@ export default function PartnerDashboard() {
           clients={dbData.clients}
           onNavigate={setPage}
         />;
-      case 'tickets':   return <ServiceHubTab />;
+      case 'tickets':   return <PartnerServiceHubTab onTicketCreated={() => setPage('activity')} />;
       case 'analytics': return <AnalyticsTab leads={dbData.leads} tickets={dbData.tickets} />;
       default:          return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
     }
