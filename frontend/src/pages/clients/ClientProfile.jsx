@@ -676,14 +676,14 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
 
   useEffect(() => {
     const calculateProgressAndStatus = (stages) => {
-      const completedCount = stages.filter(s => s.status === 'completed').length;
-      const progress = Math.round((completedCount / stages.length) * 100);
+      const totalSubProgress = stages.reduce((sum, s) => sum + (s.subProgress || (s.status === 'completed' ? 100 : s.status === 'in-progress' ? 50 : 0)), 0);
+      const progress = Math.round(totalSubProgress / (stages.length || 1));
       
       let status = 'In Progress';
       if (progress === 100) status = 'Completed';
       else if (progress === 0) status = 'Pending';
       else {
-        const lastCompleted = [...stages].reverse().find(s => s.status === 'completed');
+        const lastCompleted = [...stages].reverse().find(s => s.status === 'completed' || s.subProgress === 100);
         if (lastCompleted && lastCompleted.name === 'Application Filed') {
            status = 'Filed';
         }
@@ -787,22 +787,43 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
     setLocalClaims(prev => prev.map(c => {
       if (c._id === selectedClaimId) {
         const newStages = [...c.stages];
-        newStages[idx] = { ...newStages[idx], [field]: value };
         
-        // If a stage is moved out of 'completed', reset all subsequent stages
-        if (field === 'status' && (value === 'pending' || value === 'in-progress')) {
-          for (let i = idx + 1; i < newStages.length; i++) {
-            newStages[i] = { ...newStages[i], status: 'pending' };
+        if (field === 'subProgress') {
+          let newStatus = newStages[idx].status;
+          if (value === 100) newStatus = 'completed';
+          else if (value > 0) newStatus = 'in-progress';
+          else newStatus = 'pending';
+          
+          newStages[idx] = { ...newStages[idx], subProgress: value, status: newStatus };
+          
+          if (value < 100) {
+            for (let i = idx + 1; i < newStages.length; i++) {
+              newStages[i] = { ...newStages[i], status: 'pending', subProgress: 0 };
+            }
+          }
+        } else {
+          newStages[idx] = { ...newStages[idx], [field]: value };
+          if (field === 'status') {
+            if (value === 'completed') newStages[idx].subProgress = 100;
+            else if (value === 'in-progress') newStages[idx].subProgress = 25;
+            else newStages[idx].subProgress = 0;
+            
+            if (value === 'pending' || value === 'in-progress') {
+              for (let i = idx + 1; i < newStages.length; i++) {
+                newStages[i] = { ...newStages[i], status: 'pending', subProgress: 0 };
+              }
+            }
           }
         }
         
-        const completedCount = newStages.filter(s => s.status === 'completed').length;
-        const progress = Math.round((completedCount / newStages.length) * 100);
+        const totalSubProgress = newStages.reduce((sum, s) => sum + (s.subProgress || 0), 0);
+        const progress = Math.round(totalSubProgress / (newStages.length || 1));
+        
         let status = 'In Progress';
         if (progress === 100) status = 'Completed';
         else if (progress === 0) status = 'Pending';
         else {
-          const lastCompleted = [...newStages].reverse().find(s => s.status === 'completed');
+          const lastCompleted = [...newStages].reverse().find(s => s.status === 'completed' || s.subProgress === 100);
           if (lastCompleted && lastCompleted.name === 'Application Filed') status = 'Filed';
         }
 
@@ -1001,11 +1022,53 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
                           onChange={(e) => handleStageChange(idx, 'date', e.target.value)} 
                           style={{ width: '100%', padding: '4px 8px', fontSize: '11px', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#0f172a' }}
                         />
+                        
+                        {/* Editable Sub-stages */}
+                        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: 0, paddingLeft: 0, borderLeft: `1px solid #e2e8f0`, marginLeft: '8px' }}>
+                          {['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'].map((subName, subIdx) => {
+                            const val = (subIdx + 1) * 25;
+                            const currentSubProgress = stage.subProgress !== undefined ? stage.subProgress : (stage.status === 'completed' ? 100 : 0);
+                            const isSubDone = currentSubProgress >= val;
+                            const subColor = isSubDone ? '#2563eb' : '#e2e8f0';
+                            
+                            return (
+                              <div 
+                                key={val} 
+                                onClick={() => isPrevCompleted && handleStageChange(idx, 'subProgress', currentSubProgress === val ? val - 25 : val)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', padding: '4px 0 4px 16px', cursor: isPrevCompleted ? 'pointer' : 'not-allowed', opacity: isPrevCompleted ? 1 : 0.5 }}
+                              >
+                                <div style={{ position: 'absolute', left: '-4px', top: '50%', transform: 'translateY(-50%)', width: '7px', height: '7px', borderRadius: '50%', background: subColor, border: `2px solid #fff`, transition: 'all 0.2s' }} />
+                                <div style={{ fontSize: '11px', fontWeight: isSubDone ? 700 : 500, color: isSubDone ? '#0f172a' : '#94a3b8' }}>
+                                  {subName} <span style={{ opacity: 0.5 }}>({val}%)</span>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
                       </div>
                     ) : (
                       <>
                         <div style={{ fontSize: '14px', fontWeight: 800, color: stage.status === 'pending' ? '#94a3b8' : '#0f172a' }}>{stage.name}</div>
                         <div style={{ fontSize: '12px', color: stage.status === 'in-progress' ? '#2563eb' : '#64748b', marginTop: '2px', fontWeight: 600 }}>{stage.date}</div>
+                        
+                        {/* Read-only Sub-stages */}
+                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: 0, paddingLeft: 0, borderLeft: `1px solid #e2e8f0`, marginLeft: '8px' }}>
+                          {['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'].map((subName, subIdx) => {
+                            const val = (subIdx + 1) * 25;
+                            const currentSubProgress = stage.subProgress !== undefined ? stage.subProgress : (stage.status === 'completed' ? 100 : 0);
+                            const isSubDone = currentSubProgress >= val;
+                            const subColor = isSubDone ? (stage.status === 'completed' ? '#10b981' : '#2563eb') : '#e2e8f0';
+                            
+                            return (
+                              <div key={val} style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', padding: '4px 0 4px 16px' }}>
+                                <div style={{ position: 'absolute', left: '-4px', top: '50%', transform: 'translateY(-50%)', width: '7px', height: '7px', borderRadius: '50%', background: subColor, border: `2px solid #fff` }} />
+                                <div style={{ fontSize: '11px', fontWeight: isSubDone ? 700 : 500, color: isSubDone ? '#0f172a' : '#94a3b8' }}>
+                                  {subName} <span style={{ opacity: 0.5 }}>({val}%)</span>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
                       </>
                     )}
                   </div>

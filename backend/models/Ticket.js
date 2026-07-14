@@ -26,7 +26,8 @@ const ticketSchema = mongoose.Schema(
       {
         name: { type: String },
         status: { type: String, enum: ['completed', 'in-progress', 'pending'], default: 'pending' },
-        date: { type: String }
+        date: { type: String },
+        subProgress: { type: Number, enum: [0, 25, 50, 75, 100], default: 0 }
       }
     ],
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

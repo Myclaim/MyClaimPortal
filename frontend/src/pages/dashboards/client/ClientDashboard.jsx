@@ -41,7 +41,7 @@ const getStatusBadgeStyle = (status) => {
     case 'docs pending': case 'docs_pending': case 'pending':
       return { color: '#818CF8', bg: 'rgba(129,140,248,0.12)', border: '1px solid rgba(129,140,248,0.25)', dot: '#818CF8' };
     default:
-      return { color: '#94a3b8', bg: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)', dot: '#94a3b8' };
+      return { color: 'var(--dashboard-text-muted)', bg: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)', dot: 'var(--dashboard-text-muted)' };
   }
 };
 
@@ -135,12 +135,12 @@ const CLAIM_CSS = `
   .chip-shimmer {
     position: absolute; top: 0; left: -100%;
     width: 50%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+    background: linear-gradient(90deg, transparent, var(--dashboard-border), transparent);
     pointer-events: none; skew-x: -20deg;
   }
   .chip-bar-track {
     width: 100%; height: 3px; border-radius: 999px;
-    background: rgba(255,255,255,0.06); margin-top: 12px; overflow: hidden;
+    background: var(--dashboard-border); margin-top: 12px; overflow: hidden;
   }
   .chip-bar-fill {
     height: 100%; border-radius: 999px;
@@ -159,7 +159,7 @@ const CLAIM_CSS = `
     transition: color 0.2s ease, background 0.2s ease;
     position: relative; z-index: 1;
   }
-  .claims-tab-btn:hover { background: rgba(255,255,255,0.05); }
+  .claims-tab-btn:hover { background: var(--dashboard-card); }
   .claims-tab-btn.active { font-weight: 800; }
   .tab-active-indicator {
     position: absolute; bottom: 0; height: 2px;
@@ -171,7 +171,7 @@ const CLAIM_CSS = `
 
   /* ── Claim card ── */
   .claim-card {
-    background: rgba(255,255,255,0.03);
+    background: var(--dashboard-card-soft);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border-radius: 22px; padding: 22px;
     display: flex; flex-direction: column; gap: 16px;
@@ -181,7 +181,7 @@ const CLAIM_CSS = `
   }
   .claim-card::before {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 55%);
+    background: linear-gradient(135deg, var(--dashboard-card) 0%, transparent 55%);
     border-radius: 22px; pointer-events: none; z-index: 0;
   }
   .claim-card > * { position: relative; z-index: 1; }
@@ -196,7 +196,7 @@ const CLAIM_CSS = `
   .claim-card .card-ribbon::after {
     content: ''; position: absolute; top: 0; left: -100%;
     width: 60%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+    background: linear-gradient(90deg, transparent, var(--dashboard-border), transparent);
     animation: ribbonShine 3s ease infinite;
   }
   .card-active  { border: 1px solid rgba(16,185,129,0.28); }
@@ -223,7 +223,7 @@ const CLAIM_CSS = `
 
   /* ── Buttons ── */
   .claim-btn-primary {
-    border: none; color: #fff;
+    border: none; color: var(--dashboard-text);
     padding: 10px 18px; border-radius: 11px;
     font-weight: 800; font-size: 12px; cursor: pointer;
     display: flex; align-items: center; gap: 6px;
@@ -232,20 +232,20 @@ const CLAIM_CSS = `
   }
   .claim-btn-primary::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    background: linear-gradient(90deg, transparent, var(--dashboard-border), transparent);
     transform: translateX(-100%); transition: transform 0.45s ease;
   }
   .claim-btn-primary:hover { transform: translateY(-2px) scale(1.05); }
   .claim-btn-primary:hover::after { transform: translateX(100%); }
   .claim-btn-primary:active { transform: scale(0.96); }
   .claim-btn-sec {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+    background: var(--dashboard-card);
+    border: 1px solid var(--dashboard-border); color: var(--dashboard-text-muted);
     padding: 10px 14px; border-radius: 11px;
     font-weight: 700; font-size: 12px; cursor: pointer;
     transition: all 0.2s ease;
   }
-  .claim-btn-sec:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; border-color: rgba(255,255,255,0.22); transform: translateY(-1px); }
+  .claim-btn-sec:hover { background: var(--dashboard-border); color: var(--dashboard-border); border-color: var(--dashboard-border); transform: translateY(-1px); }
 
   /* ── Warn banner ── */
   .warn-banner {
@@ -261,7 +261,7 @@ const CLAIM_CSS = `
   .new-claim-btn {
     display: flex; align-items: center; gap: 7px;
     background: linear-gradient(135deg,#10B981,#059669);
-    border: none; color: #fff; padding: 9px 18px; border-radius: 12px;
+    border: none; color: var(--dashboard-text); padding: 9px 18px; border-radius: 12px;
     font-weight: 800; font-size: 12px; cursor: pointer;
     box-shadow: 0 4px 20px rgba(16,185,129,0.35);
     transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease;
@@ -271,7 +271,7 @@ const CLAIM_CSS = `
   }
   .new-claim-btn::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, var(--dashboard-border), transparent);
     transform: translateX(-100%); transition: transform 0.4s ease;
   }
   .new-claim-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 30px rgba(16,185,129,0.5); }
@@ -280,7 +280,7 @@ const CLAIM_CSS = `
 
   /* ── Progress bar ── */
   .progress-bar-track {
-    width: 100%; height: 5px; background: rgba(255,255,255,0.06);
+    width: 100%; height: 5px; background: var(--dashboard-border);
     border-radius: 999px; overflow: hidden;
   }
   .progress-bar-fill {
@@ -318,7 +318,7 @@ const StatChip = ({ label, value, color, icon: Icon, delay = 0, barColor }) => {
       className="stat-chip"
       style={{
         '--chip-delay': `${delay}ms`,
-        background: `linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)`,
+        background: `linear-gradient(145deg, var(--dashboard-border) 0%, rgba(255,255,255,0.02) 100%)`,
         border: `1px solid ${color}25`,
         boxShadow: `0 4px 24px ${color}12`,
       }}
@@ -436,8 +436,8 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
           { label: 'Est. Value', value: claim.estValue, color: '#10B981' }
         ].map((m, mi) => (
           <div key={m.label} style={{
-            background: 'rgba(255,255,255,0.03)', borderRadius: 11, padding: '10px 11px',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--dashboard-card-soft)', borderRadius: 11, padding: '10px 11px',
+            border: '1px solid var(--dashboard-border)',
             animation: `fadeSlideUp 0.45s ease ${animDelay + 200 + mi * 60}ms both`
           }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: m.color || CL.text, letterSpacing: '-0.3px' }}>{m.value}</div>
@@ -463,7 +463,7 @@ const ClaimCard = ({ claim, animDelay = 0, onViewDetails }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
           {[0, 25, 50, 75, 100].map(v => (
             <div key={v} style={{
-              width: 1, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 1
+              width: 1, height: 4, background: 'var(--dashboard-border)', borderRadius: 1
             }} />
           ))}
         </div>
@@ -503,14 +503,14 @@ const CLAIM_DETAIL_CSS = `
 
   .detail-wrap { animation: detailSlideIn 0.45s cubic-bezier(.34,1.56,.64,1) both; }
   .detail-section {
-    background: rgba(255,255,255,0.03);
+    background: var(--dashboard-card-soft);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 18px; padding: 22px;
     backdrop-filter: blur(12px);
     animation: detailFadeUp 0.4s ease var(--sec-delay,0s) both;
   }
   .detail-section:hover {
-    border-color: rgba(255,255,255,0.12);
+    border-color: var(--dashboard-border);
     transition: border-color 0.3s ease;
   }
   .step-dot {
@@ -527,36 +527,36 @@ const CLAIM_DETAIL_CSS = `
   .holder-row {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid var(--dashboard-border);
     background: rgba(255,255,255,0.02);
     transition: all 0.2s ease;
     animation: detailFadeUp 0.4s ease var(--holder-delay,0s) both;
   }
-  .holder-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: translateX(4px); }
+  .holder-row:hover { background: var(--dashboard-card); border-color: var(--dashboard-border); transform: translateX(4px); }
   .action-row {
     display: flex; align-items: center; justify-content: space-between;
     padding: 11px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid var(--dashboard-border);
     background: rgba(255,255,255,0.02);
     transition: all 0.2s ease;
     animation: detailFadeUp 0.4s ease var(--action-delay,0s) both;
   }
-  .action-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+  .action-row:hover { background: var(--dashboard-card); border-color: var(--dashboard-border); }
   .update-row {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid var(--dashboard-card);
     animation: detailFadeUp 0.4s ease var(--upd-delay,0s) both;
   }
   .update-row:last-child { border-bottom: none; }
   .back-btn {
     display: flex; align-items: center; gap: 6px;
     padding: 7px 14px; border-radius: 10px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dashboard-border); border: 1px solid var(--dashboard-border);
     color: var(--dashboard-text-muted); cursor: pointer; font-size: 12px; font-weight: 700;
     transition: all 0.2s ease;
   }
-  .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--dashboard-text); transform: translateX(-3px); }
+  .back-btn:hover { background: var(--dashboard-border); color: var(--dashboard-text); transform: translateX(-3px); }
   .stat-box {
     background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
     border-radius: 14px; padding: 14px 20px; min-width: 110px;
@@ -567,7 +567,7 @@ const CLAIM_DETAIL_CSS = `
   .complete-badge {
     padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 800;
     background: linear-gradient(135deg,#10B981,#059669);
-    color: #fff; box-shadow: 0 4px 16px rgba(16,185,129,0.4);
+    color: var(--dashboard-text); box-shadow: 0 4px 16px rgba(16,185,129,0.4);
     animation: tagFloat 3s ease infinite;
   }
 `;
@@ -582,7 +582,8 @@ const ClaimDetailView = ({ claim, onBack }) => {
     label: stage.name,
     date: stage.date,
     done: stage.status === 'completed',
-    active: stage.status === 'in-progress',
+    active: stage.status === 'in-progress' || (stage.subProgress > 0 && stage.subProgress < 100),
+    subProgress: stage.subProgress || 0
   })) : [
     { label: 'Documents Collected', date: 'Mar 2, 2026', done: true },
     { label: 'Verification', date: 'Mar 5, 2026', done: true },
@@ -628,7 +629,7 @@ const ClaimDetailView = ({ claim, onBack }) => {
 
       {/* ── Company Header ── */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+        background: 'var(--dashboard-card-soft)', border: '1px solid rgba(255,255,255,0.07)',
         borderRadius: 20, padding: '24px 28px', marginBottom: 20,
         backdropFilter: 'blur(12px)', position: 'relative', overflow: 'hidden',
         animation: 'detailFadeUp 0.4s ease both'
@@ -687,13 +688,13 @@ const ClaimDetailView = ({ claim, onBack }) => {
                     '--dot-delay': `${0.15 + i * 0.07}s`,
                     background: step.done ? 'linear-gradient(135deg,#10B981,#059669)'
                       : step.active ? `linear-gradient(135deg,${orbColor}40,${orbColor}15)`
-                      : 'rgba(255,255,255,0.06)',
-                    border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid rgba(255,255,255,0.1)',
+                      : 'var(--dashboard-border)',
+                    border: step.active ? `2px solid ${orbColor}` : step.done ? '2px solid #10B981' : '2px solid var(--dashboard-border)',
                     boxShadow: step.done ? '0 4px 12px rgba(16,185,129,0.35)' : step.active ? `0 4px 12px ${orbColor}35` : 'none'
                   }}>
                     {step.done ? <CheckCircle2 size={16} color="#fff" /> :
                       step.active ? <Activity size={14} color={orbColor} /> :
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />}
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dashboard-border)' }} />}
                   </div>
                   {i < steps.length - 1 && (
                     <div className="step-line" style={{
@@ -704,14 +705,14 @@ const ClaimDetailView = ({ claim, onBack }) => {
                   )}
                 </div>
                 {/* content */}
-                <div style={{ paddingBottom: i < steps.length - 1 ? 20 : 0, paddingTop: 5, flex: 1 }}>
+                <div style={{ paddingBottom: i < steps.length - 1 ? 24 : 0, paddingTop: 5, flex: 1 }}>
                   <div style={{
                     fontWeight: step.active ? 800 : step.done ? 700 : 500,
                     color: step.done ? CL.text : step.active ? orbColor : CL.textMuted,
                     fontSize: 13, lineHeight: 1.3
                   }}>{step.label}</div>
                   {step.date && (
-                    <div style={{ fontSize: 10, color: step.active ? orbColor : CL.textMuted, marginTop: 3, fontWeight: 600 }}>
+                    <div style={{ fontSize: 10, color: step.active ? orbColor : CL.textMuted, marginTop: 4, fontWeight: 600 }}>
                       {step.active && <span style={{
                         display: 'inline-block', background: `${orbColor}20`, color: orbColor,
                         border: `1px solid ${orbColor}40`, borderRadius: 999, padding: '1px 7px',
@@ -719,6 +720,23 @@ const ClaimDetailView = ({ claim, onBack }) => {
                       }}>Active</span>}{step.date}
                     </div>
                   )}
+
+                  {/* 4 Substages for every stage */}
+                  <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 0, paddingLeft: 0, borderLeft: step.done ? `1px solid rgba(16,185,129,0.3)` : step.active ? `1px solid ${orbColor}50` : `1px solid var(--dashboard-border)`, marginLeft: 8 }}>
+                    {['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'].map((subName, subIdx) => {
+                      const val = (subIdx + 1) * 25;
+                      const isSubDone = step.done || step.subProgress >= val;
+                      const subColor = isSubDone ? (step.done ? '#10B981' : orbColor) : 'var(--dashboard-border)';
+                      return (
+                        <div key={val} style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', padding: '5px 0 5px 16px' }}>
+                          <div style={{ position: 'absolute', left: -4, top: '50%', transform: 'translateY(-50%)', width: 7, height: 7, borderRadius: '50%', background: subColor, border: `2px solid var(--dashboard-card)` }} />
+                          <div style={{ fontSize: 11, fontWeight: isSubDone ? 700 : 500, color: isSubDone ? CL.text : CL.textMuted }}>
+                            {subName} <span style={{ opacity: 0.5, marginLeft: 4 }}>({val}%)</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             ))}
@@ -902,7 +920,7 @@ const MyClaimsView = ({ claims, navigate }) => {
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: 18, height: 18, borderRadius: '50%',
                     background: 'linear-gradient(135deg,#EF4444,#DC2626)',
-                    color: '#fff', fontSize: 9, fontWeight: 900, marginLeft: 6,
+                    color: 'var(--dashboard-text)', fontSize: 9, fontWeight: 900, marginLeft: 6,
                     boxShadow: '0 2px 8px rgba(239,68,68,0.5)',
                     animation: 'pulseDot 2s ease infinite'
                   }}>{pendingDocs}</span>
@@ -958,14 +976,14 @@ const ClientFamilyTreeNode = ({ name, role, isClient }) => (
   <div style={{ 
     background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(30, 41, 59, 0.45)', 
     border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-    color: '#fff',
+    color: 'var(--dashboard-text)',
     padding: '14px 28px', 
     borderRadius: '16px', 
     minWidth: '140px',
     textAlign: 'center',
     boxShadow: isClient 
       ? '0 10px 25px -5px rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15)' 
-      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
+      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px var(--dashboard-card)',
     position: 'relative',
     zIndex: 2,
     backdropFilter: 'blur(8px)',
@@ -985,7 +1003,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
   const spouse = familyMembers.filter(m => ['Spouse'].includes(m.relationWithHolder));
   const others = familyMembers.filter(m => !['Father', 'Mother', 'Grandfather', 'Grandmother', 'Brother', 'Sister', 'Son', 'Daughter', 'Spouse'].includes(m.relationWithHolder));
 
-  const lineBg = 'rgba(255, 255, 255, 0.15)';
+  const lineBg = 'var(--dashboard-border)';
 
   return (
     <div style={{ 
@@ -1017,7 +1035,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
           style={{ 
             padding: '10px 20px', 
             background: 'linear-gradient(135deg, #10B981, #059669)', 
-            color: '#fff', 
+            color: 'var(--dashboard-text)', 
             border: 'none', 
             borderRadius: '12px', 
             cursor: 'pointer', 
@@ -1110,8 +1128,8 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
         )}
 
         {familyMembers.length === 0 && (
-          <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: `1px dashed rgba(255,255,255,0.1)`, marginTop: '20px' }}>
-            <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: CL.textMuted }}>
+          <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: `1px dashed var(--dashboard-border)`, marginTop: '20px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'var(--dashboard-card)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: CL.textMuted }}>
               <Users size={24} />
             </div>
             <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
@@ -1263,13 +1281,13 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
           <div style={{ background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', borderRadius: '20px', width: '90%', maxWidth: '1000px', height: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#fff' }}>{previewDoc.name}</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: 'var(--dashboard-text)' }}>{previewDoc.name}</h3>
                 {previewDoc.url && (
                   <a 
                     href={`${BASE_URL}${previewDoc.url}`}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: 'var(--dashboard-text)', fontWeight: 700, cursor: 'pointer' }}
                   ><Download size={14} /> View Original</a>
                 )}
               </div>
@@ -1278,7 +1296,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
             <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
                 if (!previewDoc.url) {
-                  return <div style={{ color: '#fff', fontSize: '16px' }}>No file uploaded yet.</div>;
+                  return <div style={{ color: 'var(--dashboard-text)', fontSize: '16px' }}>No file uploaded yet.</div>;
                 }
                 const fullUrl = `${BASE_URL}${previewDoc.url}`;
                 const ext = previewDoc.url.includes('.') ? previewDoc.url.split('.').pop().toLowerCase() : '';
@@ -1301,7 +1319,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
             key={tab}
             style={{
               padding: '12px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-              color: activeSubTab === tab ? '#fff' : 'rgba(255,255,255,0.4)',
+              color: activeSubTab === tab ? '#fff' : 'var(--dashboard-border)',
               borderBottom: activeSubTab === tab ? '2.5px solid #10B981' : '2.5px solid transparent',
               transition: 'all 0.2s',
               position: 'relative',
@@ -1334,9 +1352,9 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
               
               let borderStyle = '1px solid rgba(255,255,255,0.08)';
               let bgStyle = 'rgba(255,255,255,0.02)';
-              let iconColor = 'rgba(255,255,255,0.4)';
+              let iconColor = 'var(--dashboard-border)';
               let statusText = 'Not uploaded';
-              let statusColor = 'rgba(255,255,255,0.4)';
+              let statusColor = 'var(--dashboard-border)';
               let cardGlow = 'none';
 
               if (!isUploaded) {
@@ -1381,14 +1399,14 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.03)',
+                      background: 'var(--dashboard-card-soft)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: iconColor, border: '1px solid rgba(255,255,255,0.06)'
+                      color: iconColor, border: '1px solid var(--dashboard-border)'
                     }}>
                       <FileText size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: 4 }}>{item.name}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--dashboard-text)', marginBottom: 4 }}>{item.name}</div>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: statusColor, display: 'flex', alignItems: 'center', gap: 4 }}>
                         {isUploaded && details.status === 'verified' && <span>✓</span>}
                         {isUploaded && details.status !== 'verified' && <span>⌛</span>}
@@ -1404,12 +1422,12 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
                         onClick={() => setPreviewDoc({ name: item.name, url: details.url })}
                         style={{
                           width: 36, height: 36, borderRadius: '50%',
-                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', cursor: 'pointer', transition: 'all 0.2s'
+                          color: 'var(--dashboard-text)', cursor: 'pointer', transition: 'all 0.2s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--dashboard-border)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--dashboard-card)'}
                       >
                         <Eye size={16} />
                       </button>
@@ -1438,7 +1456,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
             <Folder size={18} color="#10B981" />
-            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#fff' }}>Document Folders</h3>
+            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--dashboard-text)' }}>Document Folders</h3>
           </div>
 
           {/* Folder & Document Browser */}
@@ -1454,10 +1472,10 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
         /* Company Documents View */
         <div style={{
           textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)',
-          background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)'
+          background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px solid var(--dashboard-border)'
         }}>
           <Folder size={48} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>No company documents shared yet</div>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>No company documents shared yet</div>
           <div style={{ fontSize: '12px', marginTop: '6px' }}>Shared files from My Claim team will be visible here.</div>
         </div>
       )}
@@ -1475,7 +1493,7 @@ const getNotifTypeStyles = (type) => {
     case 'task_overdue': return { icon: AlertCircle, color: '#dc2626', bg: 'rgba(220,38,38,0.1)' };
     case 'due_approaching': return { icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' };
     case 'task_completed': return { icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.1)' };
-    default: return { icon: Bell, color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)' };
+    default: return { icon: Bell, color: 'var(--text-muted)', bg: 'var(--dashboard-card-soft)' };
   }
 };
 
@@ -1520,7 +1538,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
       <style>{`
         .client-notif-item {
           background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          border: 1px solid var(--dashboard-border);
           border-radius: 14px;
           padding: 16px 20px;
           display: flex;
@@ -1557,7 +1575,7 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
           <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text, display: 'flex', alignItems: 'center', gap: 10 }}>
             Notifications
             {unreadCount > 0 && (
-              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#fff', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
+              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg,#EF4444,#DC2626)', color: 'var(--dashboard-text)', padding: '3px 10px', borderRadius: 999, fontWeight: 900, boxShadow: '0 2px 8px rgba(239,68,68,0.4)' }}>
                 {unreadCount} New
               </span>
             )}
@@ -1569,9 +1587,9 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
           disabled={unreadCount === 0}
           style={{ 
             padding: '10px 20px', 
-            background: 'rgba(255,255,255,0.05)', 
+            background: 'var(--dashboard-card)', 
             color: CL.text, 
-            border: '1px solid rgba(255,255,255,0.1)', 
+            border: '1px solid var(--dashboard-border)', 
             borderRadius: '12px', 
             cursor: unreadCount === 0 ? 'not-allowed' : 'pointer', 
             fontSize: '12px', 
@@ -1612,14 +1630,14 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
                 <div style={{
                   width: '40px', height: '40px', borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyItems: 'center',
-                  background: bg || 'rgba(255,255,255,0.03)', color: color || CL.textMuted,
-                  justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.05)'
+                  background: bg || 'var(--dashboard-card-soft)', color: color || CL.textMuted,
+                  justifyContent: 'center', flexShrink: 0, border: '1px solid var(--dashboard-card)'
                 }}>
                   <Icon size={18} strokeWidth={2.5} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#fff' }}>{n.title}</h4>
+                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: 'var(--dashboard-text)' }}>{n.title}</h4>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '10px', color: CL.textMuted, fontWeight: 700 }}>
                       <Clock size={11} />
                       {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -1631,8 +1649,8 @@ const ClientNotificationsView = ({ notifications, onRefresh, user }) => {
                     {!n.isRead && (
                       <button 
                         onClick={() => markAsRead(n._id)}
-                        style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        style={{ background: 'none', border: '1px solid var(--dashboard-border)', color: 'var(--dashboard-text)', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--dashboard-card)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                       >
                         Mark as read
@@ -1677,7 +1695,7 @@ const DashboardView = ({ overview, claims, navigate }) => {
         {[
           { label: 'Total Claims', value: overview.totalClaims || claims.length, color: CL.text, icon: FileText },
           { label: 'In Progress', value: overview.inProgress || inProgress, color: '#F59E0B', icon: TrendingUp },
-          { label: 'Completed', value: overview.completed || completedDocs, color: '#10B981', icon: CheckCircle2 },
+          { label: 'Completed', value: overview.completed || claims.filter(c => c.status?.toLowerCase() === 'completed').length, color: '#10B981', icon: CheckCircle2 },
           { label: 'Need Action', value: overview.needAction || 2, color: '#EF4444', icon: AlertTriangle },
         ].map(s => (
           <div key={s.label} style={{
@@ -1725,7 +1743,7 @@ const DashboardView = ({ overview, claims, navigate }) => {
                     {claim.status}
                   </div>
                 </div>
-                <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 999 }}>
+                <div style={{ width: '100%', height: 3, background: 'var(--dashboard-card)', borderRadius: 999 }}>
                   <div style={{ width: `${claim.progress}%`, height: '100%', background: getProgressColor(claim.status), borderRadius: 999 }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginTop: 6, color: CL.textMuted }}>
@@ -2007,7 +2025,7 @@ const ClientDashboard = ({ user: propUser }) => {
       position: absolute; top: -6px; right: -6px;
       min-width: 20px; height: 20px; border-radius: 999px;
       background: linear-gradient(135deg,#EF4444,#DC2626);
-      color: #fff; font-size: 10px; font-weight: 900;
+      color: var(--dashboard-text); font-size: 10px; font-weight: 900;
       display: flex; align-items: center; justify-content: center;
       padding: 0 5px;
       border: 2px solid var(--dashboard-bg);

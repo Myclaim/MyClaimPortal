@@ -27,7 +27,10 @@ import {
   Search,
   TreeDeciduous,
   Gift,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 
 // Sidebar config (strict final structure)
@@ -500,6 +503,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const [sidebarStats, setSidebarStats] = React.useState(null);
   const [unreadNotifications, setUnreadNotifications] = React.useState(0);
@@ -763,7 +767,32 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         })
       )}
 
-      <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px' }}>
+      <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div 
+          onClick={toggleTheme}
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: '12px', 
+            background: 'var(--card)', padding: '10px 16px', 
+            borderRadius: '14px', border: '1px solid var(--border)',
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--border)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--card)';
+          }}
+        >
+          <div style={{ width: 36, height: 36, background: 'var(--bg)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </span>
+          </div>
+        </div>
+
         <div 
           onClick={handleLogout}
           style={{ 

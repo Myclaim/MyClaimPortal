@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Search, User, Clock, ShieldCheck, Activity as ActivityIcon } from 'lucide-react';
+import { Bell, Search, User, Clock, ShieldCheck, Activity as ActivityIcon, Sun, Moon } from 'lucide-react';
 import { io } from 'socket.io-client';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../../contexts/ThemeContext';
 const Topbar = ({ title }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentLogs, setRecentLogs] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const fetchLogs = async () => {
     try {
@@ -81,6 +83,15 @@ const Topbar = ({ title }) => {
               fontSize: '13px', outline: 'none', width: '200px' 
             }} 
           />
+        </div>
+
+        <div onClick={toggleTheme} style={{
+          width: '40px', height: '40px', background: 'var(--bg-primary)',
+          borderRadius: '12px', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', border: '1px solid var(--glass-border)',
+          color: 'var(--muted)', cursor: 'pointer', transition: '0.3s'
+        }}>
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </div>
 
         <div style={{ position: 'relative', cursor: 'pointer' }} ref={dropdownRef}>

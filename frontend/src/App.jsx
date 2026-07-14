@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Layout from './components/layout/Layout';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 import ClientDashboard from './pages/dashboards/client/ClientDashboard';
 import Login from './pages/auth/Login';
@@ -42,26 +43,11 @@ import AdminDocumentVerification from './pages/admin/AdminDocumentVerification';
 import AdminReports from './pages/admin/AdminReports';
 
 function App() {
-  React.useEffect(() => {
-    const root = window.document.documentElement;
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const applyTheme = (e) => {
-      if (e.matches) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    };
-
-    applyTheme(mediaQuery);
-    mediaQuery.addEventListener('change', applyTheme);
-    return () => mediaQuery.removeEventListener('change', applyTheme);
-  }, []);
 
   return (
     <Router>
-      <AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
           
@@ -135,7 +121,8 @@ function App() {
           </Route>
         </Routes>
       </AuthProvider>
-    </Router>
+    </ThemeProvider>
+  </Router>
   );
 }
 

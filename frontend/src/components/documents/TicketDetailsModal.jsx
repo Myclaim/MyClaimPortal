@@ -11,6 +11,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [stages, setStages] = useState([]);
   const [updatingProgress, setUpdatingProgress] = useState(false);
 
   const [comments, setComments] = useState([]);
@@ -23,6 +24,19 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
       fetchDocuments();
       setComments(ticket.comments || []);
       setProgress(ticket.progress || 0);
+
+      if (ticket.hubType === 'Claim Hub') {
+        const defaultStages = [
+          'Document Collection', 'Verification', 'Application Filed',
+          'Authority Review', 'Claim Approved', 'Shares Credited'
+        ];
+        const ticketStages = ticket.stages || [];
+        const initializedStages = defaultStages.map(name => {
+          const existing = ticketStages.find(s => s.name === name);
+          return existing ? existing : { name, subProgress: 0, status: 'pending', date: '' };
+        });
+        setStages(initializedStages);
+      }
     }
   }, [isOpen, ticket]);
 
@@ -52,6 +66,29 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
     } finally {
       setUpdatingProgress(false);
     }
+  };
+
+  const handleUpdateStages = async () => {
+    setUpdatingProgress(true);
+    try {
+      const sum = stages.reduce((acc, s) => acc + (s.subProgress || 0), 0);
+      const overallProgress = Math.round(sum / 6);
+      setProgress(overallProgress);
+      await api.patch(`/tickets/${ticket._id}/stages`, { stages, progress: overallProgress });
+    } catch (err) {
+      console.error('Failed to update stages', err);
+    } finally {
+      setUpdatingProgress(false);
+    }
+  };
+
+  const updateStageProgress = (stageName, val) => {
+    setStages(prev => prev.map(s => {
+      if (s.name === stageName) {
+        return { ...s, subProgress: val, status: val === 100 ? 'completed' : val > 0 ? 'in-progress' : 'pending', date: val > 0 && !s.date ? new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : s.date };
+      }
+      return s;
+    }));
   };
 
   const handleSendComment = async (e) => {
@@ -116,28 +153,101 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
                 </div>
 
                 {['admin', 'super_admin', 'employee'].includes(user?.role) && (
-                  <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: 600 }}>Update Progress</div>
-                      <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>{progress}%</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <input 
-                        type="range" 
-                        min="0" max="100" step="5" 
-                        value={progress} 
-                        onChange={e => setProgress(Number(e.target.value))}
-                        style={{ flex: 1, accentColor: 'var(--blue)' }}
-                      />
+                  ticket?.hubType === 'Claim Hub' ? (
+                    <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: 600 }}>Update Claim Stages</div>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>
+                          {Math.round(stages.reduce((acc, s) => acc + (s.subProgress || 0), 0) / 6)}% Overall
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: '8px', marginBottom: '16px' }}>
+                        {stages.map((stage, i) => {
+                          const isDone = stage.subProgress === 100;
+                          const isActive = stage.subProgress > 0 && stage.subProgress < 100;
+                          
+                          return (
+                            <div key={i} style={{ display: 'flex', gap: '12px' }}>
+                              {/* dot + line column */}
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '24px' }}>
+                                <div style={{
+                                  width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
+                                  background: isDone ? 'var(--green)' : isActive ? 'var(--blue-light)' : 'var(--bg)',
+                                  border: isDone ? '2px solid var(--green)' : isActive ? '2px solid var(--blue)' : '2px solid var(--border)',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                                  transition: 'all 0.2s', color: isDone ? '#fff' : 'var(--blue)'
+                                }} onClick={() => updateStageProgress(stage.name, isDone ? 0 : 100)}>
+                                  {isDone ? '✓' : isActive ? '⚡' : <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--border)' }} />}
+                                </div>
+                                {i < stages.length - 1 && (
+                                  <div style={{ width: '2px', flex: 1, minHeight: '30px', background: isDone ? 'var(--green)' : 'var(--border)', margin: '4px 0' }} />
+                                )}
+                              </div>
+                              
+                              {/* content */}
+                              <div style={{ paddingBottom: i < stages.length - 1 ? '16px' : '0', flex: 1 }}>
+                                <div style={{ fontSize: '13px', fontWeight: isDone || isActive ? 800 : 600, color: 'var(--text)' }}>
+                                  {stage.name}
+                                </div>
+                                
+                                {/* Substages */}
+                                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0', borderLeft: isDone ? `1px solid var(--green)` : isActive ? `1px solid var(--blue-light)` : `1px solid var(--border)`, marginLeft: '11px' }}>
+                                  {['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'].map((subName, subIdx) => {
+                                    const val = (subIdx + 1) * 25;
+                                    const isSubDone = stage.subProgress >= val;
+                                    const subColor = isSubDone ? (isDone ? 'var(--green)' : 'var(--blue)') : 'var(--border)';
+                                    
+                                    return (
+                                      <div 
+                                        key={val} 
+                                        onClick={() => updateStageProgress(stage.name, stage.subProgress === val ? val - 25 : val)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', padding: '4px 0 4px 16px', cursor: 'pointer' }}
+                                      >
+                                        <div style={{ position: 'absolute', left: '-4px', top: '50%', transform: 'translateY(-50%)', width: '7px', height: '7px', borderRadius: '50%', background: subColor, border: `2px solid var(--card)`, transition: 'all 0.2s' }} />
+                                        <div style={{ fontSize: '11px', fontWeight: isSubDone ? 700 : 500, color: isSubDone ? 'var(--text)' : 'var(--text-muted)' }}>
+                                          {subName} <span style={{ opacity: 0.5 }}>({val}%)</span>
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                       <button 
-                        onClick={handleUpdateProgress} 
-                        disabled={updatingProgress || progress === ticket?.progress}
-                        style={{ padding: '4px 10px', fontSize: '11px', background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '6px', cursor: (updatingProgress || progress === ticket?.progress) ? 'not-allowed' : 'pointer', opacity: (updatingProgress || progress === ticket?.progress) ? 0.6 : 1 }}
+                        onClick={handleUpdateStages} 
+                        disabled={updatingProgress}
+                        style={{ width: '100%', padding: '8px', fontSize: '12px', fontWeight: 700, background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '8px', cursor: updatingProgress ? 'not-allowed' : 'pointer', opacity: updatingProgress ? 0.6 : 1 }}
                       >
-                        Save
+                        Save Stages
                       </button>
                     </div>
-                  </div>
+                  ) : (
+                    <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: 600 }}>Update Progress</div>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>{progress}%</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input 
+                          type="range" 
+                          min="0" max="100" step="5" 
+                          value={progress} 
+                          onChange={e => setProgress(Number(e.target.value))}
+                          style={{ flex: 1, accentColor: 'var(--blue)' }}
+                        />
+                        <button 
+                          onClick={handleUpdateProgress} 
+                          disabled={updatingProgress || progress === ticket?.progress}
+                          style={{ padding: '4px 10px', fontSize: '11px', background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '6px', cursor: (updatingProgress || progress === ticket?.progress) ? 'not-allowed' : 'pointer', opacity: (updatingProgress || progress === ticket?.progress) ? 0.6 : 1 }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
             </div>
