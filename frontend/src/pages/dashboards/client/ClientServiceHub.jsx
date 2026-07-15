@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Search,
@@ -16,9 +17,11 @@ import {
   Globe,
   RefreshCw,
   Filter,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 import api from '../../../services/api';
+import CreateTicketModal from '../../../components/forms/CreateTicketModal';
 
 /* ─── Design Tokens (Black & Green) ──────────────────────────── */
 const C = {
@@ -310,12 +313,14 @@ const DetailPanel = ({ service, onClose }) => {
 
 /* ─── Main Component ──────────────────────────────────────────── */
 const ClientServiceHub = ({ user, onBack }) => {
+  const navigate = useNavigate();
   const [services, setServices]       = useState([]);
   const [loading, setLoading]         = useState(true);
   const [search, setSearch]           = useState('');
   const [filter, setFilter]           = useState('All');
   const [selected, setSelected]       = useState(null);
   const [refreshing, setRefreshing]   = useState(false);
+  const [showModal, setShowModal]     = useState(false);
 
   /* Fetch claim store services from backend */
   const fetchServices = async (showRefresh = false) => {
@@ -394,7 +399,37 @@ const ClientServiceHub = ({ user, onBack }) => {
             View your generated claims
           </div>
         </div>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              color: '#000',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              fontWeight: 800,
+              fontSize: '13px',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(16, 185, 129, 0.3)';
+              e.currentTarget.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(16, 185, 129, 0.2)';
+              e.currentTarget.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+            }}
+          >
+            <Plus size={16} /> New Ticket
+          </button>
           <button
             onClick={() => fetchServices(true)}
             disabled={refreshing}
@@ -512,6 +547,16 @@ const ClientServiceHub = ({ user, onBack }) => {
 
       {/* ── Detail panel ────────────────────────────────── */}
       {selected && <DetailPanel service={selected} onClose={() => setSelected(null)} />}
+
+      {showModal && (
+        <CreateTicketModal 
+          onClose={() => setShowModal(false)} 
+          onSuccess={() => {
+            alert('Ticket created successfully!');
+            navigate('/client?tab=services');
+          }} 
+        />
+      )}
 
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

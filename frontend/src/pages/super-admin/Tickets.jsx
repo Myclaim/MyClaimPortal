@@ -149,7 +149,7 @@ const Tickets = () => {
       const matchesSearch = 
         t.client?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.service?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t._id.slice(-6).toUpperCase().includes(searchQuery.toUpperCase());
+        new Date(t.createdAt).getTime().includes(searchQuery.toUpperCase());
       
       const matchesTab = activeTab === 'All Tickets' || 
         (activeTab === 'Claim Hub' && t.service?.toLowerCase().includes('claim')) ||
@@ -600,7 +600,7 @@ const Tickets = () => {
                   <td>
                     <input type="checkbox" checked={selectedTickets.includes(t._id)} onChange={() => toggleSelect(t._id)} style={{ cursor: 'pointer' }} />
                   </td>
-                  <td style={{ color: 'var(--blue)', fontWeight: 800 }}>#{t.service?.slice(0, 3).toUpperCase()}-2024-{t._id.slice(-4).toUpperCase()}</td>
+                  <td style={{ color: 'var(--blue)', fontWeight: 800 }}>#{new Date(t.createdAt).getTime()}</td>
                   <td>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <select 
@@ -724,7 +724,7 @@ const Tickets = () => {
                       onClick={() => openDocs(t)}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{t._id.slice(-6).toUpperCase()}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{new Date(t.createdAt).getTime()}</span>
                         <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-light)', background: 'var(--bg)', padding: '2px 8px', borderRadius: '6px' }}>{t.priority}</span>
                       </div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{t.client?.name || 'Unknown Client'}</div>

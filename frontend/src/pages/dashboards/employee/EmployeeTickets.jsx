@@ -197,7 +197,7 @@ const EmployeeTickets = () => {
       (t.subject || '').toLowerCase().includes(q) ||
       (t.service || '').toLowerCase().includes(q) ||
       (t.client?.name || '').toLowerCase().includes(q) ||
-      String(t._id).slice(-6).toLowerCase().includes(q)
+      String(new Date(t.createdAt).getTime()).includes(q)
     );
 
     // Sort logic
@@ -307,7 +307,7 @@ const EmployeeTickets = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>
-                  #{String(t._id).slice(-6).toUpperCase()}
+                  #{new Date(t.createdAt).getTime()}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, marginBottom: 8 }}>
                   {t.subject || t.service || 'Ticket'}
@@ -594,7 +594,7 @@ const EmployeeTickets = () => {
                       <tr key={ticket._id} style={{ borderLeft: overdue ? '3px solid #ef4444' : '3px solid transparent' }}>
                         <td>
                           <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--text)', background: 'var(--bg)', padding: '3px 8px', borderRadius: 5 }}>
-                            #{String(ticket._id).slice(-6).toUpperCase()}
+                            #{new Date(ticket.createdAt).getTime()}
                           </span>
                         </td>
                         <td>

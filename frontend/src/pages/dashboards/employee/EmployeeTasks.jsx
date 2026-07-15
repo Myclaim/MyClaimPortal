@@ -151,7 +151,7 @@ const EmployeeTasks = () => {
       (t.subject || '').toLowerCase().includes(q) ||
       (t.service || '').toLowerCase().includes(q) ||
       (t.client?.name || '').toLowerCase().includes(q) ||
-      String(t._id).slice(-6).toLowerCase().includes(q)
+      String(new Date(t.createdAt).getTime()).includes(q)
     );
 
     // Sort logic
@@ -241,7 +241,7 @@ const EmployeeTasks = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', background: 'var(--bg)', padding: '2px 7px', borderRadius: 5 }}>
-              #{String(task._id).slice(-6).toUpperCase()}
+              #{new Date(task.createdAt).getTime()}
             </span>
             <StatusBadge status={task.status} />
             <PriorityBadge priority={task.priority} />
@@ -325,7 +325,7 @@ const EmployeeTasks = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>
-                  #{String(t._id).slice(-6).toUpperCase()}
+                  #{new Date(t.createdAt).getTime()}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, marginBottom: 8 }}>
                   {t.subject || t.service || 'Task Assignment'}

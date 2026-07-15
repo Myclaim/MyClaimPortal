@@ -117,7 +117,9 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
         <div className="modal-header" style={{ padding: '24px 32px', borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <h3 className="modal-title" style={{ fontSize: '20px' }}>Ticket #{ticket?._id.slice(-6).toUpperCase()}</h3>
+              <h3 className="modal-title" style={{ fontSize: '20px' }}>
+                Ticket #{user?.role === 'client' ? new Date(ticket?.createdAt).getTime() : ticket?._id.slice(-6).toUpperCase()}
+              </h3>
               <span className={`badge-pill ${ticket?.status === 'active' ? 'badge-active' : ticket?.status === 'in_process' ? 'badge-process' : ''}`} style={{ background: ticket?.status === 'active' ? 'var(--green-light)' : ticket?.status === 'in_process' ? 'rgba(245, 158, 11, 0.1)' : 'var(--blue-light)', color: ticket?.status === 'active' ? 'var(--green)' : ticket?.status === 'in_process' ? '#b45309' : 'var(--blue)', padding: '4px 10px', fontSize: '11px', fontWeight: 800, borderRadius: '12px' }}>
                 {ticket?.status?.replace('_', ' ').toUpperCase()}
               </span>

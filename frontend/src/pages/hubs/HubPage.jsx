@@ -44,7 +44,7 @@ const KanbanBoard = ({ vertical, tasks, onDropTask }) => {
                   style={{ background: 'var(--card)', padding: 16, borderRadius: 8, border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', cursor: 'grab' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{t.id.slice(-6).toUpperCase()}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{new Date(t.createdAt).getTime()}</span>
                     <span className={`ch-badge ${t.priority === 'High' ? 'ch-badge-high' : t.priority === 'Medium' ? 'ch-badge-medium' : 'ch-badge-low'}`}>{t.priority}</span>
                   </div>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: 'var(--text)' }}>
@@ -591,7 +591,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
                     <tbody>
                       {supportTickets.map(t => (
                         <tr key={t._id}>
-                          <td><span style={{ color: '#3b82f6', fontWeight: 600 }}>#{t._id.slice(-6).toUpperCase()}</span></td>
+                          <td><span style={{ color: '#3b82f6', fontWeight: 600 }}>#{new Date(t.createdAt).getTime()}</span></td>
                           <td style={{ display: 'flex', alignItems: 'center' }}>
                             <span className="user-badge" style={{ background: '#06b6d4' }}>{t.client?.name?.[0] || 'U'}</span> {t.client?.name || 'Unknown'} ({t.client?.role === 'partner' ? 'Partner' : 'Client'})
                           </td>
@@ -601,7 +601,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
                           <td style={{ color: 'var(--text-muted)' }}>{t.dueDate ? new Date(t.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No date'}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                              <button style={{ padding: '6px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedTaskDetail({ name: t.subject || t.service, topicName: '#' + t._id.slice(-6).toUpperCase(), status: t.status === 'active' ? 'Open' : t.status === 'in_process' ? 'In Progress' : 'Resolved', client: t.client?.name || 'Unknown', company: t.client?.role || 'Client', service: 'Support Request', due: t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '', admin: t.assignedTo?.name || 'Support Team', priority: t.priority === 'urgent' || t.priority === 'high' ? 'High' : t.priority === 'medium' ? 'Medium' : 'Low' })}><Eye size={16} /></button>
+                              <button style={{ padding: '6px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedTaskDetail({ name: t.subject || t.service, topicName: '#' + new Date(t.createdAt).getTime(), status: t.status === 'active' ? 'Open' : t.status === 'in_process' ? 'In Progress' : 'Resolved', client: t.client?.name || 'Unknown', company: t.client?.role || 'Client', service: 'Support Request', due: t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '', admin: t.assignedTo?.name || 'Support Team', priority: t.priority === 'urgent' || t.priority === 'high' ? 'High' : t.priority === 'medium' ? 'Medium' : 'Low' })}><Eye size={16} /></button>
                               <button style={{ padding: '6px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Edit2 size={16} /></button>
                             </div>
                           </td>

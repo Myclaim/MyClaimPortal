@@ -540,7 +540,7 @@ const AdminEmployeeManagement = () => {
                     ? <option disabled>No unassigned tickets in {hubType || 'your hub'}</option>
                     : unassignedTickets.map(t => (
                       <option key={t._id} value={t._id}>
-                        #{String(t._id).slice(-6).toUpperCase()} · {t.service} · {t.client?.name || 'Unknown'} [{t.priority}]
+                        #{new Date(t.createdAt).getTime()} · {t.service} · {t.client?.name || 'Unknown'} [{t.priority}]
                       </option>
                     ))}
                 </select>

@@ -5,6 +5,8 @@ import { Menu, X, Bell } from 'lucide-react';
 import CommandPalette from '../CommandPalette';
 import { useSocket } from '../../hooks/useSocket';
 import useAuth from '../../hooks/useAuth';
+import { useTheme } from '../../contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 const Toast = ({ message, onClose }) => (
   <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: '16px', zIndex: 10000, animation: 'slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
@@ -52,14 +54,14 @@ const Layout = () => {
 
     const handleTicketCreated = (ticket) => {
       if (!isRelevant(ticket.client)) return;
-      setToast(`New ticket created: #${ticket._id.slice(-6).toUpperCase()} (${ticket.service})`);
+      setToast(`New ticket created: #${new Date(ticket.createdAt).getTime()} (${ticket.service})`);
       setTimeout(() => setToast(null), 5000);
       window.dispatchEvent(new CustomEvent('newNotificationEvent'));
     };
 
     const handleTicketUpdated = (ticket) => {
       if (!isRelevant(ticket.client)) return;
-      setToast(`Ticket #${ticket._id.slice(-6).toUpperCase()} updated to ${ticket.status}`);
+      setToast(`Ticket #${new Date(ticket.createdAt).getTime()} updated to ${ticket.status}`);
       setTimeout(() => setToast(null), 5000);
       window.dispatchEvent(new CustomEvent('newNotificationEvent'));
     };
@@ -111,7 +113,49 @@ const Layout = () => {
       </main>
       <CommandPalette />
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+      
+      {/* Global Theme Toggle Button */}
+      <ThemeToggleBtn />
     </>
+  );
+};
+
+const ThemeToggleBtn = () => {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <div 
+      onClick={toggleTheme}
+      style={{
+        position: 'fixed',
+        top: '24px',
+        right: '32px',
+        zIndex: 150,
+        width: '40px', 
+        height: '40px', 
+        background: 'var(--card)',
+        borderRadius: '12px', 
+        display: 'flex', 
+        alignItems: 'center',
+        justifyContent: 'center', 
+        border: '1px solid var(--border)',
+        color: 'var(--text-muted)', 
+        cursor: 'pointer', 
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.borderColor = 'var(--blue)';
+        e.currentTarget.style.color = 'var(--blue)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'none';
+        e.currentTarget.style.borderColor = 'var(--border)';
+        e.currentTarget.style.color = 'var(--text-muted)';
+      }}
+    >
+      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+    </div>
   );
 };
 

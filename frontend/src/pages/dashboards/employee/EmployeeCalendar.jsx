@@ -316,7 +316,7 @@ const EmployeeCalendar = () => {
                       <div key={t._id} className={`cal-task-item ${od ? 'overdue' : ''}`}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                           <span style={{ fontSize: 12, fontWeight: 800, fontFamily: 'monospace', color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: 4 }}>
-                            #{t.ticketId || String(t._id).slice(-6).toUpperCase()}
+                            #{t.ticketId || new Date(t.createdAt).getTime()}
                           </span>
                           <span style={{ fontSize: 10, fontWeight: 700, color: PRIORITY_COLORS[t.priority], display: 'flex', alignItems: 'center', gap: 3 }}>
                             <Flag size={10} /> {t.priority?.toUpperCase()}

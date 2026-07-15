@@ -86,52 +86,7 @@ const ClientMyServices = () => {
     }
   };
 
-  const handleStatusChange = async (ticketId, newStatus) => {
-    try {
-      await api.patch(`/tickets/${ticketId}/status`, { status: newStatus });
-      load();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to update ticket status');
-    }
-  };
-
-  const toggleSelect = (id) => {
-    setSelectedTickets(prev => prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedTickets.length === filteredTickets.length && filteredTickets.length > 0) {
-      setSelectedTickets([]);
-    } else {
-      setSelectedTickets(filteredTickets.map(t => t._id));
-    }
-  };
-
-  const handleBulkAction = async (actionType) => {
-    if (selectedTickets.length === 0) return;
-    try {
-      let payload = {};
-      if (actionType === 'status' && bulkStatus) payload = { status: bulkStatus };
-      else if (actionType === 'assign' && bulkAssignTo) payload = { userId: bulkAssignTo === 'unassigned' ? null : bulkAssignTo };
-      else return;
-
-      await api.patch('/tickets/bulk', { ticketIds: selectedTickets, action: actionType, payload });
-      setSelectedTickets([]);
-      setBulkStatus('');
-      setBulkAssignTo('');
-      load();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to process bulk action');
-    }
-  };
-
-  const handleDrop = (e, status) => {
-    e.preventDefault();
-    const ticketId = e.dataTransfer.getData('ticketId');
-    if (ticketId) handleStatusChange(ticketId, status);
-  };
+  // Removed client status change and bulk actions
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -152,7 +107,7 @@ const ClientMyServices = () => {
       const matchesSearch = 
         t.client?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.service?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t._id.slice(-6).toUpperCase().includes(searchQuery.toUpperCase());
+        new Date(t.createdAt).getTime().includes(searchQuery.toUpperCase());
       
       const matchesTab = activeTab === 'All Tickets' || 
         (activeTab === 'Claim Hub' && t.service?.toLowerCase().includes('claim')) ||
@@ -451,9 +406,6 @@ const ClientMyServices = () => {
             <button onClick={handleExport} className="btn-export">
               <Download size={16} /> Export
             </button>
-            <button onClick={() => setShowModal(true)} className="btn-new-ticket">
-              <Plus size={16} /> New Ticket
-            </button>
           </div>
         </div>
       </div>
@@ -571,26 +523,7 @@ const ClientMyServices = () => {
           </div>
         </div>
 
-        {selectedTickets.length > 0 && viewMode === 'table' && (
-          <div style={{ background: 'var(--ms-selection-bg)', border: '1px solid var(--dashboard-border)', borderRadius: '12px', padding: '12px 24px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '24px', animation: 'fadeIn 0.3s' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ms-selection-text)' }}>{selectedTickets.length} Tickets Selected</div>
-            
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--dashboard-border)', background: 'var(--dashboard-card)', color: 'var(--dashboard-text)', fontSize: '13px', outline: 'none' }}>
-                <option value="">Change Status...</option>
-                <option value="active">Active</option>
-                <option value="in_process">In Process</option>
-                <option value="completed">Completed</option>
-                <option value="closed">Closed</option>
-              </select>
-              <button onClick={() => handleBulkAction('status')} style={{ padding: '8px 16px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Apply</button>
-            </div>
 
-            <div style={{ width: '1px', height: '24px', background: 'var(--dashboard-border)' }}></div>
-
-            <button onClick={() => setSelectedTickets([])} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--dashboard-text-muted)', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>Clear Selection</button>
-          </div>
-        )}
 
         {/* Main Content Area */}
         {viewMode === 'table' ? (
@@ -598,9 +531,6 @@ const ClientMyServices = () => {
           <table className="ticket-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>
-                  <input type="checkbox" checked={selectedTickets.length === filteredTickets.length && filteredTickets.length > 0} onChange={toggleSelectAll} style={{ cursor: 'pointer' }} />
-                </th>
                 <th>Ticket ID</th>
                 <th>Status</th>
                 <th>Progress</th>
@@ -612,7 +542,7 @@ const ClientMyServices = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="8" style={{ textAlign: 'center', padding: '64px' }}>
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: '64px' }}>
                   <div className="spin" style={{ width: '32px', height: '32px', border: '3px solid var(--dashboard-border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto' }}></div>
                   <div style={{ marginTop: '16px', color: 'var(--dashboard-text-muted)' }}>Syncing Activity logs...</div>
                 </td></tr>
@@ -646,33 +576,17 @@ const ClientMyServices = () => {
 
                 return (
                 <tr key={t._id}>
+                  <td style={{ color: 'var(--blue)', fontWeight: 800 }}>#{new Date(t.createdAt).getTime()}</td>
                   <td>
-                    <input type="checkbox" checked={selectedTickets.includes(t._id)} onChange={() => toggleSelect(t._id)} style={{ cursor: 'pointer' }} />
-                  </td>
-                  <td style={{ color: 'var(--blue)', fontWeight: 800 }}>#{t.service?.slice(0, 3).toUpperCase()}-2024-{t._id.slice(-4).toUpperCase()}</td>
-                  <td>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <select 
-                        value={t.status}
-                        onChange={(e) => handleStatusChange(t._id, e.target.value)}
-                        className={`badge-pill ${t.status === 'active' ? 'badge-active' : t.status === 'in_process' ? 'badge-process' : ''}`}
-                        style={{
-                          appearance: 'none',
-                          border: 'none',
-                          outline: 'none',
-                          cursor: 'pointer',
-                          paddingRight: '24px',
-                          background: t.status === 'active' ? 'var(--green-light)' : t.status === 'in_process' ? 'rgba(245, 158, 11, 0.1)' : t.status === 'completed' ? 'var(--blue-light)' : 'rgba(148, 163, 184, 0.1)',
-                          color: t.status === 'active' ? 'var(--green)' : t.status === 'in_process' ? '#b45309' : t.status === 'completed' ? 'var(--blue)' : 'var(--dashboard-text-muted)',
-                        }}
-                      >
-                        <option value="active">Active</option>
-                        <option value="in_process">In Process</option>
-                        <option value="completed">Completed</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                      <ChevronDown size={12} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'currentColor', opacity: 0.7 }} />
-                    </div>
+                    <span 
+                      className={`badge-pill ${t.status === 'active' ? 'badge-active' : t.status === 'in_process' ? 'badge-process' : ''}`}
+                      style={{
+                        background: t.status === 'active' ? 'var(--green-light)' : t.status === 'in_process' ? 'rgba(245, 158, 11, 0.1)' : t.status === 'completed' ? 'var(--blue-light)' : 'rgba(148, 163, 184, 0.1)',
+                        color: t.status === 'active' ? 'var(--green)' : t.status === 'in_process' ? '#b45309' : t.status === 'completed' ? 'var(--blue)' : 'var(--dashboard-text-muted)',
+                      }}
+                    >
+                      {t.status === 'in_process' ? 'In Process' : t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+                    </span>
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -712,7 +626,7 @@ const ClientMyServices = () => {
                   </td>
                 </tr>
               )}) : (
-                <tr><td colSpan="8" style={{ textAlign: 'center', padding: '64px', color: 'var(--dashboard-text-muted)' }}>No tickets found matching your filters.</td></tr>
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: '64px', color: 'var(--dashboard-text-muted)' }}>No tickets found matching your filters.</td></tr>
               )}
             </tbody>
           </table>
@@ -729,8 +643,6 @@ const ClientMyServices = () => {
               <div 
                 key={col.id} 
                 className="board-column"
-                onDragOver={e => e.preventDefault()}
-                onDrop={e => handleDrop(e, col.id)}
               >
                 <div style={{ padding: '16px', borderBottom: '1px solid var(--dashboard-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -747,12 +659,10 @@ const ClientMyServices = () => {
                     <div 
                       key={t._id} 
                       className="board-card"
-                      draggable
-                      onDragStart={e => e.dataTransfer.setData('ticketId', t._id)}
                       onClick={() => openDocs(t)}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{t._id.slice(-6).toUpperCase()}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{new Date(t.createdAt).getTime()}</span>
                         <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--dashboard-text-muted)', background: 'var(--dashboard-bg)', padding: '2px 8px', borderRadius: '6px' }}>{t.priority}</span>
                       </div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--dashboard-text)', marginBottom: '4px' }}>{t.client?.name || 'Unknown Client'}</div>
@@ -780,14 +690,6 @@ const ClientMyServices = () => {
         onClose={() => setIsDocsModalOpen(false)}
         ticket={selectedTicket}
       />
-
-      {showModal && (
-        <CreateTicketModal 
-          onClose={() => setShowModal(false)} 
-          onSuccess={load} 
-          initialClients={clients}
-        />
-      )}
       </div>
     </div>
   );

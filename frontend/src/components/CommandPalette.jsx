@@ -169,7 +169,7 @@ const CommandPalette = () => {
                       >
                         <Ticket size={18} color={isSelected ? '#fff' : 'var(--blue)'} />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '14px', fontWeight: 700 }}>#{t._id.slice(-6).toUpperCase()} - {t.service}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700 }}>#{new Date(t.createdAt).getTime()} - {t.service}</div>
                           <div style={{ fontSize: '12px', color: isSelected ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)' }}>{t.client?.name} • {t.status}</div>
                         </div>
                         {isSelected && <ChevronRight size={18} />}

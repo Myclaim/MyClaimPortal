@@ -173,7 +173,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
                       {selectedType === 'ticket' ? (
                         tickets.map(t => (
                           <option key={t._id} value={t._id}>
-                            #{t._id.slice(-6).toUpperCase()} - {t.service}
+                            #{new Date(t.createdAt).getTime()} - {t.service}
                           </option>
                         ))
                       ) : (
