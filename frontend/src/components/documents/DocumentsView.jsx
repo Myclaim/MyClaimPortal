@@ -88,6 +88,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
   const fetchFolders = async () => {
     if (currentFolderId === 'Profile Form Uploads') return; // Virtual folder
     setLoadingFolders(true);
+    setDbFolders([]);
     try {
       const parentQuery = currentFolderId ? currentFolderId : 'root';
       const res = await api.get(`/folders?client_id=${client._id}&parent_folder_id=${parentQuery}`);
@@ -474,8 +475,16 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      style={{ position: 'relative', minHeight: '400px' }}
+      style={{ position: 'relative', minHeight: '400px', display: 'flex', flexDirection: 'column' }}
     >
+      <style>{`
+        .doc-grid-item {
+          transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        .doc-grid-item:active {
+          transform: scale(0.96) !important;
+        }
+      `}</style>
       {/* Drag Drop Overlay */}
       {isDragging && (
         <div style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10, background: 'rgba(59, 130, 246, 0.1)', border: '2px dashed #3b82f6', borderRadius: '16px', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -704,7 +713,9 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         {currentFolders.map(f => (
           <div 
             key={f._id} 
-            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', cursor: 'pointer', background: activeFolderMenu === f._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
+            onClick={() => navigateToFolder(f)}
+            className="doc-grid-item"
+            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', cursor: 'pointer', background: activeFolderMenu === f._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveFolderMenu(null)}
           >
             {/* Folder Context Menu */}
@@ -738,7 +749,7 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
               </div>
             )}
 
-            <div onClick={() => navigateToFolder(f)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               {f.isVirtual ? (
                 <div style={{ position: 'relative' }}>
                   <Folder size={80} color="#eab308" fill="#fef08a" strokeWidth={1} />
@@ -767,7 +778,9 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
         {currentDocs.map(d => (
           <div 
             key={d._id} 
-            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', transition: 'all 0.2s', background: activeDocMenu === d._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
+            onClick={() => setPreviewDoc(d)}
+            className="doc-grid-item"
+            style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', borderRadius: '16px', cursor: 'pointer', background: activeDocMenu === d._id ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f1f5f9') : 'transparent' }}
             onMouseLeave={() => setActiveDocMenu(null)}
           >
             {/* Document Context Menu */}
@@ -832,7 +845,6 @@ const DocumentsView = ({ documents, client, onRefresh, readOnlyStructure = false
             </div>
 
             <div 
-              onClick={() => setPreviewDoc(d)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', cursor: 'pointer' }}
             >
               <div style={{ position: 'relative' }}>

@@ -203,16 +203,71 @@ const ClientMyServices = () => {
           from { opacity: 0; transform: translateY(15px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        }
         .animate-fade-up {
           animation: fadeSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .page {
+          --ms-export-bg: var(--dashboard-card);
+          --ms-export-border: var(--dashboard-border);
+          --ms-export-text: var(--dashboard-text);
+          --ms-export-hover-bg: var(--dashboard-bg);
+          
+          --ms-stat-bg: linear-gradient(145deg, var(--dashboard-card), var(--dashboard-bg));
+          --ms-stat-border: var(--dashboard-border);
+          --ms-stat-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05);
+          --ms-stat-before: linear-gradient(135deg, rgba(16,185,129,0.05) 0%, transparent 100%);
+          --ms-stat-hover-border: rgba(16, 185, 129, 0.3);
+          --ms-stat-hover-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.15);
+
+          --ms-card-soft: var(--dashboard-card-soft);
+          --ms-card-hover: var(--dashboard-card);
+          --ms-card-th: var(--dashboard-card-soft);
+          --ms-search-bg: var(--dashboard-card-soft);
+
+          --ms-board-bg: linear-gradient(180deg, var(--dashboard-card-soft), var(--dashboard-bg));
+          --ms-board-card-border: var(--dashboard-border);
+          --ms-board-card-shadow: 0 6px 16px rgba(0,0,0,0.05);
+          --ms-board-card-hover-border: rgba(16,185,129,0.3);
+          
+          --ms-selection-bg: var(--dashboard-card);
+          --ms-selection-text: var(--dashboard-text);
+        }
+
+        .dark .page {
+          --ms-export-bg: #0f172a;
+          --ms-export-border: rgba(16, 185, 129, 0.3);
+          --ms-export-text: #10B981;
+          --ms-export-hover-bg: #10B981;
+
+          --ms-stat-bg: linear-gradient(145deg, var(--dashboard-card), rgba(15, 23, 42, 0.4));
+          --ms-stat-border: rgba(255, 255, 255, 0.05);
+          --ms-stat-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+          --ms-stat-before: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+          --ms-stat-hover-border: rgba(16, 185, 129, 0.3);
+          --ms-stat-hover-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.15);
+
+          --ms-card-soft: rgba(255,255,255,0.03);
+          --ms-card-hover: rgba(255,255,255,0.08);
+          --ms-card-th: rgba(255,255,255,0.02);
+          --ms-search-bg: rgba(15, 23, 42, 0.6);
+
+          --ms-board-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1));
+          --ms-board-card-border: rgba(255, 255, 255, 0.05);
+          --ms-board-card-shadow: 0 6px 16px rgba(0,0,0,0.15);
+          --ms-board-card-hover-border: rgba(255,255,255,0.15);
+
+          --ms-selection-bg: rgba(255,255,255,0.05);
+          --ms-selection-text: #fff;
         }
 
         .btn-export {
           padding: 10px 20px;
           border-radius: 12px;
-          background: #0f172a;
-          border: 1px solid rgba(16, 185, 129, 0.3);
-          color: #10B981;
+          background: var(--ms-export-bg);
+          border: 1px solid var(--ms-export-border);
+          color: var(--ms-export-text);
           display: flex;
           align-items: center;
           gap: 8px;
@@ -220,14 +275,14 @@ const ClientMyServices = () => {
           font-weight: 700;
           font-size: 13px;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .btn-export:hover {
-          background: #10B981;
-          color: #000;
+          background: var(--ms-export-hover-bg);
+          color: var(--dashboard-text);
           border-color: #10B981;
           transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+          box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.15);
         }
 
         .btn-new-ticket {
@@ -252,8 +307,8 @@ const ClientMyServices = () => {
         }
 
         .ticket-stat-card {
-          background: linear-gradient(145deg, var(--dashboard-card), rgba(15, 23, 42, 0.4));
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: var(--ms-stat-bg);
+          border: 1px solid var(--ms-stat-border);
           border-radius: 20px;
           padding: 24px;
           display: flex;
@@ -261,18 +316,18 @@ const ClientMyServices = () => {
           align-items: flex-start;
           justify-content: space-between;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+          box-shadow: var(--ms-stat-shadow);
           position: relative;
           overflow: hidden;
           min-height: 160px;
         }
         .ticket-stat-card::before {
           content: ''; position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+          background: var(--ms-stat-before);
           pointer-events: none; opacity: 0; transition: opacity 0.3s;
         }
         .ticket-stat-card:hover::before { opacity: 1; }
-        .ticket-stat-card:hover { transform: translateY(-4px); border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.15); }
+        .ticket-stat-card:hover { transform: translateY(-4px); border-color: var(--ms-stat-hover-border); box-shadow: var(--ms-stat-hover-shadow); }
         
         .tab-btn {
           padding: 10px 20px;
@@ -285,11 +340,11 @@ const ClientMyServices = () => {
           align-items: center;
           gap: 10px;
           border: 1px solid transparent;
-          background: rgba(255,255,255,0.03);
+          background: var(--ms-card-soft);
           color: var(--dashboard-text-muted);
         }
         .tab-btn.active { background: rgba(16, 185, 129, 0.1); color: var(--green); border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1); }
-        .tab-btn:not(.active):hover { background: rgba(255,255,255,0.08); color: var(--dashboard-text); }
+        .tab-btn:not(.active):hover { background: var(--ms-card-hover); color: var(--dashboard-text); }
         
         .ticket-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .ticket-table th { 
@@ -301,7 +356,7 @@ const ClientMyServices = () => {
           font-weight: 800;
           letter-spacing: 1px;
           border-bottom: 1px solid var(--dashboard-border);
-          background: rgba(255,255,255,0.02);
+          background: var(--ms-card-th);
         }
         .ticket-table td { 
           padding: 18px 24px; 
@@ -310,7 +365,7 @@ const ClientMyServices = () => {
           color: var(--dashboard-text);
           transition: background 0.2s;
         }
-        .ticket-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .ticket-table tr:hover td { background: var(--ms-card-soft); }
         
         .badge-pill {
           padding: 4px 12px;
@@ -327,7 +382,7 @@ const ClientMyServices = () => {
 
         .search-area input {
           width: 100%; 
-          background: rgba(15, 23, 42, 0.6); 
+          background: var(--ms-search-bg); 
           border: 1px solid var(--dashboard-border); 
           border-radius: 14px; 
           padding: 14px 16px 14px 48px;
@@ -338,7 +393,7 @@ const ClientMyServices = () => {
         }
         .search-area input:focus { border-color: var(--green); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); outline: none; background: var(--dashboard-card); }
         
-        .status-toggle { display: flex; background: rgba(255,255,255,0.03); border: 1px solid var(--dashboard-border); border-radius: 14px; padding: 6px; gap: 6px; }
+        .status-toggle { display: flex; background: var(--ms-card-soft); border: 1px solid var(--dashboard-border); border-radius: 14px; padding: 6px; gap: 6px; }
         .status-toggle-btn {
           padding: 10px 18px; 
           font-size: 13px; 
@@ -352,7 +407,7 @@ const ClientMyServices = () => {
         }
         .status-toggle-btn:hover {
           color: var(--dashboard-text);
-          background: rgba(255,255,255,0.05);
+          background: var(--ms-card-hover);
         }
         .status-toggle-btn.active { 
           background: var(--dashboard-card); 
@@ -362,7 +417,7 @@ const ClientMyServices = () => {
         }
 
         .board-column {
-          background: linear-gradient(180deg, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1));
+          background: var(--ms-board-bg);
           border: 1px solid var(--dashboard-border);
           border-radius: 20px;
           min-height: 500px;
@@ -371,15 +426,15 @@ const ClientMyServices = () => {
         }
         .board-card {
           background: var(--dashboard-card);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--ms-board-card-border);
           border-radius: 14px;
           padding: 18px;
           margin-bottom: 14px;
           cursor: grab;
-          box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+          box-shadow: var(--ms-board-card-shadow);
           transition: transform 0.2s, border-color 0.2s;
         }
-        .board-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+        .board-card:hover { border-color: var(--ms-board-card-hover-border); transform: translateY(-2px); }
         .board-card:active { cursor: grabbing; transform: scale(0.98); }
       `}</style>
 
@@ -517,8 +572,8 @@ const ClientMyServices = () => {
         </div>
 
         {selectedTickets.length > 0 && viewMode === 'table' && (
-          <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--dashboard-border)', borderRadius: '12px', padding: '12px 24px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '24px', animation: 'fadeIn 0.3s' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{selectedTickets.length} Tickets Selected</div>
+          <div style={{ background: 'var(--ms-selection-bg)', border: '1px solid var(--dashboard-border)', borderRadius: '12px', padding: '12px 24px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '24px', animation: 'fadeIn 0.3s' }}>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ms-selection-text)' }}>{selectedTickets.length} Tickets Selected</div>
             
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--dashboard-border)', background: 'var(--dashboard-card)', color: 'var(--dashboard-text)', fontSize: '13px', outline: 'none' }}>
@@ -629,7 +684,7 @@ const ClientMyServices = () => {
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: 'white', boxShadow: '0 4px 10px rgba(34, 197, 94, 0.3)' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: '#10B981', boxShadow: '0 4px 10px rgba(34, 197, 94, 0.3)' }}>
                         {t.client?.name?.substring(0, 2).toUpperCase() || '??'}
                       </div>
                       <span style={{ fontWeight: 700, color: 'var(--dashboard-text)' }}>{t.client?.name || 'Unknown User'}</span>

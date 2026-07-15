@@ -13,6 +13,7 @@ import ClientMyServices from './ClientMyServices';
 import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../../hooks/useAuth';
+import { useTheme } from '../../../contexts/ThemeContext';
 import api from '../../../services/api';
 import '../../super-admin/Overview.css';
 
@@ -974,25 +975,25 @@ const MyClaimsView = ({ claims, navigate }) => {
 /* ── FAMILY TREE COMPONENT ── */
 const ClientFamilyTreeNode = ({ name, role, isClient }) => (
   <div style={{ 
-    background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(30, 41, 59, 0.45)', 
-    border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-    color: 'var(--dashboard-text)',
+    background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'var(--family-node-bg)', 
+    border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'var(--family-node-border)'}`,
+    color: isClient ? '#fff' : 'var(--dashboard-text)',
     padding: '14px 28px', 
     borderRadius: '16px', 
     minWidth: '140px',
     textAlign: 'center',
     boxShadow: isClient 
       ? '0 10px 25px -5px rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15)' 
-      : '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px var(--dashboard-card)',
+      : 'var(--family-node-shadow)',
     position: 'relative',
     zIndex: 2,
     backdropFilter: 'blur(8px)',
-    transition: 'transform 0.2s ease, border-color 0.2s ease',
+    transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
   }}
   className="family-node-hover"
   >
-    <div style={{ fontWeight: 800, fontSize: '14px', letterSpacing: '-0.3px' }}>{name}</div>
-    <div style={{ fontSize: '10px', color: isClient ? '#A7F3D0' : 'rgba(255, 255, 255, 0.5)', fontWeight: 800, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{role}</div>
+    <div style={{ fontWeight: 800, fontSize: '14px', letterSpacing: '-0.3px', color: isClient ? '#fff' : 'var(--dashboard-text)' }}>{name}</div>
+    <div style={{ fontSize: '10px', color: isClient ? '#A7F3D0' : 'var(--family-role-color)', fontWeight: 800, margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{role}</div>
   </div>
 );
 
@@ -1006,7 +1007,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
   const lineBg = 'var(--dashboard-border)';
 
   return (
-    <div style={{ 
+    <div className="family-tree-container" style={{ 
       textAlign: 'center', 
       padding: '40px', 
       background: CL.card, 
@@ -1018,6 +1019,18 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
       position: 'relative'
     }}>
       <style>{`
+        .family-tree-container {
+          --family-node-bg: var(--dashboard-card);
+          --family-node-border: var(--dashboard-border);
+          --family-node-shadow: 0 4px 12px rgba(0,0,0,0.05), inset 0 1px 1px var(--dashboard-card);
+          --family-role-color: var(--dashboard-text-muted);
+        }
+        .dark .family-tree-container {
+          --family-node-bg: rgba(30, 41, 59, 0.45);
+          --family-node-border: rgba(255, 255, 255, 0.08);
+          --family-node-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.02);
+          --family-role-color: rgba(255, 255, 255, 0.5);
+        }
         .family-node-hover {
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -1128,7 +1141,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
         )}
 
         {familyMembers.length === 0 && (
-          <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: `1px dashed var(--dashboard-border)`, marginTop: '20px' }}>
+          <div style={{ padding: '40px', background: 'var(--dashboard-card-soft)', borderRadius: '16px', border: `1px dashed var(--dashboard-border)`, marginTop: '20px' }}>
             <div style={{ width: '48px', height: '48px', background: 'var(--dashboard-card)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: CL.textMuted }}>
               <Users size={24} />
             </div>
@@ -1144,6 +1157,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
 
 /* ── DOCUMENTS HUB COMPONENT ── */
 const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
+  const { theme } = useTheme();
   const BASE_URL = import.meta.env.DEV ? 'http://localhost:5005' : 'https://myclaimportal.onrender.com';
   const [activeSubTab, setActiveSubTab] = useState('My Documents');
   const [isDragging, setIsDragging] = useState(false);
@@ -1313,13 +1327,13 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--dashboard-border)', marginBottom: 24 }}>
         {['My Documents', 'Company Documents'].map(tab => (
           <div 
             key={tab}
             style={{
               padding: '12px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-              color: activeSubTab === tab ? '#fff' : 'var(--dashboard-border)',
+              color: activeSubTab === tab ? 'var(--dashboard-text)' : 'var(--dashboard-text-muted)',
               borderBottom: activeSubTab === tab ? '2.5px solid #10B981' : '2.5px solid transparent',
               transition: 'all 0.2s',
               position: 'relative',
@@ -1452,7 +1466,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
             })}
           </div>
 
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '32px 0' }} />
+          <div style={{ height: '1px', background: 'var(--dashboard-border)', margin: '32px 0' }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
             <Folder size={18} color="#10B981" />
@@ -1465,7 +1479,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
             client={clientProfile || user} 
             onRefresh={onRefresh} 
             readOnlyStructure={true} 
-            theme="dark" 
+            theme={theme} 
           />
         </div>
       ) : (
