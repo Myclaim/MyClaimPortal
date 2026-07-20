@@ -485,10 +485,9 @@ const ITEMS = [
   {
     id: 'client-refer-earn',
     section: 'client-tools',
-    label: 'Refer & Earn',
-    path: '/client?tab=refer-earn',
+    label: 'Refer a Friend',
+    path: '/client?tab=refer-friend',
     icon: Gift,
-    badgeLabel: '₹500'
   },
 ];
 

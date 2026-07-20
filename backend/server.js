@@ -36,6 +36,7 @@ app.use('/api/employees', require('./routes/employeeRoutes'));
 app.use('/api/partners', require('./routes/partnerRoutes'));
 app.use('/api/finance', require('./routes/financeRoutes'));
 app.use('/api/department-services', require('./routes/departmentServiceRoutes'));
+app.use('/api/referral', require('./routes/referralRoutes'));
 
 // Basic route
 app.get('/', (req, res) => {

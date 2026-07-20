@@ -6,10 +6,12 @@ import {
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
-  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download
+  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download, Gift
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
 import ClientMyServices from './ClientMyServices';
+import ReferFriendTab from './ReferFriendTab';
+import ReferCodeModal from '../../../components/modals/ReferCodeModal';
 import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../../hooks/useAuth';
@@ -1852,15 +1854,18 @@ const DashboardView = ({ overview, claims, navigate }) => {
       }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'grid', placeItems: 'center', color: CL.accent, flexShrink: 0 }}>
-            <RefreshCw size={18} />
+            <Gift size={18} />
           </div>
           <div>
-            <div style={{ fontWeight: 800, color: CL.text, fontSize: 14 }}>Refer a Friend &amp; Earn ₹5,000</div>
-            <div style={{ color: CL.textMuted, fontSize: 11, marginTop: 2 }}>For every friend who completes their claim recovery through RM Legal</div>
+            <div style={{ fontWeight: 800, color: CL.text, fontSize: 14 }}>Refer a Friend</div>
+            <div style={{ color: CL.textMuted, fontSize: 11, marginTop: 2 }}>Share your referral code — when a friend joins using your code, they're linked to your account</div>
           </div>
         </div>
-        <button style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>
-          Refer Now
+        <button
+          onClick={() => navigate('/client?tab=refer-friend')}
+          style={{ background: CL.accent, border: 'none', color: CL.bg, padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <Gift size={13} /> Refer a Friend
         </button>
       </div>
     </>
@@ -1884,6 +1889,7 @@ const ClientDashboard = ({ user: propUser }) => {
   const showNotifications = urlTab === 'notifications';
   const showServices = urlTab === 'services';
   const showIEPFSearch = urlTab === 'iepf-search';
+  const showReferFriend = urlTab === 'refer-friend';
 
   const [dashboard, setDashboard] = useState(null);
   const [clientProfile, setClientProfile] = useState(null);
@@ -1894,6 +1900,7 @@ const ClientDashboard = ({ user: propUser }) => {
   const [notifHovered, setNotifHovered] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [showReferModal, setShowReferModal] = useState(false);
 
   const fetchClientNotifications = async () => {
     if (!user?.token) return;
@@ -1963,6 +1970,24 @@ const ClientDashboard = ({ user: propUser }) => {
     window.addEventListener('newNotificationEvent', handleNewNotif);
     return () => window.removeEventListener('newNotificationEvent', handleNewNotif);
   }, [user]);
+
+  // ── Show referral code prompt for new clients (max 3 times) ──
+  useEffect(() => {
+    if (!user || user.role !== 'client' || loading) return;
+    const checkReferPrompt = async () => {
+      try {
+        const { data: refData } = await api.get('/referral/my-code');
+        // Show modal if: hasn't entered a code AND been shown fewer than 3 times
+        if (!refData.hasEnteredReferCode && (refData.referCodePromptCount || 0) < 3) {
+          // Small delay so dashboard loads first
+          setTimeout(() => setShowReferModal(true), 1200);
+        }
+      } catch (e) {
+        // silently skip if referral API unavailable
+      }
+    };
+    checkReferPrompt();
+  }, [user, loading]);
 
   const overview = dashboard?.overview || { totalClaims: 3, inProgress: 2, completed: 1, needAction: 2 };
 
@@ -2120,7 +2145,7 @@ const ClientDashboard = ({ user: propUser }) => {
         <div className="header-title-block">
           <div style={{ marginBottom: 6 }}>
             <span className="header-tag">
-              {showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : showNotifications ? '🔔 NOTIFICATIONS' : '🏠 DASHBOARD'}
+              {showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : showNotifications ? '🔔 NOTIFICATIONS' : showReferFriend ? '🎁 REFER A FRIEND' : '🏠 DASHBOARD'}
             </span>
           </div>
           <h1 className="header-greeting">
@@ -2132,6 +2157,8 @@ const ClientDashboard = ({ user: propUser }) => {
               <span className="header-title-shimmer">Documents Hub</span>
             ) : showNotifications ? (
               <span className="header-title-shimmer">Notifications</span>
+            ) : showReferFriend ? (
+              <span className="header-title-shimmer">Refer a Friend</span>
             ) : (
               <>
                 Welcome back,{' '}
@@ -2150,6 +2177,8 @@ const ClientDashboard = ({ user: propUser }) => {
               <>View, upload, and sync your <strong style={{ color: CL.accent }}>identity &amp; financial documents</strong></>
             ) : showNotifications ? (
               <>Stay updated on your <strong style={{ color: CL.accent }}>claim statuses and updates</strong></>
+            ) : showReferFriend ? (
+              <>Share your code, earn <strong style={{ color: CL.accent }}>₹500 per referral</strong> and help friends recover their assets</>
             ) : (
               <>Here's your <strong style={{ color: CL.accent }}>CLIENT</strong> command center — stay on top of everything.</>
             )}
@@ -2184,6 +2213,8 @@ const ClientDashboard = ({ user: propUser }) => {
         <ClientNotificationsView notifications={notifications} onRefresh={fetchClientNotifications} user={user} />
       ) : showServices ? (
         <ClientMyServices user={user} />
+      ) : showReferFriend ? (
+        <ReferFriendTab user={user} />
       ) : showIEPFSearch ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🔍</div>
@@ -2208,6 +2239,15 @@ const ClientDashboard = ({ user: propUser }) => {
           onClose={() => setIsAddFamilyModalOpen(false)}
           clientId={user?._id || user?.id}
           onSuccess={fetchFamilyData}
+        />
+      )}
+
+      {/* 🎁 REFERRAL CODE PROMPT MODAL */}
+      {showReferModal && (
+        <ReferCodeModal
+          onClose={(applied) => {
+            setShowReferModal(false);
+          }}
         />
       )}
 

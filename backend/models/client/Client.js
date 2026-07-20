@@ -76,7 +76,14 @@ const clientSchema = mongoose.Schema({
 
   parent_id: { type: mongoose.Schema.Types.ObjectId, index: true },
   client_id_ref: { type: String, unique: true, sparse: true },
-  is_active: { type: Boolean, default: true }
+  is_active: { type: Boolean, default: true },
+
+  // Referral System
+  referralCode: { type: String, unique: true, sparse: true }, // this client's own referral code
+  referredBy: { type: String, default: null },               // referral code of the person who referred this client
+  referralCount: { type: Number, default: 0 },               // how many people used this client's code
+  referCodePromptCount: { type: Number, default: 0 },        // how many times prompt was shown (max 3)
+  hasEnteredReferCode: { type: Boolean, default: false }      // true once code entered or 3 dismissals done
 }, { timestamps: true });
 
 module.exports = mongoose.model('Client', clientSchema);
