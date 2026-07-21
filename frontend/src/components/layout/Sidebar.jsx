@@ -456,7 +456,7 @@ const ITEMS = [
   {
     id: 'client-service-hub',
     section: 'client-main',
-    label: 'Service Hub',
+    label: 'Claim Hub',
     path: '/client?tab=service-hub',
     icon: Activity,
   },
@@ -495,7 +495,7 @@ const ITEMS = [
 const CLIENT_MENU_ORDER = {
   main: ['client-dashboard', 'client-my-claims', 'client-my-services', 'client-service-hub', 'client-investment-store', 'client-documents'],
   tools: ['client-family-tree', 'client-iepf-search', 'client-refer-earn'],
-  account: ['client-support', 'client-profile']
+  account: []
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {
@@ -740,16 +740,6 @@ const Sidebar = ({ isOpen = false, onClose }) => {
             })}
           </div>
 
-          <div style={{ height: 10 }} />
-
-          <div className="sidebar-section">
-            <div className="sidebar-section-label">ACCOUNT</div>
-            {CLIENT_MENU_ORDER.account.map((id) => {
-              const it = ITEMS.find(i => i.id === id);
-              if (!it) return null;
-              return <SidebarItem key={it.id} item={it} />;
-            })}
-          </div>
         </>
       ) : (
         SECTIONS.map((section) => {
@@ -766,41 +756,42 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         })
       )}
 
-      <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
-        <div 
-          onClick={handleLogout}
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '12px', 
-            background: 'rgba(34, 197, 94, 0.05)', padding: '10px 16px', 
-            borderRadius: '14px', border: '1px solid rgba(34, 197, 94, 0.1)',
-            cursor: 'pointer', transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
-            e.currentTarget.querySelector('.logout-icon').style.color = '#ef4444';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)';
-            e.currentTarget.querySelector('.logout-icon').style.color = 'var(--accent-green)';
-          }}
-        >
-          <div style={{ width: 36, height: 36, background: 'var(--accent-green)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 700, fontSize: '14px', flexShrink: 0 }}>
-            {user?.name ? user.name.substring(0, 2).toUpperCase() : 'AV'}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.role === 'super_admin' ? 'Super Admin' : user?.name || 'Akash Verma'}
+      {user?.role !== 'client' && (
+        <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div 
+            onClick={handleLogout}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', 
+              background: 'rgba(34, 197, 94, 0.05)', padding: '10px 16px', 
+              borderRadius: '14px', border: '1px solid rgba(34, 197, 94, 0.1)',
+              cursor: 'pointer', transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
+              e.currentTarget.querySelector('.logout-icon').style.color = '#ef4444';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)';
+              e.currentTarget.querySelector('.logout-icon').style.color = 'var(--accent-green)';
+            }}
+          >
+            <div style={{ width: 36, height: 36, background: 'var(--accent-green)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 700, fontSize: '14px', flexShrink: 0 }}>
+              {user?.name ? user.name.substring(0, 2).toUpperCase() : 'AV'}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.role === 'super_admin' ? 'Super Admin' : user?.name || 'Akash Verma'}
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase' }}>
+                {user?.role?.replace('_', ' ') || 'User'}
+              </span>
+            </div>
+            <span className="logout-icon" style={{ color: 'var(--accent-green)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}>
+              <LogOut size={16} />
             </span>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase' }}>
-              {user?.role?.replace('_', ' ') || 'User'}
-            </span>
           </div>
-          <span className="logout-icon" style={{ color: 'var(--accent-green)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}>
-            <LogOut size={16} />
-          </span>
         </div>
-      </div>
+      )}
     </nav>
   );
 };

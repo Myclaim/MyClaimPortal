@@ -20,7 +20,7 @@ const uploadDocument = async (req, res) => {
 
     const { linked_to, ticket_id, client_id, name, doc_category, folder, folder_id } = req.body;
 
-    if (!linked_to || !['ticket', 'client'].includes(linked_to)) {
+    if (!linked_to || !['ticket', 'client', 'global'].includes(linked_to)) {
       return res.status(400).json({ message: 'Invalid linked_to value' });
     }
 
@@ -72,11 +72,12 @@ const uploadDocument = async (req, res) => {
 // @access  Private
 const getDocuments = async (req, res) => {
   try {
-    const { ticket_id, client_id } = req.query;
+    const { ticket_id, client_id, doc_category } = req.query;
     let query = {};
 
     if (ticket_id) query.ticket_id = ticket_id;
     if (client_id) query.client_id = client_id;
+    if (doc_category) query.doc_category = doc_category;
 
     // RBAC
     if (req.user.role === 'client') {
@@ -277,6 +278,68 @@ const copyDocument = async (req, res) => {
   }
 };
 
+// @desc    Get company documents for a specific client (admin-uploaded, linked to client)
+// @route   GET /api/documents/company?client_id=xxx
+// @access  Private
+const getCompanyDocuments = async (req, res) => {
+  try {
+    const { client_id } = req.query;
+    let query = { doc_category: 'company' };
+
+    // Client can only see their own company docs
+    if (req.user.role === 'client') {
+      query.client_id = req.user._id;
+    } else if (client_id) {
+      query.client_id = client_id;
+    }
+
+    const documents = await Document.find(query)
+      .populate('client_id', 'name email')
+      .populate('uploaded_by', 'name role')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Manually populate uploaded_by across collections
+    for (let doc of documents) {
+      if (doc.uploaded_by && typeof doc.uploaded_by === 'object' && !doc.uploaded_by.name) {
+        let uploader = await User.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Admin.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Partner.findById(doc.uploaded_by).select('name role').lean();
+        doc.uploaded_by = uploader || null;
+      }
+    }
+
+    res.json(documents);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get legal documents (global, admin-uploaded)
+// @route   GET /api/documents/legal
+// @access  Private
+const getLegalDocuments = async (req, res) => {
+  try {
+    const documents = await Document.find({ doc_category: 'legal' })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Populate uploaded_by
+    for (let doc of documents) {
+      if (doc.uploaded_by) {
+        let uploader = await User.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Admin.findById(doc.uploaded_by).select('name role').lean();
+        if (!uploader) uploader = await Partner.findById(doc.uploaded_by).select('name role').lean();
+        doc.uploaded_by = uploader || null;
+      }
+    }
+
+    res.json(documents);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocuments,
@@ -285,4 +348,6 @@ module.exports = {
   updateDocumentStatus,
   moveDocument,
   copyDocument,
+  getCompanyDocuments,
+  getLegalDocuments,
 };

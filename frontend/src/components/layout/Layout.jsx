@@ -113,49 +113,7 @@ const Layout = () => {
       </main>
       <CommandPalette />
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-      
-      {/* Global Theme Toggle Button */}
-      <ThemeToggleBtn />
     </>
-  );
-};
-
-const ThemeToggleBtn = () => {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <div 
-      onClick={toggleTheme}
-      style={{
-        position: 'fixed',
-        top: '24px',
-        right: '32px',
-        zIndex: 150,
-        width: '40px', 
-        height: '40px', 
-        background: 'var(--card)',
-        borderRadius: '12px', 
-        display: 'flex', 
-        alignItems: 'center',
-        justifyContent: 'center', 
-        border: '1px solid var(--border)',
-        color: 'var(--text-muted)', 
-        cursor: 'pointer', 
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.borderColor = 'var(--blue)';
-        e.currentTarget.style.color = 'var(--blue)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'none';
-        e.currentTarget.style.borderColor = 'var(--border)';
-        e.currentTarget.style.color = 'var(--text-muted)';
-      }}
-    >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-    </div>
   );
 };
 

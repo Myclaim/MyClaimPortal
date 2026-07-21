@@ -202,7 +202,7 @@ const DetailPanel = ({ service, onClose }) => {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Service Hub › Details
+              Claim Hub › Details
             </div>
             <button onClick={onClose} style={{
               background: 'var(--border)', border: `1px solid ${C.border}`,

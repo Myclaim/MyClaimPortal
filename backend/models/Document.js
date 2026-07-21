@@ -20,7 +20,7 @@ const documentSchema = mongoose.Schema(
     },
     linked_to: {
       type: String,
-      enum: ['ticket', 'client'],
+      enum: ['ticket', 'client', 'global'],
       required: true,
     },
     ticket_id: {
@@ -33,7 +33,7 @@ const documentSchema = mongoose.Schema(
     },
     doc_category: {
       type: String,
-      enum: ['primary', 'secondary', 'internal'],
+      enum: ['primary', 'secondary', 'internal', 'company', 'legal'],
       default: 'secondary',
     },
     folder: {

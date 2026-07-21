@@ -7,7 +7,9 @@ const {
   deleteDocument,
   updateDocumentStatus,
   moveDocument,
-  copyDocument
+  copyDocument,
+  getCompanyDocuments,
+  getLegalDocuments
 } = require('../controllers/documentController');
 const {
   getDocumentsPending,
@@ -23,6 +25,8 @@ router.get('/missing', getDocumentsMissing);
 
 router.post('/upload', protect, uploadDocs.single('file'), uploadDocument);
 router.get('/', protect, getDocuments);
+router.get('/company', protect, getCompanyDocuments);
+router.get('/legal', protect, getLegalDocuments);
 router.route('/:id')
   .get(protect, getDocumentById)
   .delete(protect, deleteDocument);

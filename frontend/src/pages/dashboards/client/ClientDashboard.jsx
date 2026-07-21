@@ -6,7 +6,8 @@ import {
   AlertTriangle, CreditCard, RefreshCw, ShoppingBag,
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
-  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download, Gift
+  GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download, Gift,
+  Sun, Moon, LogOut, Phone, Mail, HelpCircle, Layers
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
 import ClientMyServices from './ClientMyServices';
@@ -934,10 +935,6 @@ const MyClaimsView = ({ claims, navigate }) => {
           {/* sliding underline */}
           <div className="tab-active-indicator" style={{ left: indicator.left, width: indicator.width }} />
         </div>
-
-        <button className="new-claim-btn">
-          <Plus size={14} /> New Claim
-        </button>
       </div>
 
       {/* ── Cards grid ── */}
@@ -1145,7 +1142,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
         {familyMembers.length === 0 && (
           <div style={{ padding: '40px', background: 'var(--dashboard-card-soft)', borderRadius: '16px', border: `1px dashed var(--dashboard-border)`, marginTop: '20px' }}>
             <div style={{ width: '48px', height: '48px', background: 'var(--dashboard-card)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: CL.textMuted }}>
-              <Users size={24} />
+              <User size={24} />
             </div>
             <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
             <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Contact your partner to build your family tree.</p>
@@ -1157,20 +1154,59 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
   );
 };
 
-/* ── DOCUMENTS HUB COMPONENT ── */
+
 const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
   const { theme } = useTheme();
   const BASE_URL = import.meta.env.DEV ? 'http://localhost:5005' : 'https://myclaimportal.onrender.com';
-  const [activeSubTab, setActiveSubTab] = useState('My Documents');
-  const [isDragging, setIsDragging] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState('Client Documents');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [previewDoc, setPreviewDoc] = useState(null);
+  const [companyDocs, setCompanyDocs] = useState([]);
+  const [legalDocs, setLegalDocs] = useState([]);
+  const [loadingCompany, setLoadingCompany] = useState(false);
+  const [loadingLegal, setLoadingLegal] = useState(false);
+
+  const fetchCompanyDocs = async () => {
+    setLoadingCompany(true);
+    try {
+      const { data } = await axios.get(`${BASE_URL}/api/documents/company`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setCompanyDocs(data);
+    } catch (err) {
+      console.error('Error fetching company documents:', err);
+    } finally {
+      setLoadingCompany(false);
+    }
+  };
+
+  const fetchLegalDocs = async () => {
+    setLoadingLegal(true);
+    try {
+      const { data } = await axios.get(`${BASE_URL}/api/documents/legal`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setLegalDocs(data);
+    } catch (err) {
+      console.error('Error fetching legal documents:', err);
+    } finally {
+      setLoadingLegal(false);
+    }
+  };
+
+  // Lazy-load tab data on first switch
+  useEffect(() => {
+    if (activeSubTab === 'Company Documents' && companyDocs.length === 0 && !loadingCompany) {
+      fetchCompanyDocs();
+    }
+    if (activeSubTab === 'Legal Documents' && legalDocs.length === 0 && !loadingLegal) {
+      fetchLegalDocs();
+    }
+  }, [activeSubTab]);
 
   const getDocDetails = (docName) => {
-    // Exact check first
     let doc = documents.find(d => d.name.toLowerCase() === docName.toLowerCase());
-    // Partial check fallback
     if (!doc) {
       doc = documents.find(d => d.name.toLowerCase().includes(docName.toLowerCase().replace(' card', '').trim()));
     }
@@ -1185,7 +1221,6 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
       };
     }
     
-    // Check clientProfile fallback for PAN/Aadhaar
     if (clientProfile?.kyc_data) {
       if (docName === 'PAN Card' && clientProfile.kyc_data.panCardFile) {
         return { uploaded: true, status: 'verified', url: clientProfile.kyc_data.panCardFile, name: 'PAN Card' };
@@ -1254,44 +1289,49 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
     input.click();
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const docName = prompt("Enter a name/tag for this document:", file.name);
-      if (docName) {
-        await handleFileUpload(file, docName);
-      }
-    }
-  };
-
-  // Generate dynamic cards based on primary documents uploaded
   const primaryDocs = documents.filter(d => d.doc_category === 'primary');
   const uniquePrimaryNames = [...new Set(primaryDocs.map(d => d.name))];
-  
   const cardItems = uniquePrimaryNames.map(name => ({ name, type: 'dynamic' }));
   
-  // Ensure basic KYC docs are always present to prompt upload
-  if (!cardItems.find(c => c.name.toLowerCase() === 'aadhaar card')) {
-    cardItems.unshift({ name: 'Aadhaar Card', type: 'aadhaar' });
-  }
-  if (!cardItems.find(c => c.name.toLowerCase() === 'pan card')) {
-    cardItems.unshift({ name: 'PAN Card', type: 'pan' });
-  }
+  if (!cardItems.find(c => c.name.toLowerCase() === 'aadhaar card')) cardItems.unshift({ name: 'Aadhaar Card', type: 'aadhaar' });
+  if (!cardItems.find(c => c.name.toLowerCase() === 'pan card')) cardItems.unshift({ name: 'PAN Card', type: 'pan' });
+
+  /* ── read-only card for admin/legal docs ── */
+  const ReadOnlyDocCard = ({ doc }) => {
+    const ext = doc.file_url?.split('.').pop()?.toLowerCase() || '';
+    const isImage = ['jpg','jpeg','png','gif','webp'].includes(ext);
+    const isPDF = ext === 'pdf';
+    const formatSize = (b) => !b ? '' : b < 1024 ? `${b} B` : b < 1048576 ? `${(b/1024).toFixed(1)} KB` : `${(b/1048576).toFixed(1)} MB`;
+    const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    return (
+      <div style={{ background: 'rgba(129,140,248,0.03)', border: '1px solid rgba(129,140,248,0.18)', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, transition: 'transform 0.2s ease, border-color 0.2s ease' }} className="family-node-hover">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(129,140,248,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818CF8', border: '1px solid rgba(129,140,248,0.2)', flexShrink: 0 }}>
+            <FileText size={20} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--dashboard-text)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--dashboard-text-muted)', background: 'rgba(129,140,248,0.08)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(129,140,248,0.15)' }}>{isPDF ? 'PDF' : isImage ? 'Image' : ext.toUpperCase() || 'File'}</span>
+              {doc.file_size && <span style={{ fontSize: '11px', color: 'var(--dashboard-text-muted)' }}>{formatSize(doc.file_size)}</span>}
+              {doc.createdAt && <span style={{ fontSize: '11px', color: 'var(--dashboard-text-muted)' }}>{formatDate(doc.createdAt)}</span>}
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button onClick={() => setPreviewDoc({ name: doc.name, url: doc.file_url })} title="Preview" style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dashboard-text)', cursor: 'pointer' }}>
+            <Eye size={15} />
+          </button>
+          <a href={`${BASE_URL}${doc.file_url}`} target="_blank" rel="noreferrer" title="Download" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981', textDecoration: 'none' }}>
+            <Download size={15} />
+          </a>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* Document Preview Modal */}
       {previewDoc && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }} onClick={() => setPreviewDoc(null)}>
           <div style={{ background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', borderRadius: '20px', width: '90%', maxWidth: '1000px', height: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
@@ -1299,30 +1339,18 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: 'var(--dashboard-text)' }}>{previewDoc.name}</h3>
                 {previewDoc.url && (
-                  <a 
-                    href={`${BASE_URL}${previewDoc.url}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: 'var(--dashboard-text)', fontWeight: 700, cursor: 'pointer' }}
-                  ><Download size={14} /> View Original</a>
+                  <a href={`${BASE_URL}${previewDoc.url}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: 'var(--dashboard-text)', fontWeight: 700, cursor: 'pointer' }}><Download size={14} /> View Original</a>
                 )}
               </div>
               <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }} onClick={() => setPreviewDoc(null)}><X size={22} /></button>
             </div>
             <div style={{ flex: 1, padding: 0, overflow: 'hidden', background: '#0a0f18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {(() => {
-                if (!previewDoc.url) {
-                  return <div style={{ color: 'var(--dashboard-text)', fontSize: '16px' }}>No file uploaded yet.</div>;
-                }
-                const fullUrl = `${BASE_URL}${previewDoc.url}`;
-                const ext = previewDoc.url.includes('.') ? previewDoc.url.split('.').pop().toLowerCase() : '';
+                if (!previewDoc.url) return <div style={{ color: 'var(--dashboard-text)', fontSize: '16px' }}>No file uploaded yet.</div>;
+                const fullUrl = previewDoc.url.startsWith('http') ? previewDoc.url : `${BASE_URL}${previewDoc.url}`;
+                const ext = fullUrl.split('.').pop().toLowerCase();
                 const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                
-                if (isImage) {
-                  return <img src={fullUrl} alt={previewDoc.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />;
-                } else {
-                  return <iframe src={fullUrl} title={previewDoc.name} style={{ width: '100%', height: '100%', border: 'none' }} />;
-                }
+                return isImage ? <img src={fullUrl} alt={previewDoc.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : <iframe src={fullUrl} title={previewDoc.name} style={{ width: '100%', height: '100%', border: 'none' }} />;
               })()}
             </div>
           </div>
@@ -1330,16 +1358,14 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
       )}
 
       <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--dashboard-border)', marginBottom: 24 }}>
-        {['My Documents', 'Company Documents'].map(tab => (
+        {['Client Documents', 'Company Documents', 'Legal Documents'].map(tab => (
           <div 
             key={tab}
             style={{
               padding: '12px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
               color: activeSubTab === tab ? 'var(--dashboard-text)' : 'var(--dashboard-text-muted)',
               borderBottom: activeSubTab === tab ? '2.5px solid #10B981' : '2.5px solid transparent',
-              transition: 'all 0.2s',
-              position: 'relative',
-              top: '1px'
+              transition: 'all 0.2s', position: 'relative', top: '1px'
             }}
             onClick={() => setActiveSubTab(tab)}
           >
@@ -1348,156 +1374,133 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh }) => {
         ))}
       </div>
 
-      {activeSubTab === 'My Documents' ? (
+      {activeSubTab === 'Client Documents' && (
         <div>
-          <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', marginBottom: 20, fontWeight: 500 }}>
-            Your identity and financial documents
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', fontWeight: 500 }}>
+              Your identity and financial documents
+            </div>
+            <button
+              onClick={triggerGeneralUpload}
+              disabled={uploading}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 800,
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', border: 'none',
+                color: '#ffffff', cursor: uploading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.2s ease', opacity: uploading ? 0.7 : 1
+              }}
+            >
+              <Upload size={16} /> {uploading ? 'Uploading...' : 'Upload Doc'}
+            </button>
           </div>
 
-          {error && (
-            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', marginBottom: 20, fontWeight: 600 }}>
-              {error}
-            </div>
-          )}
-
-          {/* Cards Grid */}
+          {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', marginBottom: 20, fontWeight: 600 }}>{error}</div>}
+          
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
             {cardItems.map(item => {
               const details = getDocDetails(item.name);
               const isUploaded = details.uploaded;
-              
-              let borderStyle = '1px solid rgba(255,255,255,0.08)';
-              let bgStyle = 'rgba(255,255,255,0.02)';
-              let iconColor = 'var(--dashboard-border)';
-              let statusText = 'Not uploaded';
-              let statusColor = 'var(--dashboard-border)';
-              let cardGlow = 'none';
-
-              if (!isUploaded) {
-                borderStyle = '1px solid rgba(245,158,11,0.2)';
-                bgStyle = 'rgba(245,158,11,0.02)';
-                iconColor = '#F59E0B';
-                statusColor = '#F59E0B';
-                cardGlow = '0 8px 24px rgba(245,158,11,0.06)';
-              } else if (details.status === 'verified') {
-                borderStyle = '1px solid rgba(16,185,129,0.25)';
-                bgStyle = 'rgba(16,185,129,0.02)';
-                iconColor = '#10B981';
-                statusText = 'Verified';
-                statusColor = '#10B981';
-                cardGlow = '0 8px 24px rgba(16,185,129,0.08)';
-              } else {
-                borderStyle = '1px solid rgba(129,140,248,0.25)';
-                bgStyle = 'rgba(129,140,248,0.02)';
-                iconColor = '#818CF8';
-                statusText = details.status.charAt(0).toUpperCase() + details.status.slice(1);
-                statusColor = '#818CF8';
-                cardGlow = '0 8px 24px rgba(129,140,248,0.08)';
-              }
-
+              let borderStyle = !isUploaded ? '1px solid rgba(245,158,11,0.2)' : (details.status === 'verified' ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(129,140,248,0.25)');
+              let iconColor = !isUploaded ? '#F59E0B' : (details.status === 'verified' ? '#10B981' : '#818CF8');
               return (
-                <div 
-                  key={item.name} 
-                  style={{
-                    background: bgStyle,
-                    border: borderStyle,
-                    borderRadius: '16px',
-                    padding: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: cardGlow,
-                    backdropFilter: 'blur(8px)',
-                    transition: 'transform 0.2s ease, border-color 0.2s ease'
-                  }}
-                  className="family-node-hover"
-                >
+                <div key={item.name} style={{ background: 'rgba(255,255,255,0.02)', border: borderStyle, borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backdropFilter: 'blur(8px)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: '50%',
-                      background: 'var(--dashboard-card-soft)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: iconColor, border: '1px solid var(--dashboard-border)'
-                    }}>
-                      <FileText size={20} />
-                    </div>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--dashboard-card-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: iconColor, border: '1px solid var(--dashboard-border)' }}><FileText size={20} /></div>
                     <div>
                       <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--dashboard-text)', marginBottom: 4 }}>{item.name}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: statusColor, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        {isUploaded && details.status === 'verified' && <span>✓</span>}
-                        {isUploaded && details.status !== 'verified' && <span>⌛</span>}
-                        {!isUploaded && <span>⚠</span>}
-                        {statusText}
-                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: iconColor }}>{isUploaded ? details.status.charAt(0).toUpperCase() + details.status.slice(1) : 'Not uploaded'}</div>
                     </div>
                   </div>
-
-                  <div>
-                    {isUploaded ? (
-                      <button 
-                        onClick={() => setPreviewDoc({ name: item.name, url: details.url })}
-                        style={{
-                          width: 36, height: 36, borderRadius: '50%',
-                          background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: 'var(--dashboard-text)', cursor: 'pointer', transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--dashboard-border)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--dashboard-card)'}
-                      >
-                        <Eye size={16} />
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => triggerDirectUpload(item.name)}
-                        style={{
-                          width: 36, height: 36, borderRadius: '50%',
-                          background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#F59E0B', cursor: 'pointer', transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245,158,11,0.25)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'}
-                      >
-                        <Upload size={16} />
-                      </button>
-                    )}
-                  </div>
+                  {isUploaded ? (
+                    <button onClick={() => setPreviewDoc({ name: item.name, url: details.url })} style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', color: 'var(--dashboard-text)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={16} /></button>
+                  ) : (
+                    <button onClick={() => triggerDirectUpload(item.name)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Upload size={16} /></button>
+                  )}
                 </div>
               );
             })}
           </div>
-
-          <div style={{ height: '1px', background: 'var(--dashboard-border)', margin: '32px 0' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-            <Folder size={18} color="#10B981" />
-            <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--dashboard-text)' }}>Document Folders</h3>
-          </div>
-
-          {/* Folder & Document Browser */}
-          <DocumentsView 
-            documents={documents} 
-            client={clientProfile || user} 
-            onRefresh={onRefresh} 
-            readOnlyStructure={true} 
-            theme={theme} 
-          />
         </div>
-      ) : (
-        /* Company Documents View */
-        <div style={{
-          textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)',
-          background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px solid var(--dashboard-border)'
-        }}>
-          <Folder size={48} style={{ marginBottom: '16px', opacity: 0.3, color: CL.accent }} />
-          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>No company documents shared yet</div>
-          <div style={{ fontSize: '12px', marginTop: '6px' }}>Shared files from My Claim team will be visible here.</div>
+      )}
+
+
+
+      {/* ── COMPANY DOCUMENTS ── */}
+      {activeSubTab === 'Company Documents' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', fontWeight: 500 }}>
+              Documents shared by My Claim team specifically for your account
+            </div>
+            <button
+              onClick={fetchCompanyDocs}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', color: 'var(--dashboard-text)', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <RefreshCw size={13} /> Refresh
+            </button>
+          </div>
+          {loadingCompany ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)' }}>
+              <Clock size={24} style={{ color: CL.accent, marginRight: 10 }} /> Loading...
+            </div>
+          ) : companyDocs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)', background: 'rgba(129,140,248,0.02)', borderRadius: '16px', border: '1px solid rgba(129,140,248,0.12)' }}>
+              <Building2 size={48} style={{ marginBottom: '16px', opacity: 0.3, color: '#818CF8' }} />
+              <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>No company documents shared yet</div>
+              <div style={{ fontSize: '12px', marginTop: '6px' }}>Files shared by My Claim team for your account will appear here.</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {companyDocs.map(doc => <ReadOnlyDocCard key={doc._id} doc={doc} />)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── LEGAL DOCUMENTS ── */}
+      {activeSubTab === 'Legal Documents' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ fontSize: '13px', color: 'var(--dashboard-text-muted)', fontWeight: 500 }}>
+              Official legal documents, templates and compliance files
+            </div>
+            <button
+              onClick={fetchLegalDocs}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: 'var(--dashboard-card)', border: '1px solid var(--dashboard-border)', color: 'var(--dashboard-text)', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <RefreshCw size={13} /> Refresh
+            </button>
+          </div>
+          <div style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: '12px', padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <AlertCircle size={18} color="#10B981" style={{ flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--dashboard-text)', marginBottom: 3 }}>Legal Notice</div>
+              <div style={{ fontSize: '12px', color: 'var(--dashboard-text-muted)', lineHeight: 1.5 }}>These documents are provided for your reference only. Please read all legal documents carefully before signing. For any queries, contact your assigned relationship manager.</div>
+            </div>
+          </div>
+          {loadingLegal ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)' }}>
+              <Clock size={24} style={{ color: CL.accent, marginRight: 10 }} /> Loading...
+            </div>
+          ) : legalDocs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--dashboard-text-muted)', background: 'rgba(16,185,129,0.02)', borderRadius: '16px', border: '1px dashed rgba(16,185,129,0.2)' }}>
+              <FileText size={48} style={{ marginBottom: '16px', opacity: 0.3, color: '#10B981' }} />
+              <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>No legal documents available</div>
+              <div style={{ fontSize: '12px', marginTop: '6px' }}>Legal documents and templates will be published here by the My Claim team.</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {legalDocs.map(doc => <ReadOnlyDocCard key={doc._id} doc={doc} />)}
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
+
 
 const getNotifTypeStyles = (type) => {
   switch (type) {
@@ -1872,16 +1875,149 @@ const DashboardView = ({ overview, claims, navigate }) => {
   );
 };
 
+/* ── MY PROFILE VIEW COMPONENT ── */
+const MyProfileView = ({ user, clientProfile }) => {
+  const name = clientProfile?.name || user?.name || 'Client User';
+  const email = clientProfile?.email || user?.email || 'client@myclaim.com';
+  const mobile = clientProfile?.kyc_data?.mobile || clientProfile?.mobile || clientProfile?.phone || user?.phone || '+91 9924261499';
+
+  return (
+    <div style={{
+      maxWidth: '680px',
+      margin: '20px auto',
+      background: CL.card,
+      backgroundImage: CL.cardBgImage,
+      border: `1px solid ${CL.border}`,
+      borderRadius: '24px',
+      padding: '36px',
+      boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Decorative top accent gradient */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: '5px',
+        background: 'linear-gradient(90deg, #10B981, #818CF8, #F59E0B)'
+      }} />
+
+      {/* Header Avatar & Title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--dashboard-border)' }}>
+        <div style={{
+          width: '72px', height: '72px', borderRadius: '50%',
+          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+          color: '#ffffff', fontSize: '32px', fontWeight: 900,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(16,185,129,0.35)', flexShrink: 0
+        }}>
+          {name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, color: 'var(--dashboard-text)' }}>My Profile</h2>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--dashboard-text-muted)', fontWeight: 500 }}>Your personal contact and account details</p>
+        </div>
+      </div>
+
+      {/* Details Cards Grid - strictly Name, Email, Mobile Number */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Full Name */}
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--dashboard-border)',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px'
+        }}>
+          <div style={{
+            width: '46px', height: '46px', borderRadius: '12px',
+            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
+            display: 'grid', placeItems: 'center', color: '#10B981', flexShrink: 0
+          }}>
+            <User size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--dashboard-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              Full Name
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>
+              {name}
+            </div>
+          </div>
+        </div>
+
+        {/* Email Address */}
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--dashboard-border)',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px'
+        }}>
+          <div style={{
+            width: '46px', height: '46px', borderRadius: '12px',
+            background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)',
+            display: 'grid', placeItems: 'center', color: '#818CF8', flexShrink: 0
+          }}>
+            <Mail size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--dashboard-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              Email Address
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>
+              {email}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Number */}
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--dashboard-border)',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px'
+        }}>
+          <div style={{
+            width: '46px', height: '46px', borderRadius: '12px',
+            background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
+            display: 'grid', placeItems: 'center', color: '#F59E0B', flexShrink: 0
+          }}>
+            <Phone size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--dashboard-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              Mobile Number
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--dashboard-text)' }}>
+              {mobile}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ══════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════ */
 const ClientDashboard = ({ user: propUser }) => {
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const user = propUser || authUser;
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const urlTab = new URLSearchParams(location.search).get('tab');
+  const showProfile = urlTab === 'profile';
   const showServiceHub = urlTab === 'service-hub';
   const showClaims = urlTab === 'claims';
   const showFamilyTree = urlTab === 'family-tree';
@@ -1901,6 +2037,19 @@ const ClientDashboard = ({ user: propUser }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [showReferModal, setShowReferModal] = useState(false);
+
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchClientNotifications = async () => {
     if (!user?.token) return;
@@ -2080,7 +2229,7 @@ const ClientDashboard = ({ user: propUser }) => {
       background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(129,140,248,0.05) 50%, rgba(255,255,255,0.02) 100%);
       border: 1px solid rgba(255,255,255,0.07);
       backdrop-filter: blur(8px);
-      overflow: hidden;
+      z-index: 10;
       animation: headerSlide 0.5s ease both;
     }
     .header-orb-1 {
@@ -2145,11 +2294,13 @@ const ClientDashboard = ({ user: propUser }) => {
         <div className="header-title-block">
           <div style={{ marginBottom: 6 }}>
             <span className="header-tag">
-              {showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : showNotifications ? '🔔 NOTIFICATIONS' : showReferFriend ? '🎁 REFER A FRIEND' : '🏠 DASHBOARD'}
+              {showProfile ? '👤 MY PROFILE' : showClaims ? '📁 MY CLAIMS' : showFamilyTree ? '🌳 FAMILY TREE' : showDocuments ? '📁 DOCUMENTS HUB' : showNotifications ? '🔔 NOTIFICATIONS' : showReferFriend ? '🎁 REFER A FRIEND' : '🏠 DASHBOARD'}
             </span>
           </div>
           <h1 className="header-greeting">
-            {showClaims ? (
+            {showProfile ? (
+              <span className="header-title-shimmer">My Profile</span>
+            ) : showClaims ? (
               <span className="header-title-shimmer">My Claims</span>
             ) : showFamilyTree ? (
               <span className="header-title-shimmer">Family Tree</span>
@@ -2169,7 +2320,9 @@ const ClientDashboard = ({ user: propUser }) => {
             )}
           </h1>
           <div className="header-subtitle">
-            {showClaims ? (
+            {showProfile ? (
+              <>View your personal <strong style={{ color: CL.accent }}>contact &amp; account details</strong></>
+            ) : showClaims ? (
               <>Track &amp; manage all your <strong style={{ color: CL.accent }}>company claims</strong> in one place</>
             ) : showFamilyTree ? (
               <>View and manage your <strong style={{ color: CL.accent }}>family hierarchy</strong> and relations</>
@@ -2185,25 +2338,187 @@ const ClientDashboard = ({ user: propUser }) => {
           </div>
         </div>
 
-        {/* right: animated notification bell */}
-        <div style={{ position: 'relative', zIndex: 1, animation: 'headerSlide 0.5s ease 0.4s both' }}>
+        {/* right: topbar action icons (Bell, Theme Toggle, User Profile Menu) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1, animation: 'headerSlide 0.5s ease 0.4s both' }}>
+          {/* 1. Notifications Bell */}
           <button
             className="notif-btn"
-            onMouseEnter={() => setNotifHovered(true)}
-            onMouseLeave={() => setNotifHovered(false)}
+            style={{ width: 42, height: 42, borderRadius: '50%', padding: 0 }}
+            title="Notifications"
             onClick={() => navigate('/client?tab=notifications')}
           >
-            {/* pulse ring */}
-            <div className="notif-ring" />
-            {/* badge */}
             {unreadNotifCount > 0 && <div className="notif-badge">{unreadNotifCount}</div>}
-            <span className="bell-icon"><Bell size={20} /></span>
+            <span className="bell-icon"><Bell size={18} /></span>
           </button>
+
+          {/* 2. Light / Dark Theme Mode Toggle */}
+          <button
+            className="notif-btn"
+            style={{ width: 42, height: 42, borderRadius: '50%', padding: 0 }}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="#818CF8" />}
+          </button>
+
+          {/* 3. User Account / Profile Button Trigger & Popover Menu */}
+          <div style={{ position: 'relative' }} ref={profileMenuRef}>
+            <button
+              className="notif-btn"
+              style={{ width: 42, height: 42, borderRadius: '50%', padding: 0, border: showProfileMenu ? '1.5px solid #10B981' : undefined }}
+              title="Account Profile"
+              onClick={() => setShowProfileMenu(prev => !prev)}
+            >
+              <User size={18} />
+            </button>
+
+            {/* Profile Popover Menu */}
+            {showProfileMenu && (
+              <div style={{
+                position: 'absolute',
+                top: '52px',
+                right: 0,
+                width: '340px',
+                background: theme === 'dark' ? '#1E293B' : '#FFFFFF',
+                color: theme === 'dark' ? '#F8FAFC' : '#0F172A',
+                border: theme === 'dark' ? '1px solid #334155' : '1px solid #E2E8F0',
+                borderRadius: '20px',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.1)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                zIndex: 9999,
+                overflow: 'hidden',
+                animation: 'headerSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}>
+                {/* User Info Top Card */}
+                <div style={{
+                  padding: '20px',
+                  borderBottom: theme === 'dark' ? '1px solid #334155' : '1px solid #E2E8F0',
+                  background: theme === 'dark' ? '#0F172A' : '#F8FAFC'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '12px' }}>
+                    <div style={{
+                      width: '52px', height: '52px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                      border: '2px solid rgba(255,255,255,0.2)',
+                      color: '#ffffff', fontSize: '22px', fontWeight: 900,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 4px 14px rgba(29,78,216,0.35)', flexShrink: 0
+                    }}>
+                      {(user?.name || clientProfile?.name || 'P').charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '16px', fontWeight: 800, color: theme === 'dark' ? '#F8FAFC' : '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {user?.name || clientProfile?.name || 'pranavsarvaiya54'}
+                      </div>
+                      <button
+                        onClick={() => { setShowProfileMenu(false); navigate('/client?tab=profile'); }}
+                        style={{ background: 'none', border: 'none', padding: 0, color: '#2563EB', fontSize: '13px', fontWeight: 700, cursor: 'pointer', marginTop: '2px', textDecoration: 'underline' }}
+                      >
+                        View Profile
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Phone & Email Info */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px',
+                    color: theme === 'dark' ? '#94A3B8' : '#64748B', paddingTop: '10px',
+                    borderTop: theme === 'dark' ? '1px dashed #334155' : '1px dashed #E2E8F0', flexWrap: 'wrap'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Phone size={13} color={theme === 'dark' ? '#94A3B8' : '#64748B'} />
+                      <span>{clientProfile?.kyc_data?.mobile || user?.phone || clientProfile?.mobile || clientProfile?.phone || '9924261499'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                      <Mail size={13} color={theme === 'dark' ? '#94A3B8' : '#64748B'} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email || clientProfile?.email || 'pranavsarvaiya54@yahoo.com'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Inner List Box (Padded bordered list matching screenshot) */}
+                <div style={{ padding: '12px' }}>
+                  <div style={{
+                    border: theme === 'dark' ? '1px solid #334155' : '1px solid #E2E8F0',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    background: theme === 'dark' ? '#0F172A' : '#FFFFFF'
+                  }}>
+                    {[
+                      { label: 'My Services', icon: FileText, tab: 'services' },
+                      { label: 'My Claims', icon: Layers, tab: 'claims' },
+                      { label: 'Family Tree', icon: TreeDeciduous, tab: 'family-tree' },
+                      { label: 'Documents Hub', icon: Folder, tab: 'documents' },
+                      { label: 'Help & Support', icon: HelpCircle, tab: 'service-hub' },
+                      { label: 'Refer & Earn', icon: Gift, tab: 'refer-friend' },
+                    ].map((opt) => (
+                      <div
+                        key={opt.label}
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate(`/client?tab=${opt.tab}`);
+                        }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 16px', cursor: 'pointer',
+                          borderBottom: theme === 'dark' ? '1px solid #334155' : '1px solid #F1F5F9',
+                          transition: 'background 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = theme === 'dark' ? '#1E293B' : '#F8FAFC'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: '50%',
+                            background: theme === 'dark' ? '#1E293B' : '#F1F5F9',
+                            border: theme === 'dark' ? '1px solid #334155' : '1px solid #E2E8F0',
+                            display: 'grid', placeItems: 'center', color: theme === 'dark' ? '#94A3B8' : '#475569'
+                          }}>
+                            <opt.icon size={16} />
+                          </div>
+                          <span style={{ fontSize: '14px', fontWeight: 600, color: theme === 'dark' ? '#F8FAFC' : '#0F172A' }}>{opt.label}</span>
+                        </div>
+                        <ChevronRight size={15} color={theme === 'dark' ? '#64748B' : '#94A3B8'} />
+                      </div>
+                    ))}
+
+                    {/* Log out row */}
+                    <div
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        if (logout) logout();
+                        navigate('/login');
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '12px 16px', cursor: 'pointer',
+                        background: 'rgba(239,68,68,0.04)',
+                        transition: 'background 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.04)'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'grid', placeItems: 'center', color: '#EF4444' }}>
+                          <LogOut size={16} />
+                        </div>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#EF4444' }}>Log out</span>
+                      </div>
+                      <ChevronRight size={15} color="#EF4444" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ── TAB CONTENT ── */}
-      {showClaims ? (
+      {showProfile ? (
+        <MyProfileView user={user} clientProfile={clientProfile} />
+      ) : showClaims ? (
         <MyClaimsView claims={claims} navigate={navigate} />
       ) : showFamilyTree ? (
         <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onNotificationClick={() => navigate('/client?tab=notifications')} />
