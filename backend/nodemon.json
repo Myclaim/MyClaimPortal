@@ -1,0 +1,8 @@
+{
+  "watch": ["server.js", "config/", "controllers/", "middleware/", "models/", "routes/", "utils/"],
+  "ignore": ["uploads/", "database_dump/", "node_modules/", "*.test.js", "*.log"],
+  "ext": "js,json",
+  "delay": "1500",
+  "signal": "SIGINT"
+}
+
