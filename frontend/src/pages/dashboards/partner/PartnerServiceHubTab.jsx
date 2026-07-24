@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Search, Check, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
 import useAuth from '../../../hooks/useAuth';
+import { searchCompanies } from '../../../services/stockService';
 
 const DEFAULT_SERVICE_SERVICES = [
   { id: 's1', code: 'SVC-GST-001', name: 'GST Registration', category: 'Licenses & Registrations', subCategory: 'Tax', price: 499, stages: 5, status: true, mappedStore: 'All Stores', description: 'Register for GST', tracking: ['Application', 'Docs Verified', 'Filed', 'ARN Generated', 'GSTIN Issued'] },
@@ -25,6 +26,36 @@ const PartnerServiceHubTab = ({ onTicketCreated }) => {
   const [apiClients, setApiClients] = useState([]);
   const [storeServices, setStoreServices] = useState([]);
   const [ordersToday, setOrdersToday] = useState(0);
+
+  // Company Search state
+  const [companyQuery, setCompanyQuery] = useState('');
+  const [companyResults, setCompanyResults] = useState([]);
+  const [isSearchingCompany, setIsSearchingCompany] = useState(false);
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+
+  // Debounce logic for company search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (companyQuery.length >= 2) {
+        setIsSearchingCompany(true);
+        const results = await searchCompanies(companyQuery);
+        setCompanyResults(results);
+        setIsSearchingCompany(false);
+        setShowCompanyDropdown(true);
+      } else {
+        setCompanyResults([]);
+        setShowCompanyDropdown(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [companyQuery]);
+
+  const handleSelectCompany = (company) => {
+    setTicketDetails({ ...ticketDetails, companyName: company.name });
+    setCompanyQuery(company.name);
+    setShowCompanyDropdown(false);
+  };
 
   useEffect(() => {
     const loadServices = async () => {
@@ -290,15 +321,46 @@ const PartnerServiceHubTab = ({ onTicketCreated }) => {
                 <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '24px' }}>Confirm & Create Ticket</h2>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px' }}>
-                  <div>
+                  <div style={{ position: 'relative' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>COMPANY NAME</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Reliance Industries, TCS Ltd" 
-                      value={ticketDetails.companyName}
-                      onChange={e => setTicketDetails({...ticketDetails, companyName: e.target.value})}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Search NSE/BSE company..." 
+                        value={companyQuery}
+                        onChange={e => {
+                          setCompanyQuery(e.target.value);
+                          setTicketDetails({...ticketDetails, companyName: e.target.value});
+                        }}
+                        onFocus={() => { if(companyResults.length > 0) setShowCompanyDropdown(true); }}
+                        onBlur={() => setTimeout(() => setShowCompanyDropdown(false), 200)}
+                        style={{ width: '100%', padding: '10px 12px', paddingRight: '30px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
+                      />
+                      {isSearchingCompany && (
+                        <div style={{ position: 'absolute', right: '10px', top: '10px' }}>
+                          <Loader2 size={16} className="animate-spin" color="var(--text-muted)" />
+                        </div>
+                      )}
+                    </div>
+                    {showCompanyDropdown && companyResults.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '6px', marginTop: '4px', zIndex: 10, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        {companyResults.map(c => (
+                          <div 
+                            key={c._id} 
+                            onClick={() => handleSelectCompany(c)}
+                            style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.2s' }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{c.name}</div>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                              {c.exchanges?.includes('NSE') && <span style={{ fontSize: '11px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>NSE: {c.nseSymbol}</span>}
+                              {c.exchanges?.includes('BSE') && <span style={{ fontSize: '11px', background: 'rgba(249, 115, 22, 0.1)', color: '#f97316', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>BSE: {c.bseScripCode}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>QUANTITY (SHARES)</label>

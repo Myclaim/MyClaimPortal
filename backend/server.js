@@ -37,6 +37,7 @@ app.use('/api/partners', require('./routes/partnerRoutes'));
 app.use('/api/finance', require('./routes/financeRoutes'));
 app.use('/api/department-services', require('./routes/departmentServiceRoutes'));
 app.use('/api/referral', require('./routes/referralRoutes'));
+app.use('/api/companies', require('./routes/companyRoutes'));
 
 // Basic route
 app.get('/', (req, res) => {
@@ -100,7 +101,7 @@ const gracefulShutdown = (signal) => {
 };
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 
 // ─── Catch unhandled errors (prevent silent crashes) ──────────────
