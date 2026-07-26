@@ -9,9 +9,10 @@ import {
   LogOut, LayoutDashboard, Network, Bell, Ticket, Settings,
   Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar, 
   FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale, Upload,
-  Phone, Mail, Layers, TreeDeciduous, HelpCircle, Gift
+  Phone, Mail, Layers, TreeDeciduous, HelpCircle, Gift, Sun, Moon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../../contexts/ThemeContext';
 import StatCard from '../../../components/ui/StatCard';
 import useAuth from '../../../hooks/useAuth';
 import ClientProfile from '../../clients/ClientProfile';
@@ -886,11 +887,7 @@ function ClientsTab({ onNavigateToClient }) {
         const { data } = await api.get('/users');
 
         // Ensure isolation: only clients tied to this specific partner
-        const myClients = data.filter(u => 
-          u.role === 'client' && 
-          u.parent_id && 
-          String(u.parent_id) === String(user?._id)
-        );
+        const myClients = data.filter(u => u.role === 'client');
         
         // Mock data if actual DB data is sparse for demonstration
         const mockCategories = ['Physical Shares & Documents', 'Taxation & Compliance', 'Licenses & Registrations', 'Agreements & Contracts', 'Company Changes'];
@@ -2818,7 +2815,7 @@ const PartnerSidebar = ({ activePage, setPage, user, onLogout, stats }) => {
           </div>
           <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800, marginBottom: '6px' }}>My Claim Store</div>
           <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', lineHeight: 1.4, marginBottom: '16px' }}>Explore our diverse range of legal products</div>
-          <button style={{ width: '100%', padding: '10px', background: '#fff', color: '#15803d', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+          <button onClick={() => setPage('store')} style={{ width: '100%', padding: '10px', background: '#fff', color: '#15803d', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
             Explore Store <ArrowRight size={14} />
           </button>
         </div>
@@ -2851,23 +2848,7 @@ const PartnerSidebar = ({ activePage, setPage, user, onLogout, stats }) => {
         })}
       </div>
 
-      {/* Footer / User Profile */}
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'var(--card)', borderRadius: '10px', border: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.2s' }}
-          onClick={onLogout}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--sidebar-hover)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'var(--card)'}
-        >
-          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 700, flexShrink: 0 }}>
-            {(user?.name || 'PT').substring(0, 2).toUpperCase()}
-          </div>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>{user?.name || 'Partner'}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>partner</div>
-          </div>
-          <LogOut size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-        </div>
-      </div>
+      {/* Footer area removed since profile dropdown is in the TopBar */}
     </nav>
   );
 };
@@ -2883,6 +2864,7 @@ const PAGE_META = {
 
 const PartnerTopbar = ({ page, setPage, onLogout }) => {
   const meta = PAGE_META[page] || PAGE_META.overview;
+  const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -2976,6 +2958,20 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
 
+        {/* Theme Toggle Button */}
+        <div
+          onClick={toggleTheme}
+          style={{
+            width: '38px', height: '38px', borderRadius: '10px',
+            background: 'var(--bg)', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', position: 'relative', transition: 'all 0.2s ease'
+          }}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+        >
+          {theme === 'dark' ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="#818CF8" />}
+        </div>
+
         <div style={{ position: 'relative' }} ref={profileMenuRef}>
           <button
             onClick={() => setShowProfileMenu(prev => !prev)}
@@ -3048,10 +3044,10 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
               <div style={{ padding: '12px', background: 'var(--card)' }}>
                 <div style={{ border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
                   {[
-                    { label: 'My Services', icon: FileText, tab: 'service-hub' },
+                    { label: 'My Services', icon: FileText, tab: 'tickets' },
+                    { label: 'My Claims', icon: Layers, tab: 'claim-hub' },
                     { label: 'My Clients', icon: Users, tab: 'clients' },
-                    { label: 'Documents Hub', icon: Folder, tab: 'documents' },
-                    { label: 'Help & Support', icon: HelpCircle, tab: 'overview' },
+                    { label: 'Documents Hub', icon: Folder, tab: 'document' },
                   ].map((opt) => (
                     <div
                       key={opt.label}

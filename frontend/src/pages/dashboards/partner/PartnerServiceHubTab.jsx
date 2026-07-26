@@ -97,7 +97,7 @@ const PartnerServiceHubTab = ({ type = 'service', onTicketCreated }) => {
     const fetchClients = async () => {
       try {
         const { data } = await api.get('/users');
-        const myClients = data.filter(u => u.role === 'client' && u.parent_id && String(u.parent_id) === String(user?._id));
+        const myClients = data.filter(u => u.role === 'client');
         if (myClients.length > 0) {
           const formatted = myClients.map((c, i) => ({
             _id: c._id,
