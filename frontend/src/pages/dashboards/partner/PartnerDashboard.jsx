@@ -335,8 +335,9 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
             </div>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-            <thead>
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <thead>
               <tr style={{ color: 'var(--text-muted)', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
                 <th style={{ paddingBottom: '8px', fontWeight: 600 }}>SERVICE</th>
                 <th style={{ paddingBottom: '8px', fontWeight: 600 }}>CLIENT</th>
@@ -361,22 +362,12 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
           
-      {/* Footer */}
-      <div style={{ 
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-        padding: '24px 0', borderTop: '1px solid var(--border)', fontSize: '13px', color: 'var(--text-muted)' 
-      }}>
-        <div>© 2026, made with <span style={{ color: '#ef4444' }}>❤️</span> by MyClaim India</div>
-        <div style={{ display: 'flex', gap: '24px' }}>
-          <a href="#" style={{ color: '#22c55e', textDecoration: 'none' }}>License</a>
-          <a href="#" style={{ color: '#22c55e', textDecoration: 'none' }}>Documentation</a>
-          <a href="#" style={{ color: '#22c55e', textDecoration: 'none' }}>Support</a>
-        </div>
-      </div>
+      {/* Footer removed */}
     </>
   );
 }
@@ -660,8 +651,9 @@ function LeadsTab() {
           <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
             Proposal List
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
               <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
                 <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>PROPOSAL ID</th>
                 <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CLIENT</th>
@@ -707,6 +699,7 @@ function LeadsTab() {
             </tbody>
           </table>
         </div>
+      </div>
       )}
 
       {activeSubTab === 'leads' && (
@@ -1005,9 +998,10 @@ function ClientsTab({ onNavigateToClient }) {
           </div>
         </div>
         
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+        <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CLIENT ID</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CLIENT NAME</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CONTACT</th>
@@ -1065,7 +1059,8 @@ function ClientsTab({ onNavigateToClient }) {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </>
   );
@@ -2094,9 +2089,9 @@ function EmployeesTab({ clients = [] }) {
             ))}
           </div>
         </div>
-
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
+        <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
             <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE ID</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE</th>
@@ -2147,7 +2142,8 @@ function EmployeesTab({ clients = [] }) {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {showModal && (
@@ -2425,10 +2421,11 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           })}
         </div>
         
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>TICKET ID</th>
+        <div style={{ overflowX: 'auto', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>TICKET ID</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CLIENT</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>SERVICE</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
@@ -2510,7 +2507,8 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
               );
             })}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {showModal && (
