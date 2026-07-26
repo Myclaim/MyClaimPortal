@@ -8,7 +8,7 @@ import {
   UserPlus, Send, Star, MoreVertical, Shield, ShieldCheck,
   LogOut, LayoutDashboard, Network, Bell, Ticket, Settings,
   Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar, 
-  FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale
+  FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale, Upload
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatCard from '../../../components/ui/StatCard';
@@ -1302,17 +1302,39 @@ function CalculatorTab() {
    TAB: DOCUMENTS
 ════════════════════════════════════════════════════════════════ */
 function DocumentTab() {
+  const [activeNavTab, setActiveNavTab] = useState('Documents');
+  const [activeFolderTab, setActiveFolderTab] = useState('RM Legal Docs');
+  const fileInputRef = useRef(null);
+  
+  const [documents, setDocuments] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+
+  const fetchDocs = async () => {
+    setLoadingDocs(true);
+    try {
+      const res = await api.get('/documents');
+      setDocuments(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch documents', err);
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocs();
+  }, []);
+
+  const filteredDocs = documents.filter(doc => doc.folder === activeFolderTab);
+  const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005' : 'https://myclaimportal.onrender.com');
+
   const AGREEMENTS = [
     { title: 'NDA', desc: 'Protect confidential info' },
     { title: 'Master Service Agreement', desc: 'Flexible contract for services' },
     { title: 'Franchise Agreement', desc: 'Formalize a franchise' },
   ];
 
-  const FOLDERS = [
-    { title: 'RM Legal Docs' },
-    { title: 'My Documents' },
-    { title: 'Legal Documents', active: true },
-  ];
+  const FOLDER_TABS = ['RM Legal Docs', 'My Documents', 'Legal Documents'];
 
   return (
     <div style={{ paddingBottom: '40px' }}>
@@ -1321,55 +1343,151 @@ function DocumentTab() {
         <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Your compliance documents, bills, and legal files</p>
       </div>
 
-      {/* Promo Banner */}
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 32px', marginBottom: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-          <FileText size={16} color="#94a3b8" />
-          <div style={{ fontSize: '14px', color: '#94a3b8' }}>
-            <span style={{ fontWeight: 700, color: '#cbd5e1' }}>Need a legal agreement?</span> Protect your business with our expert-drafted contracts
-          </div>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }}>
-          {AGREEMENTS.map((agr, i) => (
-            <div key={i} style={{ flexShrink: 0, width: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(34, 197, 94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80' }}>
-                <FileText size={20} />
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{agr.title}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{agr.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
-        <button style={{ background: 'transparent', border: 'none', borderBottom: '2px solid #22c55e', color: '#fff', fontSize: '14px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer' }}>
+      <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', marginBottom: '40px' }}>
+        <button 
+          onClick={() => setActiveNavTab('Documents')}
+          style={{ background: 'transparent', border: 'none', borderBottom: activeNavTab === 'Documents' ? '2px solid #22c55e' : '2px solid transparent', color: activeNavTab === 'Documents' ? '#fff' : 'var(--text-muted)', fontSize: '14px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer', transition: 'all 0.2s' }}>
           Documents
         </button>
-        <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '14px', fontWeight: 600, padding: '0 0 12px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button 
+          onClick={() => setActiveNavTab('Legal doc generator')}
+          style={{ background: 'transparent', border: 'none', borderBottom: activeNavTab === 'Legal doc generator' ? '2px solid #22c55e' : '2px solid transparent', color: activeNavTab === 'Legal doc generator' ? '#fff' : 'var(--text-muted)', fontSize: '14px', fontWeight: 600, padding: '0 0 12px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
           Legal doc generator
           <span style={{ background: '#22c55e', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>NEW</span>
         </button>
       </div>
 
-      {/* Folders Section */}
-      <div>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Select a folder to view your compliance documents, bills, and related files</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
-          {FOLDERS.map((f, i) => (
-            <div key={i} style={{ background: 'var(--card)', border: `1px solid ${f.active ? '#22c55e' : 'var(--border)'}`, borderRadius: '16px', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-              <div style={{ color: '#22c55e', marginBottom: '16px' }}>
-                <Folder size={48} strokeWidth={1.5} />
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{f.title}</div>
+      {/* Legal Doc Generator Content */}
+      {activeNavTab === 'Legal doc generator' && (
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px 32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+            <FileText size={16} color="#94a3b8" />
+            <div style={{ fontSize: '14px', color: '#94a3b8' }}>
+              <span style={{ fontWeight: 700, color: '#cbd5e1' }}>Need a legal agreement?</span> Protect your business with our expert-drafted contracts
             </div>
-          ))}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }}>
+            {AGREEMENTS.map((agr, i) => (
+              <div key={i} style={{ flexShrink: 0, width: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(34, 197, 94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80' }}>
+                  <FileText size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{agr.title}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{agr.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Documents Content */}
+      {activeNavTab === 'Documents' && (
+        <>
+          {/* Folder Tabs Section */}
+          <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
+            {FOLDER_TABS.map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setActiveFolderTab(tab)}
+                style={{ 
+                  background: 'transparent', border: 'none', 
+                  borderBottom: activeFolderTab === tab ? '2px solid #10b981' : '2px solid transparent', 
+                  color: activeFolderTab === tab ? '#fff' : '#94a3b8', 
+                  fontSize: '15px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer', transition: 'all 0.2s' 
+                }}>
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ fontSize: '14px', color: '#94a3b8' }}>
+              Select a folder to view your compliance documents, bills, and related files
+            </div>
+            
+            {/* Hidden File Input */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={async (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const file = e.target.files[0];
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  formData.append('linked_to', 'global');
+                  formData.append('folder', activeFolderTab);
+                  
+                  try {
+                    await api.post('/documents/upload', formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    alert('Document uploaded successfully to ' + activeFolderTab);
+                    fetchDocs();
+                  } catch (err) {
+                    console.error('Upload failed', err);
+                    alert('Upload failed: ' + (err.response?.data?.message || err.message));
+                  }
+                  
+                  // Reset input so the same file can be uploaded again if needed
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }
+              }}
+            />
+            
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              style={{ 
+                background: '#10b981', color: '#fff', border: 'none', 
+                padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, 
+                display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#059669'}
+              onMouseLeave={e => e.currentTarget.style.background = '#10b981'}>
+              <Upload size={18} /> Upload Doc
+            </button>
+          </div>
+          
+          {/* Folder Content Box */}
+          {loadingDocs ? (
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '14px' }}>Loading documents...</div>
+            </div>
+          ) : filteredDocs.length === 0 ? (
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+              <Folder size={48} color="#10b981" style={{ opacity: 0.5, marginBottom: '16px' }} />
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>No documents found</div>
+              <div style={{ fontSize: '13px' }}>There are currently no files in {activeFolderTab}</div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+              {filteredDocs.map(doc => (
+                <div key={doc._id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#10b981'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                    <FileText size={24} />
+                  </div>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }} title={doc.name}>
+                      {doc.name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {new Date(doc.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); window.open(BASE_URL + doc.file_url, '_blank'); }} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', borderRadius: '8px' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }} title="Download">
+                    <Download size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -2647,6 +2765,7 @@ const getNavItems = (stats) => [
   { id: 'employees',  label: 'My Employee',  icon: UserPlus,      section: 'PEOPLE',    badge: stats?.employees !== undefined ? stats.employees : 0 },
 
   { id: 'tickets',    label: 'Service Hub',  icon: Settings,      section: 'OPERATIONS', badge: 5 },
+  { id: 'claim-hub',  label: 'Claim Hub',    icon: Scale,         section: 'OPERATIONS' },
   { id: 'store',      label: 'Store',        icon: ShoppingBag,   section: 'OPERATIONS' },
 
   { id: 'task',       label: 'Task',         icon: CheckSquare,   section: 'APPS & TOOLS', badge: 8 },
@@ -2842,9 +2961,7 @@ const PartnerTopbar = ({ page }) => {
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', background: 'var(--banner-badge-bg)', color: 'var(--banner-badge-text)', border: '1px solid var(--banner-border)', borderRadius: '10px', padding: '8px 14px', fontSize: '12px', fontWeight: 700 }}>
-          <Star size={13} />Phase 1 Scope
-        </div>
+
         <div style={{ position: 'relative' }} ref={dropdownRef}>
           <div 
             onClick={handleBellClick}
@@ -3006,7 +3123,8 @@ export default function PartnerDashboard() {
           clients={dbData.clients}
           onNavigate={setPage}
         />;
-      case 'tickets':   return <PartnerServiceHubTab onTicketCreated={() => setPage('activity')} />;
+      case 'tickets':   return <PartnerServiceHubTab type="service" onTicketCreated={() => setPage('activity')} />;
+      case 'claim-hub': return <PartnerServiceHubTab type="claim" onTicketCreated={() => setPage('activity')} />;
       case 'analytics': return <AnalyticsTab leads={dbData.leads} tickets={dbData.tickets} />;
       default:          return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
     }

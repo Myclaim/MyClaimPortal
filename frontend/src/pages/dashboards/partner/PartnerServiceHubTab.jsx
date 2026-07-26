@@ -15,7 +15,16 @@ const DEFAULT_SERVICE_SERVICES = [
   { id: 's7', code: 'SVC-MSME-007', name: 'MSME Registration', category: 'Licenses & Registrations', subCategory: 'License', price: 199, stages: 3, status: true, mappedStore: 'All Stores', description: 'Register MSME', tracking: ['Application', 'Filed', 'Registered'] },
 ];
 
-const PartnerServiceHubTab = ({ onTicketCreated }) => {
+const DEFAULT_CLAIM_SERVICES = [
+  { id: 'c1', code: 'CLM-IEPF-001', name: 'IEPF Claim', category: 'Physical Shares & Dividends', subCategory: 'IEPF', price: 4999, stages: 5, status: true, mappedStore: 'All Stores', description: 'Claim shares and dividends from IEPF authority', tracking: ['Docs Verification', 'IEPF-5 Filing', 'Nodal Officer Verification', 'Approval', 'Shares Credited'] },
+  { id: 'c2', code: 'CLM-TRM-002', name: 'Transmission of Shares', category: 'Inheritance & Transmission', subCategory: 'Shares', price: 2999, stages: 4, status: true, mappedStore: 'All Stores', description: 'Transmission of physical/demat shares upon death of holder', tracking: ['Docs Collection', 'Company Submission', 'Verification', 'Transferred'] },
+  { id: 'c3', code: 'CLM-DUP-003', name: 'Duplicate Share Certificate', category: 'Physical Shares & Dividends', subCategory: 'Certificates', price: 1999, stages: 4, status: true, mappedStore: 'All Stores', description: 'Obtain duplicate share certificates for lost/damaged shares', tracking: ['FIR & Newspaper Ad', 'RTA Submission', 'Board Approval', 'Certificate Issued'] },
+  { id: 'c4', code: 'CLM-DIV-004', name: 'Unclaimed Dividend Recovery', category: 'Physical Shares & Dividends', subCategory: 'Dividend', price: 1499, stages: 4, status: true, mappedStore: 'All Stores', description: 'Recover unpaid or unclaimed company dividends', tracking: ['Claim Calculation', 'RTA Request', 'Verification', 'Disbursed'] },
+];
+
+const PartnerServiceHubTab = ({ type = 'service', onTicketCreated }) => {
+  const isClaim = type === 'claim';
+  const defaultServices = isClaim ? DEFAULT_CLAIM_SERVICES : DEFAULT_SERVICE_SERVICES;
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [activeTab, setActiveTab] = useState('Popular');
@@ -60,29 +69,29 @@ const PartnerServiceHubTab = ({ onTicketCreated }) => {
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const res = await api.get('/department-services?type=service');
-        const data = res.data.length > 0 ? res.data : DEFAULT_SERVICE_SERVICES;
+        const res = await api.get(`/department-services?type=${type}`);
+        const data = res.data.length > 0 ? res.data : defaultServices;
         setStoreServices(data.filter(s => s.status !== false).map(s => ({
           ...s,
           title: s.name,
           desc: s.description || s.desc || '',
-          icon: '📋',
+          icon: isClaim ? '⚖️' : '📋',
           tabs: ['Popular', s.category]
         })));
       } catch (err) {
         console.error(err);
-        setStoreServices(DEFAULT_SERVICE_SERVICES.filter(s => s.status).map(s => ({
+        setStoreServices(defaultServices.filter(s => s.status).map(s => ({
           ...s,
           title: s.name,
           desc: s.description || s.desc || '',
-          icon: '📋',
+          icon: isClaim ? '⚖️' : '📋',
           tabs: ['Popular', s.category]
         })));
       }
     };
 
     loadServices();
-  }, []);
+  }, [type]);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -148,8 +157,8 @@ const PartnerServiceHubTab = ({ onTicketCreated }) => {
     try {
       const payload = {
         clientId: selectedClient._id || selectedClient.id,
-        hubType: 'Service Hub',
-        subject: `New Service Request: ${selectedService.title} for ${ticketDetails.companyName || 'N/A'}`,
+        hubType: isClaim ? 'Claim Hub' : 'Service Hub',
+        subject: `New ${isClaim ? 'Claim' : 'Service'} Request: ${selectedService.title} for ${ticketDetails.companyName || 'N/A'}`,
         service: selectedService.title,
         priority: 'medium',
         notes: `Quantity: ${ticketDetails.quantity || 'N/A'}`
@@ -206,8 +215,8 @@ const PartnerServiceHubTab = ({ onTicketCreated }) => {
 
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Service Store</h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Professional services — Select service, choose client, create ticket</p>
+        <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>{isClaim ? 'Claim Hub' : 'Service Store'}</h2>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{isClaim ? 'Claim services — Select claim, choose client, create ticket' : 'Professional services — Select service, choose client, create ticket'}</p>
       </div>
 
       {/* Stats Dashboard */}

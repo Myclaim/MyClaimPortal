@@ -41,6 +41,7 @@ const SECTIONS = [
   { id: 'crm', label: 'CRM' },
   { id: 'store', label: 'STORE' },
   { id: 'task-board', label: 'TASK BOARD' },
+  { id: 'operations', label: 'OPERATIONS' },
   { id: 'communication-log', label: 'COMMUNICATION LOG' },
   { id: 'department-board', label: 'DEPARTMENT BOARD' },
   { id: 'security', label: 'SECURITY' },
@@ -233,6 +234,29 @@ const ITEMS = [
     path: '/admin-tickets',
     icon: Ticket,
     supportsBadge: true,
+  },
+
+  // OPERATIONS
+  {
+    id: 'op-claim-hub',
+    section: 'operations',
+    label: 'Claim Hub',
+    path: '/operations/claim-hub',
+    icon: '⚖️',
+  },
+  {
+    id: 'op-service-hub',
+    section: 'operations',
+    label: 'Service Hub',
+    path: '/operations/service-hub',
+    icon: '🔧',
+  },
+  {
+    id: 'op-store',
+    section: 'operations',
+    label: 'Store',
+    path: '/operations/store',
+    icon: '🛒',
   },
 
   // COMMUNICATION LOG
@@ -686,7 +710,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
 
       // Partners & Super Partners see CRM, Task Board, and Dashboard
       if (['partner', 'super_partner'].includes(role)) {
-        return ['dashboard', 'crm', 'task-board', 'department-board', 'communication-log', 'document-management', 'resources', 'automation'].includes(item.section);
+        return ['dashboard', 'crm', 'task-board', 'operations', 'department-board', 'communication-log', 'document-management', 'resources', 'automation'].includes(item.section);
       }
 
       return true;
