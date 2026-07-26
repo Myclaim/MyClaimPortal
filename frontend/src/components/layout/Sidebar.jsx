@@ -727,12 +727,12 @@ const Sidebar = ({ isOpen = false, onClose }) => {
     <nav className={`sidebar ${isOpen ? 'open' : ''}`} style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--glass-border)', boxShadow: '4px 0 24px rgba(0,0,0,0.2)' }}>
       <div className="sidebar-logo" style={{ padding: '32px 24px', borderBottom: '1px solid var(--glass-border)' }}>
         <div style={{ marginRight: '14px' }}>
-          <div style={{ width: 44, height: 44, background: 'rgba(34, 197, 94, 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-            <Shield size={24} color="var(--accent-green)" />
+          <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src="/logo.png" alt="MyClaim India" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
         </div>
         <div>
-          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em' }}>{user?.role === 'client' ? 'RM LEGAL' : 'IEPF CLAIMS'}</div>
+          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em' }}>MyClaim India</div>
           <div className="sidebar-logo-sub" style={{ color: 'var(--accent-green)', fontWeight: 800, fontSize: '9px', letterSpacing: '0.1em' }}>
             {user?.role === 'client' ? 'CLIENT PORTAL' : `${user?.role?.replace('_', ' ').toUpperCase()} PORTAL`}
           </div>

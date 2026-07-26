@@ -8,7 +8,8 @@ import {
   UserPlus, Send, Star, MoreVertical, Shield, ShieldCheck,
   LogOut, LayoutDashboard, Network, Bell, Ticket, Settings,
   Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar, 
-  FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale, Upload
+  FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale, Upload,
+  Phone, Mail, Layers, TreeDeciduous, HelpCircle, Gift
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatCard from '../../../components/ui/StatCard';
@@ -179,7 +180,7 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
               Welcome back, Partner!
             </h2>
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '32px' }}>
-              RM LEGAL Associates - Partner Dashboard
+              MyClaim India - Partner Dashboard
             </div>
             
             <div style={{ fontSize: '36px', fontWeight: 800, color: '#22c55e', lineHeight: 1, marginBottom: '8px' }}>
@@ -368,7 +369,7 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
         padding: '24px 0', borderTop: '1px solid var(--border)', fontSize: '13px', color: 'var(--text-muted)' 
       }}>
-        <div>© 2026, made with <span style={{ color: '#ef4444' }}>❤️</span> by RM LEGAL</div>
+        <div>© 2026, made with <span style={{ color: '#ef4444' }}>❤️</span> by MyClaim India</div>
         <div style={{ display: 'flex', gap: '24px' }}>
           <a href="#" style={{ color: '#22c55e', textDecoration: 'none' }}>License</a>
           <a href="#" style={{ color: '#22c55e', textDecoration: 'none' }}>Documentation</a>
@@ -1303,7 +1304,7 @@ function CalculatorTab() {
 ════════════════════════════════════════════════════════════════ */
 function DocumentTab() {
   const [activeNavTab, setActiveNavTab] = useState('Documents');
-  const [activeFolderTab, setActiveFolderTab] = useState('RM Legal Docs');
+  const [activeFolderTab, setActiveFolderTab] = useState('MyClaim India Docs');
   const fileInputRef = useRef(null);
   
   const [documents, setDocuments] = useState([]);
@@ -1334,7 +1335,7 @@ function DocumentTab() {
     { title: 'Franchise Agreement', desc: 'Formalize a franchise' },
   ];
 
-  const FOLDER_TABS = ['RM Legal Docs', 'My Documents', 'Legal Documents'];
+  const FOLDER_TABS = ['MyClaim India Docs', 'My Documents', 'Legal Documents'];
 
   return (
     <div style={{ paddingBottom: '40px' }}>
@@ -2799,11 +2800,11 @@ const PartnerSidebar = ({ activePage, setPage, user, onLogout, stats }) => {
       {/* Logo */}
       <div style={{ height: '80px', display: 'flex', alignItems: 'center', padding: '0 24px', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #22c55e, #15803d)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.3)' }}>
-            <Scale size={20} color="#fff" />
+          <div style={{ width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src="/logo.png" alt="MyClaim India" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
-            <div style={{ color: 'var(--text)', fontSize: '18px', fontWeight: 800, letterSpacing: '0.5px' }}>RM <span style={{color: '#22c55e'}}>LEGAL</span></div>
+            <div style={{ color: 'var(--text)', fontSize: '18px', fontWeight: 800, letterSpacing: '0.5px' }}>MyClaim India</div>
           </div>
         </div>
       </div>
@@ -2877,15 +2878,28 @@ const PAGE_META = {
   clients:   { title: 'My Clients', sub: 'Your scoped converted accounts' },
   tickets:   { title: 'My Tickets', sub: 'Service updates inside your scope' },
   analytics: { title: 'Analytics', sub: 'Conversion and volume trends' },
+  profile:   { title: 'My Profile', sub: 'Your personal contact and account details' },
 };
 
-const PartnerTopbar = ({ page }) => {
+const PartnerTopbar = ({ page, setPage, onLogout }) => {
   const meta = PAGE_META[page] || PAGE_META.overview;
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
   const dropdownRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchLogs = async () => {
     try {
@@ -2962,6 +2976,131 @@ const PartnerTopbar = ({ page }) => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
 
+        <div style={{ position: 'relative' }} ref={profileMenuRef}>
+          <button
+            onClick={() => setShowProfileMenu(prev => !prev)}
+            style={{ 
+              width: '42px', height: '42px', borderRadius: '50%', padding: 0, background: 'transparent',
+              border: showProfileMenu ? '1.5px solid #10B981' : '1px solid transparent', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              color: 'var(--text-muted)'
+            }}
+          >
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 800 }}>
+              {(user?.name || 'P').charAt(0).toUpperCase()}
+            </div>
+          </button>
+          
+          {showProfileMenu && (
+            <div className="animate-slide-up" style={{
+              position: 'absolute',
+              top: 'calc(100% + 12px)',
+              right: 0,
+              width: '340px',
+              background: '#0f172a',
+              border: '1px solid var(--border)',
+              borderRadius: '20px',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+              overflow: 'hidden',
+              zIndex: 100
+            }}>
+              <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '12px' }}>
+                  <div style={{
+                    width: '52px', height: '52px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                    border: '2px solid rgba(255,255,255,0.1)',
+                    color: '#ffffff', fontSize: '22px', fontWeight: 900,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 14px rgba(29,78,216,0.3)', flexShrink: 0
+                  }}>
+                    {(user?.name || 'P').charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.name || 'Partner User'}
+                    </div>
+                    <button
+                      onClick={() => { setShowProfileMenu(false); setPage('profile'); }}
+                      style={{ background: 'none', border: 'none', padding: 0, color: '#3B82F6', fontSize: '13px', fontWeight: 700, cursor: 'pointer', marginTop: '2px', textDecoration: 'underline' }}
+                    >
+                      View Profile
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px',
+                  color: 'var(--text-muted)', paddingTop: '10px',
+                  borderTop: '1px dashed var(--border)', flexWrap: 'wrap'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Phone size={13} />
+                    <span>{user?.phone || '9924261499'}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                    <Mail size={13} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email || 'partner@myclaim.com'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--card)' }}>
+                <div style={{ border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+                  {[
+                    { label: 'My Services', icon: FileText, tab: 'service-hub' },
+                    { label: 'My Clients', icon: Users, tab: 'clients' },
+                    { label: 'Documents Hub', icon: Folder, tab: 'documents' },
+                    { label: 'Help & Support', icon: HelpCircle, tab: 'overview' },
+                  ].map((opt) => (
+                    <div
+                      key={opt.label}
+                      onClick={() => { setShowProfileMenu(false); setPage(opt.tab); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border)',
+                        transition: 'background 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{
+                          width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.05)', display: 'grid', placeItems: 'center', color: 'var(--text-muted)'
+                        }}>
+                          <opt.icon size={16} />
+                        </div>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{opt.label}</span>
+                      </div>
+                      <ChevronRight size={15} color="var(--text-muted)" />
+                    </div>
+                  ))}
+
+                  <div
+                    onClick={() => { setShowProfileMenu(false); onLogout(); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 16px', cursor: 'pointer', background: 'rgba(239,68,68,0.04)',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.04)'}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'grid', placeItems: 'center', color: '#EF4444' }}>
+                        <LogOut size={16} />
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#EF4444' }}>Log out</span>
+                    </div>
+                    <ChevronRight size={15} color="#EF4444" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div style={{ position: 'relative' }} ref={dropdownRef}>
           <div 
             onClick={handleBellClick}
@@ -3031,6 +3170,136 @@ const PartnerTopbar = ({ page }) => {
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ════════════════════════════════════════════════════════════════ */
+/* ── PARTNER PROFILE VIEW COMPONENT ── */
+const PartnerProfileView = ({ user }) => {
+  const name = user?.name || 'Partner User';
+  const email = user?.email || 'partner@myclaim.com';
+  const mobile = user?.phone || '+91 9924261499';
+
+  return (
+    <div style={{
+      maxWidth: '680px',
+      margin: '20px auto',
+      background: 'var(--card)',
+      border: '1px solid var(--border)',
+      borderRadius: '24px',
+      padding: '36px',
+      boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Decorative top accent gradient */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: '5px',
+        background: 'linear-gradient(90deg, #10B981, #818CF8, #F59E0B)'
+      }} />
+
+      {/* Header Avatar & Title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{
+          width: '72px', height: '72px', borderRadius: '50%',
+          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+          color: '#ffffff', fontSize: '32px', fontWeight: 900,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(16,185,129,0.35)', flexShrink: 0
+        }}>
+          {name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, color: 'var(--text)' }}>My Profile</h2>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>Your personal contact and account details</p>
+        </div>
+      </div>
+
+      {/* Details Cards Grid */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Full Name */}
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px'
+        }}>
+          <div style={{
+            width: '46px', height: '46px', borderRadius: '12px',
+            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
+            display: 'grid', placeItems: 'center', color: '#10B981', flexShrink: 0
+          }}>
+            <User size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              Full Name
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+              {name}
+            </div>
+          </div>
+        </div>
+
+        {/* Email Address */}
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px'
+        }}>
+          <div style={{
+            width: '46px', height: '46px', borderRadius: '12px',
+            background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)',
+            display: 'grid', placeItems: 'center', color: '#818CF8', flexShrink: 0
+          }}>
+            <Mail size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              Email Address
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+              {email}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Number */}
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px'
+        }}>
+          <div style={{
+            width: '46px', height: '46px', borderRadius: '12px',
+            background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
+            display: 'grid', placeItems: 'center', color: '#F59E0B', flexShrink: 0
+          }}>
+            <Phone size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              Mobile Number
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+              {mobile}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function PartnerDashboard() {
   const [page, setPage] = useState(() => sessionStorage.getItem('MyClaim_PartnerTab') || 'overview');
   const [selectedClientId, setSelectedClientId] = useState(null);
@@ -3103,6 +3372,7 @@ export default function PartnerDashboard() {
     if (dbData.loading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Synchronizing dashboard data...</div>;
 
     switch (page) {
+      case 'profile':   return <PartnerProfileView user={user} />;
       case 'overview':  return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
       case 'leads':     return <LeadsTab />;
       case 'clients':   return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} />;
@@ -3173,7 +3443,7 @@ export default function PartnerDashboard() {
 
       {/* Main Content Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-        <PartnerTopbar page={page} />
+        <PartnerTopbar page={page} setPage={setPage} onLogout={handleLogout} />
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'transparent' }}>
           <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
             {renderPage()}
