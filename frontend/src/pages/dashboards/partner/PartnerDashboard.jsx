@@ -8,7 +8,7 @@ import {
   UserPlus, Send, Star, MoreVertical, Shield, ShieldCheck,
   LogOut, LayoutDashboard, Network, Bell, Ticket, Settings,
   Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar, 
-  FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, Scale, Upload,
+  FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, ArrowLeft, Scale, Upload,
   Phone, Mail, Layers, TreeDeciduous, HelpCircle, Gift, Sun, Moon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -1756,9 +1756,197 @@ function TaskTab() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   TAB: STORE PRE-IPO
+════════════════════════════════════════════════════════════════ */
+const PRE_IPO_FUNDS = [
+  { id: 'f1', name: 'Swiggy', sector: 'Food Tech', isin: 'INE000000100', minQty: 25, available: 1977 },
+  { id: 'f2', name: 'PhonePe', sector: 'Fintech', isin: 'INE000000101', minQty: 25, available: 1050 },
+  { id: 'f3', name: 'Ather Energy', sector: 'EV', isin: 'INE000000102', minQty: 25, available: 500 },
+  { id: 'f4', name: 'Lenskart', sector: 'Retail', isin: 'INE000000103', minQty: 25, available: 800 },
+];
+
+function PreIPOStore({ clients = [] }) {
+  const [step, setStep] = React.useState(1);
+  const [selectedFund, setSelectedFund] = React.useState(null);
+  const [selectedClient, setSelectedClient] = React.useState(null);
+  const [qty, setQty] = React.useState('');
+  
+  const handleFundSelect = (fund) => {
+    setSelectedFund(fund);
+    setStep(2);
+  };
+  
+  const handleClientSelect = (client) => {
+    setSelectedClient(client);
+    setStep(3);
+  };
+  
+  const handleQtySubmit = () => {
+    if (!qty || isNaN(qty) || Number(qty) < selectedFund.minQty) return;
+    setStep(4);
+  };
+
+  const handleConfirm = () => {
+    alert("Order confirmed!");
+    setStep(1);
+    setSelectedFund(null);
+    setSelectedClient(null);
+    setQty('');
+  };
+
+  return (
+    <div style={{ paddingBottom: '40px', color: '#fff' }}>
+      {/* Top Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
+        {[
+          { label: 'AVAILABLE FUNDS', val: 4, color: '#3b82f6' },
+          { label: 'REGISTERED CLIENTS', val: clients.length || 10, color: '#22c55e' },
+          { label: 'DEPARTMENTS', val: 1, color: '#a855f7' },
+          { label: 'ORDERS TODAY', val: 21, color: '#f97316' },
+        ].map((s, i) => (
+          <div key={i} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderLeft: `3px solid ${s.color}`, borderRadius: '12px', padding: '16px 20px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '8px' }}>{s.label}</div>
+            <div style={{ fontSize: '24px', fontWeight: 800 }}>{s.val}</div>
+          </div>
+        ))}
+      </div>
+
+      {step > 1 && (
+        <button onClick={() => setStep(step - 1)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+          <ArrowLeft size={16} /> Back
+        </button>
+      )}
+
+      {/* Stepper */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }} />
+        {[
+          { num: 1, label: 'Select Fund' },
+          { num: 2, label: 'Choose Client' },
+          { num: 3, label: 'Set Qty & Type' },
+          { num: 4, label: 'Confirm' }
+        ].map(s => {
+           const isActive = step === s.num;
+           const isDone = step > s.num;
+           return (
+             <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg)', padding: '0 16px', position: 'relative', zIndex: 1 }}>
+               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isDone || isActive ? '#22c55e' : 'rgba(255,255,255,0.1)', color: (isDone || isActive) ? '#000' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>
+                 {isDone ? '✓' : s.num}
+               </div>
+               <span style={{ fontSize: '14px', fontWeight: 700, color: (isActive || isDone) ? '#fff' : 'rgba(255,255,255,0.4)' }}>{s.label}</span>
+             </div>
+           );
+        })}
+      </div>
+
+      {/* Content based on Step */}
+      {step === 1 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+          {PRE_IPO_FUNDS.map(fund => (
+            <div key={fund.id} onClick={() => handleFundSelect(fund)} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '16px', padding: '24px', cursor: 'pointer', transition: 'all 0.2s' }} className="pre-ipo-card">
+              <style>{`
+                .pre-ipo-card:hover { border-color: #22c55e !important; }
+              `}</style>
+              <div style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>{fund.name}</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>{fund.sector}</div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>ISIN</span>
+                <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.isin}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>MIN QTY</span>
+                <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.minQty} shares</span>
+              </div>
+              
+              <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Choose Client <ArrowRight size={16} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {step === 2 && (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Select Client for {selectedFund?.name}</h3>
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {clients.slice(0, 5).map((c, i) => (
+              <div key={i} onClick={() => handleClientSelect(c)} style={{ padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="pre-ipo-client">
+                <style>{`.pre-ipo-client:hover { background: rgba(255,255,255,0.08) !important; }`}</style>
+                <span style={{ fontWeight: 700 }}>{c.name || c.username || c.email}</span>
+                <ArrowRight size={16} color="#22c55e" />
+              </div>
+            ))}
+            {clients.length === 0 && (
+              <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No clients found. Please add a client first.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Set Quantity & Type</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Pre-IPO • {selectedFund?.name}</div>
+
+          <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '32px' }}>{selectedFund?.name}</div>
+
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>QUANTITY</label>
+              <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder={`e.g. ${selectedFund?.minQty}`} style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none', boxShadow: '0 0 0 1px #3b82f6' }} />
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>Min: {selectedFund?.minQty}, Available: {selectedFund?.available}</div>
+            </div>
+            <div style={{ width: '120px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>TYPE</label>
+              <div style={{ width: '100%', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', fontWeight: 700, textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}>BUY</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '40px' }}>
+            <button onClick={handleQtySubmit} disabled={!qty || Number(qty) < selectedFund?.minQty} style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!qty || Number(qty) < selectedFund?.minQty) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!qty || Number(qty) < selectedFund?.minQty) ? 0.5 : 1 }}>
+              Continue <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Confirm Order</h3>
+          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '20px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Fund</span>
+              <span style={{ fontWeight: 800 }}>{selectedFund?.name}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Client</span>
+              <span style={{ fontWeight: 800 }}>{selectedClient?.name || selectedClient?.username || selectedClient?.email}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Quantity</span>
+              <span style={{ fontWeight: 800 }}>{qty} shares</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Type</span>
+              <span style={{ fontWeight: 800, color: '#22c55e' }}>BUY</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+            <button onClick={() => setStep(3)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
+            <button onClick={handleConfirm} style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Confirm Order</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    TAB: STORE
 ════════════════════════════════════════════════════════════════ */
-function StoreTab() {
+function StoreTab({ clients = [] }) {
   const [activeCategory, setActiveCategory] = useState('Home');
   const PORTFOLIOS = [
     { id: 1, title: 'Aggressive Mutual Fund Basket', badge: 'Top Choice for SIP', risk: 'High', duration: '5+ Years', return: 'High', iconBg: '#fecaca', iconColor: '#ef4444' },
@@ -1861,6 +2049,8 @@ function StoreTab() {
         </div>
       </div>
         </>
+      ) : activeCategory === 'Pre IPOs' ? (
+        <PreIPOStore clients={clients} />
       ) : (
         <div style={{ textAlign: 'center', padding: '80px 20px', background: 'var(--card)', borderRadius: '24px', border: '1px solid var(--border)' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📦</div>
@@ -3435,7 +3625,7 @@ export default function PartnerDashboard() {
       case 'clients':   return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} />;
       case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
       case 'employees': return <EmployeesTab clients={dbData.clients} />;
-      case 'store':     return <StoreTab />;
+      case 'store':     return <StoreTab clients={dbData.clients} />;
       case 'task':      return <TaskTab />;
       case 'calendar':  return <CalendarTab />;
       case 'document':  return <DocumentTab />;
