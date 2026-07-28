@@ -1756,16 +1756,48 @@ function TaskTab() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TAB: STORE PRE-IPO
+   TAB: STORE MULTI-STEP FLOW
 ════════════════════════════════════════════════════════════════ */
-const PRE_IPO_FUNDS = [
-  { id: 'f1', name: 'Swiggy', sector: 'Food Tech', isin: 'INE000000100', minQty: 25, available: 1977 },
-  { id: 'f2', name: 'PhonePe', sector: 'Fintech', isin: 'INE000000101', minQty: 25, available: 1050 },
-  { id: 'f3', name: 'Ather Energy', sector: 'EV', isin: 'INE000000102', minQty: 25, available: 500 },
-  { id: 'f4', name: 'Lenskart', sector: 'Retail', isin: 'INE000000103', minQty: 25, available: 800 },
-];
+const STORE_MOCK_DATA = {
+  'Mutual Funds': [
+    { id: 'mf1', name: 'HDFC Midcap Opportunities', sector: 'Equity', isin: 'INF179K01234', minQty: 10, available: 5000 },
+    { id: 'mf2', name: 'SBI Small Cap Fund', sector: 'Equity', isin: 'INF200K01111', minQty: 10, available: 4200 },
+    { id: 'mf3', name: 'Parag Parikh Flexi Cap', sector: 'Equity', isin: 'INF300K01555', minQty: 10, available: 3100 },
+  ],
+  'Insurance': [
+    { id: 'ins1', name: 'LIC Tech Term', sector: 'Term Life', isin: 'INS001', minQty: 1, available: 1000 },
+    { id: 'ins2', name: 'HDFC Click2Protect', sector: 'Term Life', isin: 'INS002', minQty: 1, available: 1000 },
+    { id: 'ins3', name: 'ICICI Lombard Health', sector: 'Health', isin: 'INS003', minQty: 1, available: 1000 },
+  ],
+  'Pre IPOs': [
+    { id: 'f1', name: 'Swiggy', sector: 'Food Tech', isin: 'INE000000100', minQty: 25, available: 1977 },
+    { id: 'f2', name: 'PhonePe', sector: 'Fintech', isin: 'INE000000101', minQty: 25, available: 1050 },
+    { id: 'f3', name: 'Ather Energy', sector: 'EV', isin: 'INE000000102', minQty: 25, available: 500 },
+    { id: 'f4', name: 'Lenskart', sector: 'Retail', isin: 'INE000000103', minQty: 25, available: 800 },
+  ],
+  'Debentures': [
+    { id: 'deb1', name: 'Muthoot Finance NCD', sector: 'Finance', isin: 'INE414G07EX4', minQty: 10, available: 1000 },
+    { id: 'deb2', name: 'Shriram Transport NCD', sector: 'Finance', isin: 'INE721A07OK4', minQty: 10, available: 850 },
+  ],
+  'PMS': [
+    { id: 'pms1', name: 'Motilal Oswal NTDOP', sector: 'Multi Cap', isin: 'PMS001', minQty: 1, available: 50 },
+    { id: 'pms2', name: 'ASK IEP', sector: 'Multi Cap', isin: 'PMS002', minQty: 1, available: 25 },
+  ],
+  'Fixed Deposits': [
+    { id: 'fd1', name: 'Bajaj Finance FD', sector: 'Finance', isin: 'FD001', minQty: 1, available: 5000 },
+    { id: 'fd2', name: 'Shriram Finance FD', sector: 'Finance', isin: 'FD002', minQty: 1, available: 3000 },
+  ],
+  'Demat': [
+    { id: 'dem1', name: 'Zerodha Demat', sector: 'Brokerage', isin: 'DEM001', minQty: 1, available: 10000 },
+    { id: 'dem2', name: 'Upstox Demat', sector: 'Brokerage', isin: 'DEM002', minQty: 1, available: 8000 },
+  ],
+  'SIF': [
+    { id: 'sif1', name: 'Smart Investment Fund A', sector: 'Mixed', isin: 'SIF001', minQty: 50, available: 2000 },
+    { id: 'sif2', name: 'Smart Investment Fund B', sector: 'Mixed', isin: 'SIF002', minQty: 50, available: 1500 },
+  ],
+};
 
-function PreIPOStore({ clients = [] }) {
+function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
   const [step, setStep] = React.useState(1);
   const [selectedFund, setSelectedFund] = React.useState(null);
   const [selectedClient, setSelectedClient] = React.useState(null);
@@ -1821,7 +1853,7 @@ function PreIPOStore({ clients = [] }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }} />
         {[
-          { num: 1, label: 'Select Fund' },
+          { num: 1, label: `Select ${categoryName === 'Insurance' ? 'Plan' : 'Product'}` },
           { num: 2, label: 'Choose Client' },
           { num: 3, label: 'Set Qty & Type' },
           { num: 4, label: 'Confirm' }
@@ -1842,7 +1874,7 @@ function PreIPOStore({ clients = [] }) {
       {/* Content based on Step */}
       {step === 1 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-          {PRE_IPO_FUNDS.map(fund => (
+          {products.map(fund => (
             <div key={fund.id} onClick={() => handleFundSelect(fund)} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '16px', padding: '24px', cursor: 'pointer', transition: 'all 0.2s' }} className="pre-ipo-card">
               <style>{`
                 .pre-ipo-card:hover { border-color: #22c55e !important; }
@@ -1851,12 +1883,12 @@ function PreIPOStore({ clients = [] }) {
               <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>{fund.sector}</div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>ISIN</span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>IDENTIFIER (ISIN)</span>
                 <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.isin}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>MIN QTY</span>
-                <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.minQty} shares</span>
+                <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.minQty} units</span>
               </div>
               
               <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1882,19 +1914,22 @@ function PreIPOStore({ clients = [] }) {
               <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No clients found. Please add a client first.</div>
             )}
           </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px' }}>
+            <button onClick={() => setStep(1)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back to Products</button>
+          </div>
         </div>
       )}
 
       {step === 3 && (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
           <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Set Quantity & Type</div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Pre-IPO • {selectedFund?.name}</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>{categoryName} • {selectedFund?.name}</div>
 
           <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '32px' }}>{selectedFund?.name}</div>
 
           <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>QUANTITY</label>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>QUANTITY (UNITS)</label>
               <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder={`e.g. ${selectedFund?.minQty}`} style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none', boxShadow: '0 0 0 1px #3b82f6' }} />
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>Min: {selectedFund?.minQty}, Available: {selectedFund?.available}</div>
             </div>
@@ -1904,7 +1939,8 @@ function PreIPOStore({ clients = [] }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
+            <button onClick={() => setStep(2)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
             <button onClick={handleQtySubmit} disabled={!qty || Number(qty) < selectedFund?.minQty} style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!qty || Number(qty) < selectedFund?.minQty) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!qty || Number(qty) < selectedFund?.minQty) ? 0.5 : 1 }}>
               Continue <ArrowRight size={16} />
             </button>
@@ -1917,7 +1953,7 @@ function PreIPOStore({ clients = [] }) {
           <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Confirm Order</h3>
           <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '20px', marginBottom: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Fund</span>
+              <span style={{ color: 'var(--text-muted)' }}>Product</span>
               <span style={{ fontWeight: 800 }}>{selectedFund?.name}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
@@ -1926,7 +1962,7 @@ function PreIPOStore({ clients = [] }) {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
               <span style={{ color: 'var(--text-muted)' }}>Quantity</span>
-              <span style={{ fontWeight: 800 }}>{qty} shares</span>
+              <span style={{ fontWeight: 800 }}>{qty} units</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Type</span>
@@ -2049,14 +2085,12 @@ function StoreTab({ clients = [] }) {
         </div>
       </div>
         </>
-      ) : activeCategory === 'Pre IPOs' ? (
-        <PreIPOStore clients={clients} />
       ) : (
-        <div style={{ textAlign: 'center', padding: '80px 20px', background: 'var(--card)', borderRadius: '24px', border: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📦</div>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>{activeCategory} Catalog</h3>
-          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>We are currently curating the best {activeCategory.toLowerCase()} for you and your clients.</p>
-        </div>
+        <GenericStoreFlow 
+          clients={clients} 
+          categoryName={activeCategory} 
+          products={STORE_MOCK_DATA[activeCategory] || []} 
+        />
       )}
     </div>
   );
