@@ -879,33 +879,35 @@ function ClientsTab({ onNavigateToClient }) {
       try {
         const { data } = await api.get('/users');
 
-        // Ensure isolation: only clients tied to this specific partner
+        // Backend already filters by parent_id for partners — just pick clients
         const myClients = data.filter(u => u.role === 'client');
-        
-        // Mock data if actual DB data is sparse for demonstration
-        const mockCategories = ['Physical Shares & Documents', 'Taxation & Compliance', 'Licenses & Registrations', 'Agreements & Contracts', 'Company Changes'];
-        const mockServices = ['IEPF Claim', 'Income Tax Return Filing', 'GST Registration', 'NDA, Legal Notice', 'Appointment of a Director'];
-        const mockStatuses = ['Active', 'Active', 'In Progress', 'Active', 'Doc Verification'];
 
         const formatted = myClients.map((c, i) => ({
-          id: `CL-00${i}`,
+          // Identity
+          id: c.client_id_ref || `CL-${String(i + 1).padStart(3, '0')}`,
           dbId: c._id,
           name: c.name,
-          email: c.email || `${c.name.toLowerCase().replace(' ', '.')}@email.com`,
-          phone: c.phone || `98${Math.floor(10000000 + Math.random() * 90000000)}`,
-          category: mockCategories[i % mockCategories.length],
-          services: mockServices[i % mockServices.length],
-          status: mockStatuses[i % mockStatuses.length],
-          since: new Date(c.createdAt || Date.now() - i * 864000000).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          email: c.email || '—',
+          phone: c.phone || '—',
+          // Real status from DB (set during onboarding Step 8)
+          status: c.status
+            ? c.status.charAt(0).toUpperCase() + c.status.slice(1)
+            : 'Active',
+          since: new Date(c.createdAt || Date.now()).toLocaleDateString('en-GB', {
+            day: '2-digit', month: 'short', year: 'numeric'
+          }),
+          // ── Real Relationship & Reference from SuperAdmin onboarding ──
+          relation:        c.relation        || '—',
+          referenceType:   c.reference       || '—',
+          referenceName:   c.referenceName   || '—',
+          referenceMobile: c.referenceMobileNo || '—',
+          // Keep for display
+          category: c.category || '—',
+          services:  c.preference || '—',
         }));
-        
-        setClients(formatted.length > 0 ? formatted : [
-          { id: 'CL-000', dbId: '0', name: 'Priya Mehta', email: 'priya.mehta@email.com', phone: '9876543210', category: 'Physical Shares & Documents', services: 'IEPF Claim', status: 'Active', since: '12 Jan 2025' },
-          { id: 'CL-001', dbId: '1', name: 'Amit Patel', email: 'amit.patel@email.com', phone: '9845612378', category: 'Taxation & Compliance', services: 'Income Tax Return Filing', status: 'Active', since: '16 Nov 2024' },
-          { id: 'CL-002', dbId: '2', name: 'Suresh Kumar', email: 'suresh.kumar@email.com', phone: '9734521890', category: 'Licenses & Registrations', services: 'GST Registration', status: 'In Progress', since: '08 Aug 2024' },
-          { id: 'CL-003', dbId: '3', name: 'Neha Gupta', email: 'neha.g@email.com', phone: '9812345678', category: 'Agreements & Contracts', services: 'NDA, Legal Notice', status: 'Active', since: '08 Jan 2025' },
-          { id: 'CL-004', dbId: '4', name: 'Vikram Joshi', email: 'vikram.j@email.com', phone: '9654321087', category: 'Company Changes', services: 'Appointment of a Director', status: 'Doc Verification', since: '17 Feb 2025' },
-        ]);
+
+        // Show real data only — no fake fallback
+        setClients(formatted);
       } catch (err) {
         console.error('Error fetching clients:', err);
       }
@@ -1007,13 +1009,16 @@ function ClientsTab({ onNavigateToClient }) {
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CONTACT</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CATEGORY</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>SERVICES</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>RELATION</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>REFERENCE TYPE</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>REFERENCE NAME</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>JOIN DATE</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No clients found.</td></tr>
+              <tr><td colSpan={11} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>No clients found.</td></tr>
             ) : filtered.map((client, idx) => (
               <tr key={client.id} style={{ borderBottom: '1px solid var(--border)', background: 'transparent', transition: '0.2s' }}>
                 <td style={{ padding: '16px 24px' }}>
@@ -1036,6 +1041,29 @@ function ClientsTab({ onNavigateToClient }) {
                 </td>
                 <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>
                   {client.services}
+                </td>
+                {/* ── Relationship & Reference fields from SuperAdmin onboarding ── */}
+                <td style={{ padding: '16px 24px' }}>
+                  {client.relation && client.relation !== '—' ? (
+                    <span style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>
+                      {client.relation}
+                    </span>
+                  ) : <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>—</span>}
+                </td>
+                <td style={{ padding: '16px 24px' }}>
+                  {client.referenceType && client.referenceType !== '—' ? (
+                    <span style={{ background: 'rgba(6,182,212,0.1)', color: '#22d3ee', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>
+                      {client.referenceType}
+                    </span>
+                  ) : <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>—</span>}
+                </td>
+                <td style={{ padding: '16px 24px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{client.referenceName}</span>
+                    {client.referenceMobile !== '—' && (
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{client.referenceMobile}</span>
+                    )}
+                  </div>
                 </td>
                 <td style={{ padding: '16px 24px' }}>
                   <span style={{ background: client.status === 'Active' ? 'rgba(34,197,94,0.1)' : client.status === 'In Progress' ? 'rgba(14,165,233,0.1)' : 'rgba(249,115,22,0.1)', color: client.status === 'Active' ? '#4ade80' : client.status === 'In Progress' ? '#38bdf8' : '#fb923c', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>

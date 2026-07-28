@@ -21,7 +21,7 @@ function userToPublicJSON(doc) {
 // Near-zero latency for all reads after first fetch
 // ─────────────────────────────────────────────
 const _cache = new Map();
-const CACHE_FIELDS = 'name username email phone companyName representative profession entity category department skills designation specialization is_active role createdAt client_id_ref firstName lastName address.city city parent_id';
+const CACHE_FIELDS = 'name username email phone companyName representative profession entity category department skills designation specialization is_active role createdAt client_id_ref firstName lastName address.city city parent_id relation reference referenceName referenceMobileNo referredById status';
 
 const _fetchAndCache = async (cacheKey, role, userId) => {
   let admins = [], partners = [], clients = [], employees = [], others = [];

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Eye, EyeOff, AlertCircle, CheckCircle,
   ChevronRight, ChevronLeft, X,
-  User, Shield, Users, Calendar, MapPin, FileText, Upload, Link as LinkIcon
+  User, Shield, Users, Calendar, MapPin, FileText, Upload, Link as LinkIcon,
+  Search, ChevronDown
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -14,6 +15,62 @@ const ClientForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
+
+  // ── Live user list for Reference & Relationship dropdowns ──
+  const [allUsers, setAllUsers] = useState([]);
+  const [refSearch, setRefSearch] = useState('');
+  const [refDropOpen, setRefDropOpen] = useState(false);
+  const [relSearch, setRelSearch] = useState('');
+  const [relDropOpen, setRelDropOpen] = useState(false);
+  const refDropRef = useRef(null);
+  const relDropRef = useRef(null);
+
+  useEffect(() => {
+    api.get('/users').then(({ data }) => {
+      // Keep partners, super_partners, and clients for reference selection
+      const usable = data.filter(u =>
+        ['partner', 'super_partner', 'client'].includes(u.role)
+      );
+      setAllUsers(usable);
+    }).catch(() => {});
+
+    // Close dropdowns on outside click
+    const handleClickOutside = (e) => {
+      if (refDropRef.current && !refDropRef.current.contains(e.target)) setRefDropOpen(false);
+      if (relDropRef.current && !relDropRef.current.contains(e.target)) setRelDropOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filtered lists
+  const filteredRefUsers = allUsers.filter(u => {
+    const q = refSearch.toLowerCase();
+    return (
+      u.name?.toLowerCase().includes(q) ||
+      u.client_id_ref?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.phone?.includes(q)
+    );
+  });
+
+  const filteredRelPartners = allUsers.filter(u => {
+    const q = relSearch.toLowerCase();
+    return (
+      ['partner', 'super_partner'].includes(u.role) &&
+      (
+        u.name?.toLowerCase().includes(q) ||
+        u.client_id_ref?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q)
+      )
+    );
+  });
+
+  const getRoleBadge = (role) => {
+    if (role === 'partner') return { label: 'Partner', color: '#22c55e', bg: 'rgba(34,197,94,0.12)' };
+    if (role === 'super_partner') return { label: 'Super Partner', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' };
+    return { label: 'Client', color: '#06b6d4', bg: 'rgba(6,182,212,0.12)' };
+  };
 
   const [form, setForm] = useState({
     // Step 1
@@ -28,6 +85,7 @@ const ClientForm = () => {
     aadharNo: '', panNo: '', otherDocsDesc: '',
     // Step 5
     relation: 'Direct', relationWithHolder: '', relationWithHolderOther: '',
+    parent_id: '',          // ← set when partner is selected — controls which partner sees this client
     // Step 6
     reference: 'Indirect', referenceName: '', referenceMobileNo: '', referredById: '',
     // Step 7
@@ -321,7 +379,13 @@ const ClientForm = () => {
                 <>
                   <div className="cf-section">STEP 5: RELATIONSHIP</div>
                   <div className="cf-grid">
-                    <div className="cf-group"><label className="cf-label">Relationship Type</label><select name="relation" className="cf-select" value={form.relation} onChange={handleChange}><option value="Direct">Direct</option><option value="Indirect">Indirect</option></select></div>
+                    <div className="cf-group">
+                      <label className="cf-label">Relationship Type</label>
+                      <select name="relation" className="cf-select" value={form.relation} onChange={handleChange}>
+                        <option value="Direct">Direct</option>
+                        <option value="Indirect">Indirect</option>
+                      </select>
+                    </div>
                     <div className="cf-group">
                       <label className="cf-label">Relation with Holder</label>
                       <select name="relationWithHolder" className="cf-select" value={form.relationWithHolder} onChange={handleChange}>
@@ -343,6 +407,124 @@ const ClientForm = () => {
                         <input name="relationWithHolderOther" className="cf-input" placeholder="e.g. Grandson" value={form.relationWithHolderOther} onChange={handleChange} />
                       </div>
                     )}
+
+                    {/* ── Partner / Referred-By Dropdown ── */}
+                    <div className="cf-group" style={{ gridColumn: 'span 2' }} ref={relDropRef}>
+                      <label className="cf-label">Assigned Partner <span style={{ color: '#94a3b8', fontWeight: 400 }}>(who brought this client?)</span></label>
+                      <div style={{ position: 'relative' }}>
+                        {/* Trigger */}
+                        <div
+                          onClick={() => setRelDropOpen(o => !o)}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '11px 14px', border: '1.5px solid var(--border)', borderRadius: 11,
+                            background: 'var(--bg)', cursor: 'pointer', userSelect: 'none',
+                            borderColor: relDropOpen ? '#10b981' : 'var(--border)',
+                            boxShadow: relDropOpen ? '0 0 0 3px rgba(16,185,129,0.07)' : 'none',
+                            transition: '0.2s'
+                          }}
+                        >
+                          {form.referredById ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(34,197,94,0.15)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>
+                                {(form.referenceName || form.referredById).substring(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{form.referenceName}</div>
+                                <div style={{ fontSize: 11, color: '#10b981' }}>{form.referredById}</div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Search by name, ID or email…</span>
+                          )}
+                          <ChevronDown size={15} color="var(--text-muted)" style={{ transform: relDropOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                        </div>
+
+                        {/* Dropdown panel */}
+                        {relDropOpen && (
+                          <div style={{
+                            position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 9999,
+                            background: '#0f172a', border: '1.5px solid #10b981', borderRadius: 14,
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.7)', overflow: 'hidden'
+                          }}>
+                            {/* Search box */}
+                            <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, background: '#0f172a' }}>
+                              <Search size={14} color="#10b981" />
+                              <input
+                                autoFocus
+                                placeholder="Search partners…"
+                                value={relSearch}
+                                onChange={e => setRelSearch(e.target.value)}
+                                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text)' }}
+                              />
+                            </div>
+                            {/* List */}
+                            <div style={{ maxHeight: 240, overflowY: 'auto', background: '#0f172a' }}>
+                              {filteredRelPartners.length === 0 ? (
+                                <div style={{ padding: '18px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No partners found</div>
+                              ) : filteredRelPartners.map(u => {
+                                const badge = getRoleBadge(u.role);
+                                const uid = u.client_id_ref || String(u._id).slice(-6).toUpperCase();
+                                return (
+                                  <div
+                                    key={u._id}
+                                    onClick={() => {
+                                      setForm(prev => ({
+                                        ...prev,
+                                        referredById: uid,
+                                        referenceName: u.name,
+                                        parent_id: u._id,   // ← THIS is what makes the client appear in the partner's dashboard
+                                      }));
+                                      setRelDropOpen(false);
+                                      setRelSearch('');
+                                    }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+                                      cursor: 'pointer', transition: '0.15s',
+                                      background: form.referredById === uid ? 'rgba(16,185,129,0.15)' : '#0f172a'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(16,185,129,0.06)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = form.referredById === uid ? 'rgba(16,185,129,0.08)' : 'transparent'}
+                                  >
+                                    <div style={{ width: 34, height: 34, borderRadius: 9, background: badge.bg, color: badge.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
+                                      {u.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>{u.name}</div>
+                                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, background: badge.bg, color: badge.color }}>{badge.label}</span>
+                                        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{uid}</span>
+                                      </div>
+                                    </div>
+                                    {form.referredById === uid && <CheckCircle size={14} color="#10b981" />}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* ── Sync confirmation banner ── */}
+                    {form.parent_id && (
+                      <div style={{
+                        gridColumn: 'span 2',
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '12px 16px', borderRadius: 12,
+                        background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)',
+                        marginTop: 4
+                      }}>
+                        <CheckCircle size={18} color="#10b981" style={{ flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#10b981' }}>
+                            ✅ Client will appear under <span style={{ color: '#fff' }}>{form.referenceName}</span>'s Partner Dashboard
+                          </div>
+                          <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                            Partner ID: {form.referredById} · parent_id synced
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
@@ -352,10 +534,158 @@ const ClientForm = () => {
                 <>
                   <div className="cf-section">STEP 6: REFERENCE DETAILS</div>
                   <div className="cf-grid">
-                    <div className="cf-group"><label className="cf-label">Reference Type</label><select name="reference" className="cf-select" value={form.reference} onChange={handleChange}><option value="Indirect">Indirect</option><option value="Direct">Direct</option></select></div>
-                    <div className="cf-group"><label className="cf-label">Reference Name</label><input name="referenceName" className="cf-input" value={form.referenceName} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Reference Mobile</label><input name="referenceMobileNo" className="cf-input" value={form.referenceMobileNo} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Internal Referral ID</label><input name="referredById" className="cf-input" placeholder="MC1234" value={form.referredById} onChange={handleChange} /></div>
+                    {/* Reference Type */}
+                    <div className="cf-group">
+                      <label className="cf-label">Reference Type</label>
+                      <select name="reference" className="cf-select" value={form.reference} onChange={handleChange}>
+                        <option value="Indirect">Indirect</option>
+                        <option value="Direct">Direct</option>
+                        <option value="Partner">Partner</option>
+                        <option value="Self">Self</option>
+                      </select>
+                    </div>
+
+                    {/* Reference Mobile (manual) */}
+                    <div className="cf-group">
+                      <label className="cf-label">Reference Mobile</label>
+                      <input name="referenceMobileNo" className="cf-input" placeholder="+91 98765 43210" value={form.referenceMobileNo} onChange={handleChange} />
+                    </div>
+
+                    {/* ── Reference Person Searchable Dropdown (full width) ── */}
+                    <div className="cf-group" style={{ gridColumn: 'span 2' }} ref={refDropRef}>
+                      <label className="cf-label">Reference Person <span style={{ color: '#94a3b8', fontWeight: 400 }}>(select from all registered users)</span></label>
+                      <div style={{ position: 'relative' }}>
+                        {/* Trigger */}
+                        <div
+                          onClick={() => setRefDropOpen(o => !o)}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '11px 14px', border: '1.5px solid var(--border)', borderRadius: 11,
+                            background: 'var(--bg)', cursor: 'pointer', userSelect: 'none',
+                            borderColor: refDropOpen ? '#10b981' : 'var(--border)',
+                            boxShadow: refDropOpen ? '0 0 0 3px rgba(16,185,129,0.07)' : 'none',
+                            transition: '0.2s'
+                          }}
+                        >
+                          {form.referenceName ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(16,185,129,0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>
+                                {form.referenceName.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{form.referenceName}</div>
+                                {form.referenceMobileNo && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{form.referenceMobileNo}</div>}
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Search by name, ID, email or phone…</span>
+                          )}
+                          <ChevronDown size={15} color="var(--text-muted)" style={{ transform: refDropOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                        </div>
+
+                        {/* Dropdown panel */}
+                        {refDropOpen && (
+                          <div style={{
+                            position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 9999,
+                            background: '#0f172a', border: '1.5px solid #10b981', borderRadius: 14,
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.7)', overflow: 'hidden'
+                          }}>
+                            {/* Search */}
+                            <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, background: '#0f172a' }}>
+                              <Search size={14} color="#10b981" />
+                              <input
+                                autoFocus
+                                placeholder="Search all users…"
+                                value={refSearch}
+                                onChange={e => setRefSearch(e.target.value)}
+                                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text)' }}
+                              />
+                            </div>
+                            {/* Count */}
+                            <div style={{ padding: '6px 14px', fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: 1, background: '#0a1628', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                              {filteredRefUsers.length} USER{filteredRefUsers.length !== 1 ? 'S' : ''} FOUND
+                            </div>
+                            {/* List */}
+                            <div style={{ maxHeight: 260, overflowY: 'auto', background: '#0f172a' }}>
+                              {filteredRefUsers.length === 0 ? (
+                                <div style={{ padding: '20px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No users found</div>
+                              ) : filteredRefUsers.map(u => {
+                                const badge = getRoleBadge(u.role);
+                                const uid = u.client_id_ref || String(u._id).slice(-6).toUpperCase();
+                                const isSelected = form.referenceName === u.name && form.referenceMobileNo === (u.phone || '');
+                                return (
+                                  <div
+                                    key={u._id}
+                                    onClick={() => {
+                                      setForm(prev => ({
+                                        ...prev,
+                                        referenceName: u.name,
+                                        referenceMobileNo: u.phone || '',
+                                        referredById: uid,
+                                        // If the reference person is a partner, also assign them as parent
+                                        ...((['partner','super_partner'].includes(u.role)) ? { parent_id: u._id } : {}),
+                                      }));
+                                      setRefDropOpen(false);
+                                      setRefSearch('');
+                                    }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+                                      cursor: 'pointer', transition: '0.15s',
+                                      background: isSelected ? 'rgba(16,185,129,0.15)' : '#0f172a',
+                                      borderBottom: '1px solid rgba(255,255,255,0.06)'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(16,185,129,0.12)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = isSelected ? 'rgba(16,185,129,0.15)' : '#0f172a'}
+                                  >
+                                    {/* Avatar */}
+                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: badge.bg, color: badge.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
+                                      {u.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                    {/* Info */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 3 }}>{u.name}</div>
+                                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: badge.bg, color: badge.color }}>{badge.label}</span>
+                                        <span style={{ fontSize: 11, color: '#10b981', fontFamily: 'monospace', fontWeight: 700 }}>#{uid}</span>
+                                        {u.phone && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>📞 {u.phone}</span>}
+                                      </div>
+                                    </div>
+                                    {/* Email */}
+                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
+                                    {isSelected && <CheckCircle size={15} color="#10b981" style={{ flexShrink: 0 }} />}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {/* Manual override hint */}
+                      <div style={{ marginTop: 8, display: 'flex', gap: 12, alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Or type manually:</span>
+                        <input
+                          name="referenceName"
+                          className="cf-input"
+                          placeholder="Reference person name"
+                          value={form.referenceName}
+                          onChange={handleChange}
+                          style={{ flex: 1, fontSize: 12, padding: '8px 12px' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Auto-filled Referral ID */}
+                    <div className="cf-group" style={{ gridColumn: 'span 2' }}>
+                      <label className="cf-label">Internal Referral ID <span style={{ color: '#94a3b8', fontWeight: 400 }}>(auto-filled from selection above)</span></label>
+                      <input
+                        name="referredById"
+                        className="cf-input"
+                        placeholder="e.g. MC1234 — auto-filled when you pick a reference person"
+                        value={form.referredById}
+                        onChange={handleChange}
+                        style={{ fontFamily: 'monospace', letterSpacing: 1 }}
+                      />
+                    </div>
                   </div>
                 </>
               )}
