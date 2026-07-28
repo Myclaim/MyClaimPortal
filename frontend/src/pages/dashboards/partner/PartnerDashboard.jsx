@@ -2257,7 +2257,18 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
         service: t.service,
         vertical: t.hubType || 'Service Hub',
         status: t.status === 'in_process' ? 'In Process' : t.status === 'completed' ? 'Completed' : 'Active',
-        progress: t.progress || 0,
+        progress: (() => {
+          if (t.progress && t.progress > 0) return t.progress;
+          if (t.stages && t.stages.length > 0) {
+            let total = 0;
+            t.stages.forEach(s => {
+              if (s.status === 'completed') total += 100;
+              else if (s.status === 'in-progress') total += (s.subProgress || 50);
+            });
+            return Math.round(total / t.stages.length);
+          }
+          return 0;
+        })(),
         created: new Date(t.createdAt).toLocaleDateString('en-GB'),
         lastUpdate: new Date(t.updatedAt || t.createdAt).toLocaleDateString('en-GB'),
         rawTicket: t
@@ -2418,6 +2429,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CLIENT</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>SERVICE</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
+              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>PROGRESS</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CREATED BY</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>DATE</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST ACTIVITY</th>
@@ -2427,7 +2439,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
+                <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
                   No tickets found. <span style={{ color: '#22c55e', cursor: 'pointer' }} onClick={() => setShowModal(true)}>Create one</span>
                 </td>
               </tr>
@@ -2469,6 +2481,14 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: ticket.status === 'Active' ? '#22c55e' : '#f59e0b' }} />
                       {ticket.status === 'In Process' ? 'Pending' : ticket.status}
                     </span>
+                  </td>
+                  <td style={{ padding: '16px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px' }}>
+                      <div style={{ flex: 1, height: '6px', background: 'var(--bg)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${ticket.progress || 0}%`, height: '100%', background: ticket.status === 'Completed' ? '#22c55e' : '#3b82f6', borderRadius: '4px' }} />
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>{ticket.progress || 0}%</span>
+                    </div>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
                     <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'capitalize' }}>
@@ -2582,7 +2602,61 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: 18 }}>
+              {(() => {
+                let displayStages = [];
+                if (selectedTicket.rawTicket?.stages && selectedTicket.rawTicket.stages.length > 0) {
+                  displayStages = selectedTicket.rawTicket.stages;
+                } else {
+                  const p = selectedTicket.progress || 0;
+                  displayStages = [
+                    { name: 'Docs Collection', status: p >= 33 ? 'completed' : p > 0 ? 'in-progress' : 'pending', subProgress: p <= 33 && p > 0 ? Math.round((p / 33) * 100) : 0 },
+                    { name: 'Verification', status: p >= 66 ? 'completed' : p > 33 ? 'in-progress' : 'pending', subProgress: p > 33 && p <= 66 ? Math.round(((p - 33) / 33) * 100) : 0 },
+                    { name: 'Authority Review', status: p >= 100 ? 'completed' : p > 66 ? 'in-progress' : 'pending', subProgress: p > 66 && p < 100 ? Math.round(((p - 66) / 34) * 100) : 0 }
+                  ];
+                }
+
+                if (displayStages.length === 0) return null;
+
+                return (
+                  <div style={{ marginTop: 24 }}>
+                    <div className="lead-view-title">Progress Timeline</div>
+                    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.1)' }}>
+                      <div style={{ position: 'absolute', left: '37px', top: '38px', bottom: '38px', width: '2px', background: 'rgba(255,255,255,0.05)', zIndex: 1 }} />
+                      {displayStages.map((stage, idx) => {
+                         const isDone = stage.status === 'completed';
+                         const isProg = stage.status === 'in-progress' || stage.status === 'in_process';
+                         const isPend = !isDone && !isProg;
+                         const color = isDone ? '#22c55e' : isProg ? '#3b82f6' : '#475569';
+                         const icon = isDone ? '✓' : isProg ? '↻' : '○';
+                         return (
+                           <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', position: 'relative', zIndex: 2 }}>
+                             <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isDone ? 'rgba(34,197,94,0.15)' : isProg ? 'rgba(59,130,246,0.15)' : 'rgba(71,85,105,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color, fontWeight: 800, fontSize: '14px', flexShrink: 0, marginTop: '2px' }}>
+                               {icon}
+                             </div>
+                             <div style={{ flex: 1 }}>
+                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <div style={{ fontSize: '14px', fontWeight: 700, color: isPend ? 'var(--text-muted)' : 'var(--text)' }}>{stage.name || `Stage ${idx + 1}`}</div>
+                                 <div style={{ fontSize: '12px', fontWeight: 600, color: isPend ? 'rgba(148,163,184,0.5)' : color, textTransform: 'capitalize' }}>
+                                   {isDone ? 'Completed' : isProg ? 'In Progress' : 'Pending'}
+                                 </div>
+                               </div>
+                               {isProg && (
+                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+                                   <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                                      <div style={{ width: `${stage.subProgress || 0}%`, height: '100%', background: color, borderRadius: '3px' }} />
+                                   </div>
+                                   <div style={{ fontSize: '12px', fontWeight: 700, color }}>{stage.subProgress || 0}%</div>
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                         );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+              <div style={{ marginTop: 24 }}>
                 <div className="lead-view-title">Notes</div>
                 <div className="lead-view-note">{selectedTicket.notes || 'No notes available.'}</div>
               </div>
