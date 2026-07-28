@@ -223,8 +223,8 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <ActionBtn label="New Lead" icon={Plus} color="#8b5cf6" onClick={() => onNavigate('leads')} />
             <ActionBtn label="My Clients" icon={Users} color="#22c55e" onClick={() => onNavigate('clients')} />
-            <ActionBtn label="Invoice" icon={FileText} color="#22c55e" onClick={() => {}} />
-            <ActionBtn label="New Task" icon={CheckSquare} color="#f59e0b" onClick={() => {}} />
+            <ActionBtn label="Invoice" icon={FileText} color="#22c55e" onClick={() => onNavigate('document')} />
+            <ActionBtn label="New Task" icon={CheckSquare} color="#f59e0b" onClick={() => onNavigate('task')} />
           </div>
         </div>
 
