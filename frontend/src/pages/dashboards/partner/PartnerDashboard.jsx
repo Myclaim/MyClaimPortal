@@ -1009,7 +1009,6 @@ function ClientsTab({ onNavigateToClient }) {
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>SERVICES</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
               <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>JOIN DATE</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -1045,16 +1044,6 @@ function ClientsTab({ onNavigateToClient }) {
                 </td>
                 <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>
                   {client.since}
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => client.dbId !== '0' && onNavigateToClient(client.dbId)} style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                      <Eye size={14} />
-                    </button>
-                    <button onClick={() => client.dbId !== '0' && onNavigateToClient(client.dbId)} style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                      <Edit size={14} />
-                    </button>
-                  </div>
                 </td>
               </tr>
             ))}
