@@ -107,7 +107,7 @@ const ClientMyServices = () => {
       const matchesSearch = 
         t.client?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.service?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        new Date(t.createdAt).getTime().includes(searchQuery.toUpperCase());
+        (t.ticketNo || String(new Date(t.createdAt).getTime())).toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesTab = activeTab === 'All Tickets' || 
         (activeTab === 'Claim Hub' && t.service?.toLowerCase().includes('claim')) ||
@@ -576,7 +576,7 @@ const ClientMyServices = () => {
 
                 return (
                 <tr key={t._id}>
-                  <td style={{ color: 'var(--blue)', fontWeight: 800 }}>#{new Date(t.createdAt).getTime()}</td>
+                  <td style={{ color: 'var(--blue)', fontWeight: 800 }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</td>
                   <td>
                     <span 
                       className={`badge-pill ${t.status === 'active' ? 'badge-active' : t.status === 'in_process' ? 'badge-process' : ''}`}
@@ -662,7 +662,7 @@ const ClientMyServices = () => {
                       onClick={() => openDocs(t)}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{new Date(t.createdAt).getTime()}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</span>
                         <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--dashboard-text-muted)', background: 'var(--dashboard-bg)', padding: '2px 8px', borderRadius: '6px' }}>{t.priority}</span>
                       </div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--dashboard-text)', marginBottom: '4px' }}>{t.client?.name || 'Unknown Client'}</div>

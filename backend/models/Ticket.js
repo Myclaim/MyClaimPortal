@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const ticketSchema = mongoose.Schema(
   {
+    ticketNo: { type: String, unique: true, sparse: true, index: true },
     client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
     hubType: { type: String, enum: ['Service Hub', 'Claim Hub', 'Store Hub', 'Support Hub'], default: 'Service Hub' },
     subject: { type: String, default: '' },

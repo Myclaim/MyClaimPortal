@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { X, Upload, FileText, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
 
@@ -173,7 +173,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onUploadSuccess, linkedTo, ticke
                       {selectedType === 'ticket' ? (
                         tickets.map(t => (
                           <option key={t._id} value={t._id}>
-                            #{new Date(t.createdAt).getTime()} - {t.service}
+                            #{t.ticketNo || new Date(t.createdAt).getTime()} - {t.service}
                           </option>
                         ))
                       ) : (

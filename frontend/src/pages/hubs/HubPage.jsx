@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Plus, Eye, Edit2, ChevronDown, ChevronRight, X, Info } from 'lucide-react';
 import { io } from 'socket.io-client';
 
@@ -44,7 +44,7 @@ const KanbanBoard = ({ vertical, tasks, onDropTask }) => {
                   style={{ background: 'var(--card)', padding: 16, borderRadius: 8, border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', cursor: 'grab' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{new Date(t.createdAt).getTime()}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</span>
                     <span className={`ch-badge ${t.priority === 'High' ? 'ch-badge-high' : t.priority === 'Medium' ? 'ch-badge-medium' : 'ch-badge-low'}`}>{t.priority}</span>
                   </div>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: 'var(--text)' }}>
@@ -591,7 +591,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
                     <tbody>
                       {supportTickets.map(t => (
                         <tr key={t._id}>
-                          <td><span style={{ color: '#3b82f6', fontWeight: 600 }}>#{new Date(t.createdAt).getTime()}</span></td>
+                          <td><span style={{ color: '#3b82f6', fontWeight: 600 }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</span></td>
                           <td style={{ display: 'flex', alignItems: 'center' }}>
                             <span className="user-badge" style={{ background: '#06b6d4' }}>{t.client?.name?.[0] || 'U'}</span> {t.client?.name || 'Unknown'} ({t.client?.role === 'partner' ? 'Partner' : 'Client'})
                           </td>

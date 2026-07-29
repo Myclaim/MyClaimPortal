@@ -410,186 +410,266 @@ const Clients = () => {
 
   return (
     <div className="page active" style={{ display: 'block' }}>
-      <div className="topbar">
-        <div>
-          <div className="topbar-title">Client List</div>
-          <div className="topbar-subtitle">
-            All clients with service, department &amp; partner mapping
+      <style>{`
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+        @keyframes tabSlide { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+        .cl-page { animation: fadeUp .5s both; }
+        /* Segment tabs */
+        .cl-tab { display:flex; align-items:center; gap:8px; padding:9px 20px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); color:var(--text-muted); transition:all .2s; }
+        .cl-tab:hover { background:rgba(255,255,255,.06); color:var(--text); }
+        .cl-tab.active { background:rgba(0,208,132,.12); border-color:rgba(0,208,132,.35); color:#00D084; box-shadow:0 0 16px rgba(0,208,132,.1); }
+        .cl-tab-count { font-size:11px; fontWeight:800; padding:2px 7px; borderRadius:20px; background:rgba(255,255,255,.08); color:var(--text-muted); }
+        .cl-tab.active .cl-tab-count { background:rgba(0,208,132,.2); color:#00D084; }
+        /* KPI cards */
+        .cl-kpi { background:#0D1526; border:1px solid rgba(255,255,255,.06); border-radius:18px; padding:22px; cursor:pointer; transition:transform .25s,box-shadow .25s; }
+        .cl-kpi:hover { transform:translateY(-4px); box-shadow:0 15px 35px rgba(0,0,0,.3); }
+        /* Search inputs */
+        .cl-search { height:52px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:13px; color:var(--text); font-family:inherit; font-size:13px; outline:none; transition:border .2s,box-shadow .2s; padding:0 16px; }
+        .cl-search:focus { border-color:#16D98F; box-shadow:0 0 0 3px rgba(22,217,143,.12); }
+        /* Table */
+        .cl-table { width:100%; border-collapse:separate; border-spacing:0; }
+        .cl-table th { padding:14px 20px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.2px; border-bottom:1px solid rgba(255,255,255,.06); background:#080f1c; white-space:nowrap; }
+        .cl-table td { padding:14px 20px; font-size:13px; color:var(--text); border-bottom:1px solid rgba(255,255,255,.04); white-space:nowrap; vertical-align:middle; transition:all .25s; }
+        .cl-row:hover td { background:#101827; transform:none; }
+        .cl-row { cursor:pointer; transition:all .25s; }
+        .cl-row:hover { transform:translateX(0); }
+        .cl-row:hover td:first-child { border-left:2px solid #00D084; }
+        /* Status pill */
+        .cl-status-active { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:700; background:#0D2B20; border:1px solid #18D88A; color:#18D88A; }
+        .cl-status-inactive { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(100,116,139,.12); border:1px solid rgba(100,116,139,.3); color:#64748b; }
+        .cl-status-pending { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#f59e0b; }
+        /* Action btns */
+        .cl-action { width:32px; height:32px; border-radius:9px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); display:inline-flex; align-items:center; justify-content:center; color:var(--text-muted); cursor:pointer; transition:all .2s; margin-right:4px; }
+        .cl-action:hover { border-color:#00D084; color:#00D084; background:rgba(0,208,132,.08); }
+        /* Avatar types */
+        .av-direct   { background:rgba(59,130,246,.15); border:1.5px solid rgba(59,130,246,.3); color:#3b82f6; }
+        .av-partner  { background:rgba(168,85,247,.15); border:1.5px solid rgba(168,85,247,.3); color:#a855f7; }
+        .av-sp       { background:rgba(234,179,8,.15);  border:1.5px solid rgba(234,179,8,.3);  color:#eab308; }
+        .av-default  { background:rgba(0,208,132,.1);   border:1.5px solid rgba(0,208,132,.25); color:#00D084; }
+        /* Pagination */
+        .cl-pg-btn { height:34px; min-width:34px; padding:0 10px; border-radius:9px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); color:var(--text-muted); font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .cl-pg-btn:hover,.cl-pg-btn.active { border-color:#00D084; color:#00D084; background:rgba(0,208,132,.08); }
+      `}</style>
+
+      {/* ═══ HERO HEADER ═══ */}
+      <div style={{ padding:'28px 32px 0', background:'rgba(8,15,28,.8)', borderBottom:'1px solid rgba(255,255,255,.06)', backdropFilter:'blur(12px)', position:'sticky', top:0, zIndex:50 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:18 }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:'rgba(0,208,132,.1)', border:'1.5px solid rgba(0,208,132,.25)', display:'flex', alignItems:'center', justifyContent:'center', color:'#00D084', flexShrink:0 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <h1 style={{ fontSize:22, fontWeight:800, color:'var(--text)', margin:0, marginBottom:4 }}>👥 Client Management</h1>
+              <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:6 }}>Manage client accounts, departments and service mappings</div>
+              <div style={{ display:'flex', alignItems:'center', gap:12, fontSize:12, fontWeight:600 }}>
+                <span style={{ color:'#00D084' }}>{loading ? '...' : totalClients} Clients</span>
+                <span style={{ color:'rgba(255,255,255,.2)' }}>•</span>
+                <span style={{ color:'var(--text-muted)' }}>89 Active Claims</span>
+                <span style={{ color:'rgba(255,255,255,.2)' }}>•</span>
+                <span style={{ color:'var(--text-muted)' }}>Updated 2 minutes ago</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+            <button onClick={openAddClient} style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', background:'linear-gradient(135deg,#00D084,#17E6A1)', color:'#000', border:'none', borderRadius:12, fontSize:13, fontWeight:800, cursor:'pointer' }}>
+              <Plus size={15} /> Add Client
+            </button>
+            <button onClick={handleExport} style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', background:'rgba(255,255,255,.05)', color:'var(--text)', border:'1px solid rgba(255,255,255,.08)', borderRadius:12, fontSize:13, fontWeight:600, cursor:'pointer' }}>
+              <Download size={14} /> Export
+            </button>
           </div>
         </div>
-        <div className="topbar-spacer"></div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="topbar-btn" onClick={openAddClient} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={14} /> Add Client
-          </button>
+
+        {/* ── Segment Tabs ── */}
+        <div style={{ display:'flex', gap:8, marginBottom:0, paddingBottom:0 }}>
+          {[
+            { key:'all',          icon:'🌐', label:'All',          count: totalClients },
+            { key:'direct',       icon:'🏢', label:'Direct',       count: directCount },
+            { key:'partner',      icon:'🤝', label:'Partner',      count: partnerCount },
+            { key:'super_partner',icon:'⭐', label:'Super Partner',count: superPartnerCount },
+          ].map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`cl-tab${activeTab === tab.key ? ' active' : ''}`}
+              style={{ animation:'tabSlide .2s both' }}>
+              {tab.icon} {tab.label}
+              <span className="cl-tab-count">{loading ? '…' : tab.count}</span>
+            </button>
+          ))}
         </div>
       </div>
-      <div className="content">
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          {['all', 'direct', 'super_partner', 'partner'].map((tab) => {
-            const labels = {
-              all: 'All Clients',
-              direct: 'Direct (Our)',
-              super_partner: 'Super Partner',
-              partner: 'Partner'
-            };
-            const counts = {
-              all: totalClients,
-              direct: directCount,
-              super_partner: superPartnerCount,
-              partner: partnerCount
-            };
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '8px 20px',
-                  background: activeTab === tab ? 'var(--blue)' : 'var(--card)',
-                  color: activeTab === tab ? '#fff' : 'var(--text-light)',
-                  border: activeTab === tab ? 'none' : '1px solid var(--border)',
-                  borderRadius: '24px',
-                  fontFamily: "'Sora',sans-serif",
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: activeTab === tab ? '0 4px 12px rgba(37,99,235,0.2)' : 'none'
-                }}
-              >
-                {labels[tab]}
-                <span style={{ 
-                  opacity: activeTab === tab ? 0.9 : 0.6, 
-                  fontSize: '13px', 
-                  fontWeight: 600,
-                  color: activeTab === tab ? '#fff' : 'var(--text-muted)'
-                }}>
-                  {loading ? '...' : counts[tab]}
-                </span>
-              </button>
-            );
-          })}
+
+      <div className="content" style={{ paddingTop:28 }}>
+
+        {/* ── KPI Cards ── */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:16, marginBottom:24 }}>
+          {[
+            { label:'Total Clients',   value: loading ? '…' : totalClients, sub:'+2 this month',  icon:'👥', color:'#00D084' },
+            { label:'Active Claims',   value:'89',                           sub:'23 pending',     icon:'📋', color:'#3b82f6' },
+            { label:'Avg Claim Value', value:'₹3.2L',                        sub:'↑ from ₹2.8L',  icon:'💰', color:'#a855f7' },
+            { label:'Success Rate',    value:'78%',                          sub:'+4% this month', icon:'✅', color:'#17E6A1' },
+            { label:'Multi-Service',   value:'34',                           sub:'Claim + Service',icon:'🔗', color:'#f59e0b' },
+          ].map((k,i) => (
+            <div key={i} className="cl-kpi">
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                <span style={{ fontSize:22 }}>{k.icon}</span>
+                <span style={{ fontSize:10, fontWeight:800, color:k.color, background:`${k.color}15`, padding:'2px 8px', borderRadius:20 }}>▲ +18%</span>
+              </div>
+              <div style={{ fontSize:28, fontWeight:800, color:k.color, letterSpacing:'-1px', lineHeight:1 }}>{k.value}</div>
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'.5px', marginTop:5 }}>{k.label}</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', marginTop:4 }}>{k.sub}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
-          <div className="stat-card" style={{ padding: '20px', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>TOTAL CLIENTS</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)' }}>{loading ? '...' : totalClients}</div>
-          </div>
-          <div className="stat-card" style={{ padding: '20px', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>ACTIVE CLAIMS</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)' }}>89</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#10b981' }}>23 pending</div>
-          </div>
-          <div className="stat-card" style={{ padding: '20px', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>AVG CLAIM VALUE</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)' }}>₹3.2L</div>
-          </div>
-          <div className="stat-card" style={{ padding: '20px', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>SUCCESS RATE</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#10b981' }}>78%</div>
-          </div>
-          <div className="stat-card" style={{ padding: '20px', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>MULTI-SERVICE</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)' }}>34</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#10b981' }}>Claim+Service</div>
-          </div>
+        {/* ── Analytics Strip ── */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:24, padding:'16px 24px', background:'#0D1526', border:'1px solid rgba(255,255,255,.06)', borderRadius:16 }}>
+          {[
+            { label:'New Clients',    value: loading ? '…' : Math.max(0, totalClients - 8), color:'#00D084' },
+            { label:'Pending Mapping',value:'2',  color:'#f59e0b' },
+            { label:'Inactive',       value: loading ? '…' : clients.filter(c=>c.is_active===false).length, color:'#f43f5e' },
+            { label:'Claims Due',     value:'18', color:'#3b82f6' },
+            { label:'Revenue',        value:'₹34.5L', color:'#17E6A1' },
+          ].map((s,i) => (
+            <div key={i} style={{ textAlign:'center' }}>
+              <div style={{ fontSize:24, fontWeight:800, color:s.color, letterSpacing:'-1px' }}>{s.value}</div>
+              <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:600, marginTop:2 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div
-            style={{
-              padding: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              borderBottom: '1px solid var(--border)',
-              flexWrap: 'wrap',
-              background: 'transparent'
-            }}
-          >
-            <div className="search-input" style={{ flex: 1, minWidth: '240px', background: 'var(--card)' }}>
-              <Search size={16} color="var(--text-light)" />
-              <input
-                type="text"
-                placeholder="Search by name, ID, phone..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                style={{ background: 'transparent' }}
-              />
-            </div>
-            <select
-              className="form-select"
-              style={{ width: '130px', background: 'var(--card)', color: 'var(--text)' }}
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            <select
-              className="form-select"
-              style={{ width: '150px', background: 'var(--card)', color: 'var(--text)' }}
-              value={serviceTypeFilter}
-              onChange={(e) => setServiceTypeFilter(e.target.value)}
-            >
-              <option value="all">Service Type</option>
-              <option value="IEPF Claim">IEPF Claim</option>
-              <option value="Demat">Demat</option>
-              <option value="Transmission">Transmission</option>
-              <option value="GST Reg.">GST Reg.</option>
-            </select>
-            <select
-              className="form-select"
-              style={{ width: '140px', background: 'var(--card)', color: 'var(--text)' }}
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-            >
-              <option value="all">Department</option>
-              <option value="Claim">Claim</option>
-              <option value="Service">Service</option>
-            </select>
-            <div className="export-btn" onClick={handleExport} style={{ background: 'var(--card)', color: 'var(--text)' }}>
-              <Download size={14} /> Export CSV
-            </div>
+        {/* ── Search + Filters ── */}
+        <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:20, flexWrap:'wrap', padding:'16px', background:'var(--card)', borderRadius:16, border:'1px solid rgba(255,255,255,.06)' }}>
+          <div style={{ flex:1, minWidth:220, position:'relative' }}>
+            <Search size={15} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-light)' }} />
+            <input className="cl-search" type="text" placeholder="🔍  Search by name, ID, phone, email..." value={query}
+              onChange={e => setQuery(e.target.value)} style={{ width:'100%', paddingLeft:38, boxSizing:'border-box' }} />
           </div>
-          <div className="table-wrap" style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', minWidth: '1400px' }}>
+          {[
+            { label:'Status ▼', val:statusFilter, set:setStatusFilter, opts:[['all','All Status'],['active','Active'],['inactive','Inactive']] },
+            { label:'Service ▼', val:serviceTypeFilter, set:setServiceTypeFilter, opts:[['all','Service Type'],['IEPF Claim','IEPF Claim'],['Demat','Demat'],['Transmission','Transmission'],['GST Reg.','GST Reg.']] },
+            { label:'Dept ▼', val:departmentFilter, set:setDepartmentFilter, opts:[['all','Department'],['Claim','Claim'],['Service','Service']] },
+          ].map((f,i) => (
+            <select key={i} className="cl-search" value={f.val} onChange={e => f.set(e.target.value)} style={{ minWidth:130 }}>
+              {f.opts.map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          ))}
+          {(query || statusFilter !== 'all' || serviceTypeFilter !== 'all' || departmentFilter !== 'all') && (
+            <button onClick={() => { setQuery(''); setStatusFilter('all'); setServiceTypeFilter('all'); setDepartmentFilter('all'); }}
+              style={{ height:52, padding:'0 16px', borderRadius:12, border:'1px solid rgba(244,63,94,.3)', background:'rgba(244,63,94,.08)', color:'#f43f5e', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* ── Table ── */}
+        <div style={{ background:'var(--card)', border:'1px solid rgba(255,255,255,.06)', borderRadius:18, overflow:'hidden' }}>
+          <div style={{ overflowX:'auto' }}>
+            <table className="cl-table">
               <thead>
                 <tr>
-                  <th style={{ whiteSpace: 'nowrap' }}>CLIENT ID</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>CLIENT NAME</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>STATUS</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>PHONE</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>EMAIL</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>SERVICE TYPE</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>CATEGORY</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>DEPARTMENT</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>ASSIGNED TO</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>SUPER PARTNER</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>PARTNER</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>CREATED BY</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>CREATED DATE</th>
+                  <th>Client ID</th><th>Client</th><th>Status</th>
+                  <th>Contact</th><th>Email</th><th>Service</th>
+                  <th>Category</th><th>Department</th><th>Assigned To</th>
+                  <th>Partner</th><th>Created</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredClients.length > 0 ? (
-                  filteredClients.map((c) => <ClientRow key={c._id} client={c} />)
-                ) : (
-                  <tr>
-                    <td colSpan={13} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
-                      {loading ? 'Loading clients...' : 'No clients found'}
-                    </td>
-                  </tr>
+                {filteredClients.length > 0 ? filteredClients.map(c => {
+                  const rel = (c.createdBy || c.created_by || c.relation || '');
+                  const avClass = rel === 'Direct' || rel === 'direct' ? 'av-direct' : rel === 'Partner' ? 'av-partner' : rel === 'Super Partner' ? 'av-sp' : 'av-default';
+                  const isActive = c.is_active !== false;
+                  return (
+                    <tr key={c._id} className="cl-row" onClick={() => navigate(`/clients/${c.client_id_ref || c._id}`)}>
+                      <td style={{ fontFamily:'monospace', fontSize:12, color:'#00D084', fontWeight:700 }}>
+                        {c.client_id_ref || String(c._id).slice(-6).toUpperCase()}
+                      </td>
+                      <td>
+                        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                          <div className={`av-default ${avClass}`} style={{ width:36, height:36, borderRadius:10, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:12 }}>
+                            {c.name?.substring(0,2).toUpperCase() || 'NA'}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight:700, fontSize:13, color:'var(--text)' }}>{c.name}</div>
+                            <div style={{ fontSize:11, color:'var(--text-light)' }}>📍 {c.city || 'Location Not Set'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={isActive ? 'cl-status-active' : 'cl-status-inactive'}>
+                          <span style={{ width:6, height:6, borderRadius:'50%', background:'currentColor', flexShrink:0 }} />
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td style={{ color:'var(--text)', fontSize:13 }}>{c.phone || <span style={{ color:'var(--text-light)' }}>Not Assigned</span>}</td>
+                      <td>
+                        <span style={{ fontSize:13, color:'rgba(255,255,255,.7)', fontWeight:500 }}
+                          onMouseEnter={e => e.currentTarget.style.color='#00D084'}
+                          onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,.7)'}>
+                          {c.email || <span style={{ color:'var(--text-light)' }}>Pending</span>}
+                        </span>
+                      </td>
+                      <td>
+                        {c.serviceType || c.service_type
+                          ? <span style={{ background:'rgba(59,130,246,.12)', color:'#3b82f6', padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700 }}>{c.serviceType || c.service_type}</span>
+                          : <span style={{ color:'var(--text-light)', fontSize:12 }}>Not Assigned</span>}
+                      </td>
+                      <td>
+                        {c.category
+                          ? <span style={{ background:'rgba(168,85,247,.12)', color:'#a855f7', padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700 }}>{c.category}</span>
+                          : <span style={{ color:'var(--text-light)', fontSize:12 }}>Pending</span>}
+                      </td>
+                      <td>
+                        {c.department
+                          ? <span style={{ background:'rgba(249,115,22,.1)', color:'#f97316', padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700 }}>✦ {c.department}</span>
+                          : <span style={{ color:'var(--text-light)', fontSize:12 }}>Not Assigned</span>}
+                      </td>
+                      <td style={{ color:'var(--text)', fontSize:13 }}>{c.assignedTo || c.assigned_to || <span style={{ color:'var(--text-light)', fontSize:12 }}>Not Assigned</span>}</td>
+                      <td style={{ color:'var(--text)', fontSize:13 }}>{c.partner || <span style={{ color:'var(--text-light)', fontSize:12 }}>—</span>}</td>
+                      <td style={{ color:'var(--text-muted)', fontSize:12 }}>
+                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'}
+                      </td>
+                      <td onClick={e => e.stopPropagation()}>
+                        <button className="cl-action" title="View" onClick={() => navigate(`/clients/${c.client_id_ref || c._id}`)}><Eye size={13}/></button>
+                        <button className="cl-action" title="Edit" onClick={() => openEditClient(c)}><Edit2 size={13}/></button>
+                        <button className="cl-action" title="Delete" style={{ color:'rgba(244,63,94,.6)' }} onClick={() => handleDeleteClient(c)}><Trash2 size={13}/></button>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr><td colSpan={12} style={{ textAlign:'center', padding:48 }}>
+                    <div style={{ fontSize:36, marginBottom:12 }}>👥</div>
+                    <div style={{ fontSize:16, fontWeight:700, color:'var(--text)', marginBottom:6 }}>No Clients Found</div>
+                    <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:20 }}>Try adjusting your filters or add a new client</div>
+                    <button onClick={openAddClient} style={{ padding:'10px 24px', background:'linear-gradient(135deg,#00D084,#17E6A1)', color:'#000', border:'none', borderRadius:12, fontSize:13, fontWeight:800, cursor:'pointer' }}>
+                      + Add Client
+                    </button>
+                  </td></tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* ── Pagination ── */}
+          {filteredClients.length > 0 && (
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 20px', borderTop:'1px solid rgba(255,255,255,.05)' }}>
+              <div style={{ fontSize:13, color:'var(--text-muted)', fontWeight:500 }}>
+                Showing <b style={{ color:'var(--text)' }}>1–{Math.min(25, filteredClients.length)}</b> of <b style={{ color:'var(--text)' }}>{filteredClients.length}</b> clients
+              </div>
+              <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+                <button className="cl-pg-btn">‹</button>
+                {[1,2,3].map(p => <button key={p} className={`cl-pg-btn${p===1?' active':''}`}>{p}</button>)}
+                <button className="cl-pg-btn">›</button>
+                <select className="cl-pg-btn" style={{ minWidth:70 }}>
+                  <option>25 rows</option><option>50 rows</option><option>100 rows</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
+
       </div>
+
+
 
       <div
         className={`modal-overlay ${activeModal !== null ? 'open' : ''}`}

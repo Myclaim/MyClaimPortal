@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   FileText, Upload, Plus, X, Eye, Edit2, Download, Ticket, 
@@ -762,7 +762,7 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
         progress: progress,
         color: mockRef.color,
         status: status,
-        ticketId: `TKT-${new Date(t.createdAt).getTime()}`,
+        ticketId: `TKT-${t.ticketNo || new Date(t.createdAt).getTime()}`,
         holders: mockRef.holders,
         clientName: mockRef.clientName,
         contact: mockRef.contact,
@@ -1163,7 +1163,7 @@ const TicketsView = ({ tickets }) => (
       <tbody>
         {tickets.length > 0 ? tickets.map(t => (
           <tr key={t._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-            <td style={{ padding: '16px', fontWeight: 800 }}>#{new Date(t.createdAt).getTime()}</td>
+            <td style={{ padding: '16px', fontWeight: 800 }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</td>
             <td style={{ padding: '16px' }}>{t.subject}</td>
             <td style={{ padding: '16px' }}>{t.service}</td>
             <td style={{ padding: '16px' }}>{t.priority}</td>

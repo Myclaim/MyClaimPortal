@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+﻿import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Search, Download, Eye, Edit2, Trash2, Plus, X, Ticket,
   CheckCircle2, Loader2, Users, Briefcase, RefreshCw, ChevronRight,
@@ -540,7 +540,7 @@ const AdminEmployeeManagement = () => {
                     ? <option disabled>No unassigned tickets in {hubType || 'your hub'}</option>
                     : unassignedTickets.map(t => (
                       <option key={t._id} value={t._id}>
-                        #{new Date(t.createdAt).getTime()} · {t.service} · {t.client?.name || 'Unknown'} [{t.priority}]
+                        #{t.ticketNo || new Date(t.createdAt).getTime()} · {t.service} · {t.client?.name || 'Unknown'} [{t.priority}]
                       </option>
                     ))}
                 </select>

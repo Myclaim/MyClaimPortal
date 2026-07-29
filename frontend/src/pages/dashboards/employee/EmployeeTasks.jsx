@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Search, Play, CheckCircle, MessageSquare, Clock, Loader2,
   AlertTriangle, RefreshCw, X, Send, Eye,
@@ -325,7 +325,7 @@ const EmployeeTasks = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>
-                  #{new Date(t.createdAt).getTime()}
+                  #{t.ticketNo || new Date(t.createdAt).getTime()}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, marginBottom: 8 }}>
                   {t.subject || t.service || 'Task Assignment'}

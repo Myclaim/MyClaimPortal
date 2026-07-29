@@ -72,27 +72,45 @@ const AdminReports = () => {
 
         <div className="grid-2">
           {/* Ticket Status Distribution */}
-          <div className="card">
-            <div className="card-header" style={{ marginBottom: '24px', borderBottom: 'none' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ marginBottom: '24px' }}>
               <div className="card-title">Ticket Status Distribution</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {[
-                { key: 'active', label: 'Active', color: '#f59e0b' },
+                { key: 'active',     label: 'Active',     color: '#f59e0b' },
                 { key: 'in_process', label: 'In Process', color: '#3b82f6' },
-                { key: 'completed', label: 'Completed', color: '#22c55e' },
-                { key: 'closed', label: 'Closed', color: '#64748b' },
+                { key: 'completed',  label: 'Completed',  color: '#22c55e' },
+                { key: 'closed',     label: 'Closed',     color: '#64748b' },
               ].map(stat => {
                 const count = statusDistribution[stat.key] || 0;
                 const percentage = Math.round((count / totalStatus) * 100);
                 return (
                   <div key={stat.key}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{stat.label}</span>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{count} <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '12px' }}>({percentage}%)</span></span>
+                    {/* Label row: label left, count + % right — all on same line */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px'
+                    }}>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', lineHeight: 1 }}>
+                        {stat.label}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)' }}>{count}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>({percentage}%)</span>
+                      </span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${percentage}%`, height: '100%', background: stat.color, borderRadius: '4px' }}></div>
+                    {/* Progress bar */}
+                    <div style={{ width: '100%', height: '7px', background: 'rgba(255,255,255,0.07)', borderRadius: '99px', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${percentage}%`,
+                        height: '100%',
+                        background: stat.color,
+                        borderRadius: '99px',
+                        transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)'
+                      }} />
                     </div>
                   </div>
                 );

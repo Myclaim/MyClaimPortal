@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   LayoutDashboard, Users, UserCircle, Ticket, Activity, Plus, Search,
   Filter, Download, Eye, TrendingUp, Network, Award,
@@ -1374,7 +1374,7 @@ const ClientsModule = () => {
             status: c.is_active !== false ? 'Active' : 'Inactive',
             tickets: clientTickets.map(t => ({
               ...t,
-              id: `#${new Date(t.createdAt).getTime()}`,
+              id: `#${t.ticketNo || new Date(t.createdAt).getTime()}`,
               status: t.status === 'active' ? 'Active' : t.status === 'in_process' ? 'In Process' : t.status === 'completed' ? 'Completed' : t.status === 'closed' ? 'Closed' : t.status
             }))
           };
@@ -1700,7 +1700,7 @@ const TicketsModule = () => {
           <tbody>
             {filtered.map(t => (
               <tr key={t._id}>
-                <td style={{ fontWeight: 700, color: SP.primary, fontSize: '13px' }}>#{new Date(t.createdAt).getTime()}</td>
+                <td style={{ fontWeight: 700, color: SP.primary, fontSize: '13px' }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</td>
                 <td style={{ fontWeight: 700, color: 'var(--text)', fontSize: '14px' }}>{t.clientName}</td>
                 <td style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{t.partnerName}</td>
                 <td><span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '3px 10px' }}>{t.service}</span></td>

@@ -502,18 +502,21 @@ const Users = () => {
     }
   }, [roleFilter]);
     const SectionWrapper = ({ title, icon, count, role, children }) => {
-       const isCollapsed = collapsedSections[role] || false;
+    const isCollapsed = collapsedSections[role] || false;
+    const lastUpdated = 'Today';
     return (
       <div className="fintech-section">
         <div className="fintech-section-header" onClick={() => setCollapsedSections(prev => ({ ...prev, [role]: !prev[role] }))}>
-          <div className="section-title">
-            <span className="section-icon">{icon}</span>
-            {title}
-            <span className="section-count">{count}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,208,132,.1)', color: '#00D084', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
+            <div>
+              <div className="section-title" style={{ marginBottom: 2 }}>{title} <span className="section-count">{count} Members</span></div>
+              <div style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 500 }}>Updated {lastUpdated}</div>
+            </div>
           </div>
-          <ChevronRight size={16} style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: '0.3s', color: 'var(--text-light)' }} />
+          <ChevronRight size={16} style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.25s ease-in-out', color: 'var(--text-light)' }} />
         </div>
-        {!isCollapsed && <div className="animate-fade">{children}</div>}
+        <div style={{ maxHeight: isCollapsed ? 0 : 2000, overflow: 'hidden', transition: 'max-height 0.25s ease-in-out' }}>{children}</div>
       </div>
     );
   };
@@ -530,17 +533,41 @@ const Users = () => {
   );
 
   const StatusBadge = ({ status }) => (
-    <span className={`status-badge ${status !== false ? 'status-active' : 'status-inactive'}`}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }}></span>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+      background: status !== false ? '#0D2E23' : 'rgba(244,63,94,.1)',
+      color: status !== false ? '#1ECF84' : '#f43f5e',
+      border: `1px solid ${status !== false ? '#1ECF84' : 'rgba(244,63,94,.3)'}`,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />
       {status !== false ? 'Active' : 'Suspended'}
     </span>
   );
 
+  const ROLE_AVATAR_COLOR = {
+    super_admin: '#00D084', admin: '#3b82f6', employee: '#a78bfa',
+    super_partner: '#f59e0b', partner: '#f97316', client: '#ec4899',
+  };
+  const getAvatarColor = (role) => ROLE_AVATAR_COLOR[role] || '#64748b';
+
+  const UserAvatar = ({ user }) => {
+    const color = getAvatarColor(user.role);
+    return (
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        background: `${color}18`, border: `1.5px solid ${color}40`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color, fontWeight: 800, fontSize: 13
+      }}>{user.name?.charAt(0)?.toUpperCase()}</div>
+    );
+  };
+
   const ActionButtons = ({ user }) => (
     <div className="action-btn-wrap">
-      <button className="action-btn-circle" title="Quick View" onClick={(e) => { e.stopPropagation(); handleView(user, 'simple'); }}><Eye size={14} /></button>
-      <button className="action-btn-circle" title="Edit Profile" onClick={(e) => { e.stopPropagation(); handleEdit(user); }}><Edit2 size={14} /></button>
-      <button className="action-btn-circle" title="Delete User" style={{ color: 'rgba(244, 63, 94, 0.7)' }} onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}><Trash2 size={14} /></button>
+      <button className="action-btn-circle" title="View" onClick={(e) => { e.stopPropagation(); handleView(user, 'simple'); }}><Eye size={14} /></button>
+      <button className="action-btn-circle" title="Edit" onClick={(e) => { e.stopPropagation(); handleEdit(user); }}><Edit2 size={14} /></button>
+      <button className="action-btn-circle" title="Delete" style={{ color: 'rgba(244,63,94,.7)' }} onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}><Trash2 size={14} /></button>
     </div>
   );
 
@@ -1001,50 +1028,155 @@ const Users = () => {
         }
       `}</style>
 
-      {/* 🚀 Header Section */}
-      <div className="um-topbar animate-seq-1">
-        <div className="um-title-wrap">
-          <div className="um-icon-badge"><LayoutDashboard size={24} /></div>
-          <div>
-            <h1 className="um-title">User Management</h1>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, marginTop: 4 }}>
-              System Users: <span className="fintech-gradient-text" style={{ fontWeight: 800, fontSize: 15 }}><CountUp value={allUsers.length} /></span>
+      {/* 🚀 Hero Header */}
+      <div className="um-topbar animate-seq-1" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            <div style={{ width: 52, height: 52, background: 'rgba(0,208,132,.1)', border: '1.5px solid rgba(0,208,132,.25)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00D084' }}>
+              <UsersIcon size={24} strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="um-title" style={{ marginBottom: 4 }}>👥 User Management</h1>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>Manage administrators, employees, partners and clients</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, fontWeight: 600 }}>
+                <span style={{ color: '#00D084' }}><CountUp value={allUsers.length} /> Total Users</span>
+                <span style={{ color: 'var(--text-light)' }}>•</span>
+                <span style={{ color: 'var(--text-muted)' }}>7 Roles</span>
+                <span style={{ color: 'var(--text-light)' }}>•</span>
+                <span style={{ color: 'var(--text-muted)' }}>Last updated 2 min ago</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="um-actions">
-          <button className="fintech-btn" onClick={() => setShowAdvFilters(true)} style={{ background: 'var(--green)', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 800 }}>
-            <Settings size={18} /> Advanced Filters
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => navigate('/users/add?role=admin')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: 'linear-gradient(135deg,#00D084,#17E6A1)', color: '#000', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>
+              <UserPlus size={16} /> Add User
+            </button>
+            <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: 'rgba(255,255,255,.05)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <Download size={15} /> Export
+            </button>
+            <button onClick={() => setShowAdvFilters(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: 'rgba(255,255,255,.05)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <Settings size={15} /> Filters
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 📊 Metrics Overview */}
-      <div className="fintech-stat-grid animate-seq-2">
-        {statCards.map((card) => (
-          <div 
-            key={card.key} 
-            className={`fintech-stat-card ${roleFilter === card.filter ? 'active' : ''}`}
+      {/* 📊 Metrics — Total Users hero + 2 rows of 4 */}
+      <div style={{ marginBottom: 32 }}>
+
+        {/* ── Total Users: full-width hero card ── */}
+        {statCards.slice(0, 1).map(card => (
+          <div key={card.key}
             onClick={() => setRoleFilter(card.filter)}
+            style={{
+              marginBottom: 16, padding: '28px 36px', borderRadius: 20, cursor: 'pointer',
+              background: 'linear-gradient(135deg, #0a1f14 0%, #0d2e1a 50%, #091a10 100%)',
+              border: `2px solid ${roleFilter === card.filter ? '#00D084' : 'rgba(0,208,132,.25)'}`,
+              boxShadow: '0 8px 32px rgba(0,208,132,.12)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              position: 'relative', overflow: 'hidden',
+              transition: 'transform .25s, box-shadow .25s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,208,132,.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,208,132,.12)'; }}
           >
-            <div className="stat-icon-wrap" style={{ background: card.iconBg, color: 'var(--green)' }}>
-              {card.icon}
+            {/* dot grid bg */}
+            <div style={{ position: 'absolute', inset: 0, opacity: .06, backgroundImage: 'radial-gradient(circle at 2px 2px,#00D084 1px,transparent 0)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+
+            {/* left: number + label */}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(0,208,132,.15)', border: '1.5px solid rgba(0,208,132,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00D084' }}>
+                  {card.icon}
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#00D084', background: 'rgba(0,208,132,.12)', padding: '3px 10px', borderRadius: 20, letterSpacing: '.5px' }}>
+                  +{Math.max(1, Math.round(card.value * 0.12))}% THIS MONTH
+                </span>
+              </div>
+              <div style={{ fontSize: 52, fontWeight: 900, color: '#fff', letterSpacing: '-2px', lineHeight: 1, marginBottom: 4 }}>
+                <CountUp value={card.value} />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#00D084', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: 4 }}>{card.label}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>{card.active} active • {card.value - card.active} inactive • 7 roles managed</div>
             </div>
-            <div className="stat-value"><CountUp value={card.value} /></div>
-            <div className="stat-label">{card.label}</div>
-            <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 800, color: 'var(--green)', opacity: 0.6 }}>
-              {Math.round((card.active / card.value) * 100 || 0)}% LIVE
+
+            {/* right: mini breakdown pills */}
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+              {statCards.slice(1, 4).map(c => (
+                <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 16px', borderRadius: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)' }}>
+                  <span style={{ color: '#00D084', display: 'flex' }}>{c.icon}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{c.value}</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', fontWeight: 600 }}>{c.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         ))}
+
+        {/* ── Role cards: 2 rows of 4 ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          {statCards.slice(1).map(card => (
+            <div key={card.key}
+              className={`fintech-stat-card ${roleFilter === card.filter ? 'active' : ''}`}
+              onClick={() => setRoleFilter(card.filter)}
+              style={{ padding: '20px 22px', cursor: 'pointer', background: '#0D1526', border: `1px solid ${roleFilter === card.filter ? '#00D084' : 'rgba(255,255,255,.06)'}` }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,.35)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                <div className="stat-icon-wrap" style={{ width: 36, height: 36, marginBottom: 0 }}>{card.icon}</div>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#00D084', background: 'rgba(0,208,132,.1)', padding: '2px 8px', borderRadius: 20 }}>+{Math.max(1, Math.round(card.value * 0.12))}%</span>
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--text)', letterSpacing: '-1px', lineHeight: 1 }}><CountUp value={card.value} /></div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '.5px', marginTop: 5 }}>{card.label}</div>
+              <div style={{ fontSize: 11, color: '#00D084', marginTop: 5, fontWeight: 600 }}>{card.active} active this month</div>
+            </div>
+          ))}
+        </div>
+
       </div>
 
-      {/* 🔍 Search & Filters */}
-      <div className="um-toolbar animate-seq-2" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '32px' }}>
-        <div className="um-search-wrap" style={{ flex: 1, position: 'relative' }}>
-          <Search size={20} />
-          <input type="text" className="um-search-input" placeholder="Search accounts, roles, departments..." value={query} onChange={e => setQuery(e.target.value)} />
+      {/* 🔍 Search + Filters */}
+      <div className="um-toolbar animate-seq-2" style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
+          <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+          <input type="text" className="um-search-input" placeholder="🔍  Search users, emails, departments..." value={query} onChange={e => setQuery(e.target.value)} style={{ paddingLeft: 40 }} />
         </div>
+        <select className="um-filter-select" value={advFilters.role} onChange={e => setAdvFilters(p => ({ ...p, role: e.target.value }))} style={{ minWidth: 120 }}>
+          <option value="">Role ▼</option>
+          <option value="super_admin">Super Admin</option>
+          <option value="admin">Admin</option>
+          <option value="employee">Employee</option>
+          <option value="partner">Partner</option>
+          <option value="client">Client</option>
+        </select>
+        <select className="um-filter-select" value={advFilters.department} onChange={e => setAdvFilters(p => ({ ...p, department: e.target.value }))} style={{ minWidth: 140 }}>
+          <option value="">Department ▼</option>
+          {uniqueDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+        <select className="um-filter-select" value={advFilters.status} onChange={e => setAdvFilters(p => ({ ...p, status: e.target.value }))} style={{ minWidth: 120 }}>
+          <option value="">Status ▼</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        {(query || advFilters.role || advFilters.department || advFilters.status) && (
+          <button onClick={() => { setQuery(''); setAdvFilters({ role:'',store:'',department:'',status:'',dateFrom:'',dateTo:'',serviceType:'' }); }} style={{ padding: '0 16px', height: 44, borderRadius: 12, border: '1px solid rgba(244,63,94,.3)', background: 'rgba(244,63,94,.08)', color: '#f43f5e', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Reset</button>
+        )}
+      </div>
+
+      {/* 📈 Analytics Strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 32, padding: '18px 24px', background: '#0D1526', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16 }}>
+        {[
+          { label: "Today's Logins", value: 26, color: '#00D084' },
+          { label: 'Inactive Users', value: allUsers.filter(u => u.is_active === false).length, color: '#f59e0b' },
+          { label: 'Pending Invites', value: 5, color: '#3b82f6' },
+          { label: 'Locked Accounts', value: 1, color: '#f43f5e' },
+        ].map((s, i) => (
+          <div key={i} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: '-1px' }}>{s.value}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, marginTop: 2 }}>{s.label}</div>
+          </div>
+        ))}
       </div>
 
       <div className="um-grid">
@@ -1055,11 +1187,11 @@ const Users = () => {
               <SectionWrapper title="Super Admin Core" icon={<ShieldCheck size={18} />} count={superAdmins.length} role="super_admin">
                 <TableComponent headers={['ID', 'System User', 'Username', 'Email', 'Status', 'Actions']} 
                   rows={filteredSuperAdmins.map((u, i) => (
-                    <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace', color: 'var(--green)' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
-                      <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
-                      <td>{u.username}</td>
-                      <td>{u.email}</td>
+                    <tr key={u._id} style={{ '--i': i }}>
+                      <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#00D084' }}>{u.client_id_ref || u._id?.slice(-6).toUpperCase()}</td>
+                      <td><div className="user-info"><UserAvatar user={u} /><div><b style={{ fontSize: 14 }}>{u.name}</b></div></div></td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{u.username || '—'}</td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{u.email}</td>
                       <td><StatusBadge status={u.is_active} /></td>
                       <td><ActionButtons user={u} /></td>
                     </tr>
@@ -1155,55 +1287,59 @@ const Users = () => {
           </div>
         </div>
 
-        {/* 🛠️ Right Sidebar: Quick Actions & Forms */}
+        {/* 🛠️ Right Sidebar */}
         <div className="um-right-panel animate-seq-4">
           <div className="right-panel-sticky">
-            <div className="panel-label">
-              <ClipboardList size={16} /> Form Sections
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
-              Quickly onboard new users via specialized forms.
+
+            {/* Quick Actions */}
+            <div style={{ background: '#0D1526', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, padding: 18, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 14 }}>⚡ Quick Actions</div>
+              {[
+                { role: 'super_admin', label: '+ Super Admin', color: '#00D084' },
+                { role: 'admin',       label: '+ Admin',       color: '#3b82f6' },
+                { role: 'employee',    label: '+ Employee',    color: '#a78bfa' },
+                { role: 'partner',     label: '+ Partner',     color: '#f59e0b' },
+                { role: 'client',      label: '+ Client',      color: '#ec4899' },
+              ].map((a, i) => (
+                <div key={i} onClick={() => navigate(`/users/add?role=${a.role}`)} style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px',
+                  borderRadius: 12, cursor: 'pointer', marginBottom: 6,
+                  background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.05)',
+                  transition: 'all .2s', fontSize: 13, fontWeight: 700, color: a.color
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.07)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,.03)'}
+                >
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0 }} />
+                  {a.label}
+                </div>
+              ))}
             </div>
 
-            {formCards.map((card, idx) => (
-              <div key={idx} onClick={() => navigate(`/users/add?role=${card.role}`)} className="fintech-form-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ 
-                    width: '42px', height: '42px', background: 'var(--green)', 
-                    borderRadius: '12px', display: 'flex', alignItems: 'center', 
-                    justifyContent: 'center', border: '1px solid rgba(0, 0, 0, 0.1)',
-                    boxShadow: '0 0 15px rgba(34, 197, 94, 0.2)',
-                    flexShrink: 0
-                  }}>
-                    {card.icon}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>{card.label}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 2 }}>{card.sub}</div>
-                  </div>
+            {/* Export */}
+            <div style={{ background: '#0D1526', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, padding: 18, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 14 }}>📤 Export Data</div>
+              {[
+                { label: 'Export CSV',   action: handleExport, color: '#00D084' },
+                { label: 'Import CSV',   action: () => {}, color: '#3b82f6' },
+                { label: 'Bulk Upload',  action: () => {}, color: '#a78bfa' },
+                { label: 'Invite Users', action: () => {}, color: '#f59e0b' },
+              ].map((a, i) => (
+                <div key={i} onClick={a.action} style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px',
+                  borderRadius: 12, cursor: 'pointer', marginBottom: 6,
+                  background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.05)',
+                  transition: 'all .2s', fontSize: 13, fontWeight: 600, color: 'var(--text)'
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.07)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,.03)'}
+                >
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0 }} />
+                  {a.label}
                 </div>
-              </div>
-            ))}
-
-            <div style={{ borderTop: '1px solid var(--border)', margin: '24px 0' }}></div>
-            
-            <div onClick={handleExport} className="fintech-form-card" style={{ background: 'rgba(34, 197, 94, 0.05)', borderColor: 'rgba(34, 197, 94, 0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ 
-                  width: '42px', height: '42px', background: 'var(--green)', 
-                  borderRadius: '12px', display: 'flex', alignItems: 'center', 
-                  justifyContent: 'center', border: '1px solid rgba(0, 0, 0, 0.1)',
-                  boxShadow: '0 0 15px rgba(34, 197, 94, 0.2)',
-                  flexShrink: 0
-                }}>
-                  <Download size={20} strokeWidth={2.5} color="#000" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>Export CSV</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 2 }}>Download all user records</div>
-                </div>
-              </div>
+              ))}
             </div>
+
           </div>
         </div>
       </div>

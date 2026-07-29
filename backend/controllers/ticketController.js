@@ -120,8 +120,19 @@ const createTicket = async (req, res) => {
     }
   }
 
+  // ─── Generate unique ticketNo: MCT-YYYYMMDD-NNNNN ──────────────────
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // "20260729"
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const endOfDay   = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  const countToday = await Ticket.countDocuments({ createdAt: { $gte: startOfDay, $lt: endOfDay } });
+  const seq = String(countToday + 1).padStart(5, '0');        // "00042"
+  const ticketNo = `MCT-${dateStr}-${seq}`;                   // "MCT-20260729-00042"
+
   const ticket = await Ticket.create({
+    ticketNo,
     client: clientId,
+
     hubType: hubType || 'Service Hub',
     subject: subject || '',
     companyName: companyName || '',

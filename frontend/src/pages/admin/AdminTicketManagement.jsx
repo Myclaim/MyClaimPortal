@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Ticket, Search, RefreshCw, X, AlertTriangle,
   CheckCircle2, Loader2, Clock, Upload, MessageSquare, UserCheck,
@@ -80,7 +80,7 @@ const TicketCard = ({ ticket: t, color, onOpen }) => (
   >
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
       <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', background: 'var(--bg)', padding: '2px 7px', borderRadius: 5 }}>
-        #{new Date(t.createdAt).getTime()}
+        #{t.ticketNo || new Date(t.createdAt).getTime()}
       </span>
       <PriBadge priority={t.priority} />
     </div>
@@ -330,7 +330,7 @@ const AdminTicketManagement = () => {
   // ── List-view row ──────────────────────────────────────────────────────────
   const ListRow = ({ t }) => (
     <tr onClick={() => openPanel(t)}>
-      <td><b style={{ fontFamily: 'monospace', fontSize: 12 }}>#{new Date(t.createdAt).getTime()}</b></td>
+      <td><b style={{ fontFamily: 'monospace', fontSize: 12 }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</b></td>
       <td>
         <div style={{ fontWeight: 700 }}>{t.service}</div>
         <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{t.hubType}</div>
@@ -373,7 +373,7 @@ const AdminTicketManagement = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>
-                  #{new Date(t.createdAt).getTime()}
+                  #{t.ticketNo || new Date(t.createdAt).getTime()}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, marginBottom: 6 }}>{t.service}</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
