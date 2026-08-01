@@ -38,6 +38,7 @@ app.use('/api/finance', require('./routes/financeRoutes'));
 app.use('/api/department-services', require('./routes/departmentServiceRoutes'));
 app.use('/api/referral', require('./routes/referralRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
+app.use('/api/wealth', require('./routes/wealthRoutes'));
 
 // Basic route
 app.get('/', (req, res) => {

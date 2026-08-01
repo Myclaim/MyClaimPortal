@@ -31,6 +31,7 @@ import StoreMarketplace from './pages/store/StoreMarketplace';
 import ClaimStore from './pages/store/ClaimStore';
 import ServiceStore from './pages/store/ServiceStore';
 import PreIpoStore from './pages/store/PreIpoStore';
+import WealthManagementStore from './pages/store/WealthManagementStore';
 import OperationsHub from './pages/operations/OperationsHub';
 import KYCHub from './pages/operations/KYCHub';
 import StubPage from './pages/stubs/StubPage';
@@ -108,6 +109,7 @@ function App() {
             <Route path="store/claim" element={<ProtectedRoute adminOnly={true}><ClaimStore /></ProtectedRoute>} />
             <Route path="store/service" element={<ProtectedRoute adminOnly={true}><ServiceStore /></ProtectedRoute>} />
             <Route path="store/pre-ipo" element={<ProtectedRoute adminOnly={true}><PreIpoStore /></ProtectedRoute>} />
+            <Route path="store/wealth" element={<WealthManagementStore />} />
             <Route path="operations" element={<ProtectedRoute adminOnly={true}><OperationsHub /></ProtectedRoute>} />
             <Route path="operations/kyc" element={<ProtectedRoute adminOnly={true}><KYCHub /></ProtectedRoute>} />
             <Route path="operations/documents" element={<ProtectedRoute adminOnly={true}><AdminDocumentVerification /></ProtectedRoute>} />

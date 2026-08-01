@@ -20,6 +20,7 @@ import api from '../../../services/api';
 import CreateTicketModal from '../../../components/forms/CreateTicketModal';
 import ServiceStore from '../../store/ServiceStore';
 import PartnerServiceHubTab from './PartnerServiceHubTab';
+import WealthManagementStore from '../../store/WealthManagementStore';
 
 /* ─── Inline badge styles (avoids missing CSS-var errors) ────── */
 const BADGE_STYLES = {
@@ -3687,7 +3688,7 @@ export default function PartnerDashboard() {
       case 'clients':   return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} />;
       case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
       case 'employees': return <EmployeesTab clients={dbData.clients} />;
-      case 'store':     return <StoreTab clients={dbData.clients} />;
+      case 'store':     return <WealthManagementStore />;
       case 'task':      return <TaskTab />;
       case 'calendar':  return <CalendarTab />;
       case 'document':  return <DocumentTab />;
