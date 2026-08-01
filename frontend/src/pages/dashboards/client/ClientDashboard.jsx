@@ -7,7 +7,7 @@ import {
   Plus, Eye, CheckCircle2, TrendingUp, FileText, ArrowRight,
   ArrowLeft, User, Activity, Building2, Star, Zap, ChevronRight,
   GitBranch, TreeDeciduous, X, AlertCircle, Play, Ticket, Download, Gift,
-  Sun, Moon, LogOut, Phone, Mail, HelpCircle, Layers
+  Sun, Moon, LogOut, Phone, Mail, HelpCircle, Layers, UserPlus
 } from 'lucide-react';
 import ClientServiceHub from './ClientServiceHub';
 import ClientMyServices from './ClientMyServices';
@@ -996,7 +996,7 @@ const ClientFamilyTreeNode = ({ name, role, isClient }) => (
   </div>
 );
 
-const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) => {
+const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
   const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
   const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
   const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
@@ -1043,11 +1043,11 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px', color: CL.text }}>Family Tree &amp; Hierarchy</h3>
         <button 
-          onClick={onNotificationClick}
+          onClick={onAddClick}
           style={{ 
             padding: '10px 20px', 
             background: 'linear-gradient(135deg, #10B981, #059669)', 
-            color: 'var(--dashboard-text)', 
+            color: '#ffffff', 
             border: 'none', 
             borderRadius: '12px', 
             cursor: 'pointer', 
@@ -1068,7 +1068,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
             e.currentTarget.style.boxShadow = '0 8px 20px rgba(16,185,129,0.35)';
           }}
         >
-          <Bell size={16} /> Notifications
+          <UserPlus size={16} /> Add Member
         </button>
       </div>
       
@@ -1098,8 +1098,8 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
 
           {/* Client Node (Center) */}
           <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center' }}>
-            <ClientFamilyTreeNode name={client?.name} role="PRIMARY CLIENT" isClient={true} />
-            {children.length > 0 && (
+            <ClientFamilyTreeNode name={client?.name || 'Primary Client'} role="PRIMARY CLIENT" isClient={true} />
+            {(children.length > 0 || spouse.length > 0) && (
               <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
             )}
           </div>
@@ -1145,7 +1145,26 @@ const ClientFamilyTreeView = ({ familyMembers, client, onNotificationClick }) =>
               <User size={24} />
             </div>
             <p style={{ margin: 0, fontWeight: 700, color: CL.text }}>No family members linked yet.</p>
-            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Contact your partner to build your family tree.</p>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', color: CL.textMuted }}>Click "+ Add Member" to build your family tree hierarchy.</p>
+            <button
+              onClick={onAddClick}
+              style={{
+                marginTop: '16px',
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, #10B981, #059669)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '10px',
+                fontWeight: 800,
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <UserPlus size={16} /> Add Member
+            </button>
           </div>
         )}
 
@@ -2521,7 +2540,7 @@ const ClientDashboard = ({ user: propUser }) => {
       ) : showClaims ? (
         <MyClaimsView claims={claims} navigate={navigate} />
       ) : showFamilyTree ? (
-        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onNotificationClick={() => navigate('/client?tab=notifications')} />
+        <ClientFamilyTreeView familyMembers={familyMembers} client={clientProfile || user} onAddClick={() => setIsAddFamilyModalOpen(true)} />
       ) : showDocuments ? (
         <ClientDocumentsHub documents={documents} clientProfile={clientProfile} user={user} onRefresh={fetchDocuments} />
       ) : showNotifications ? (

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Clock, AlertCircle, MoreVertical, LayoutGrid, List, X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Search, Filter, Plus, Clock, AlertCircle, MoreVertical, LayoutGrid, List, X, RotateCcw } from 'lucide-react';
 import api from '../../services/api';
 import { io } from 'socket.io-client';
 
@@ -10,6 +10,13 @@ const TaskBoard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clients, setClients] = useState([]);
   const [employees, setEmployees] = useState([]);
+  
+  // Filter States
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showAdvFilters, setShowAdvFilters] = useState(false);
+
   const [formData, setFormData] = useState({
     clientId: '',
     service: '',
@@ -19,6 +26,37 @@ const TaskBoard = () => {
   });
   const [creating, setCreating] = useState(false);
 
+  // Dynamic filtering
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+    if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
+    if (priorityFilter !== 'all') result = result.filter(t => t.priority === priorityFilter);
+
+    const q = search.trim().toLowerCase();
+    if (!q) return result;
+    return result.filter(t => 
+      (t.service || '').toLowerCase().includes(q) ||
+      (t.client?.name || '').toLowerCase().includes(q) ||
+      (t.client?.companyName || '').toLowerCase().includes(q) ||
+      (t.assignedTo?.name || '').toLowerCase().includes(q) ||
+      String(t._id || '').toLowerCase().includes(q)
+    );
+  }, [tasks, search, statusFilter, priorityFilter]);
+
+  const activeFilterCount = useMemo(() => {
+    let c = 0;
+    if (search) c++;
+    if (statusFilter !== 'all') c++;
+    if (priorityFilter !== 'all') c++;
+    return c;
+  }, [search, statusFilter, priorityFilter]);
+
+  const resetFilters = () => {
+    setSearch('');
+    setStatusFilter('all');
+    setPriorityFilter('all');
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -27,7 +65,7 @@ const TaskBoard = () => {
           api.get('/users')
         ]);
         setClients(clientRes.data || []);
-        setEmployees((userRes.data || []).filter(u => ['employee', 'team', 'staff'].includes(u.role)));
+        setEmployees((userRes.data || []).filter(u => u.role !== 'client'));
       } catch (err) {
         console.error('Error fetching data for modal', err);
       }
@@ -126,10 +164,85 @@ const TaskBoard = () => {
       </div>
 
       <div className="content">
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-          <div className="search-input" style={{ flex: 1, background: 'var(--card)', border: '1px solid var(--border)' }}><Search size={18} /><input type="text" placeholder="Search tasks, clients, IDs..." style={{ background: 'transparent', color: 'var(--text)' }} /></div>
-          <button className="export-btn"><Filter size={16} /> Filters</button>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="search-input" style={{ flex: 1, minWidth: '240px', background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <Search size={18} />
+            <input 
+              type="text" 
+              placeholder="Search tasks, clients, services, assigned team..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ background: 'transparent', color: 'var(--text)' }} 
+            />
+          </div>
+
+          <button 
+            className="export-btn"
+            onClick={() => setShowAdvFilters(prev => !prev)}
+            style={{
+              background: showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.15)' : 'var(--card)',
+              color: showAdvFilters || activeFilterCount > 0 ? '#00D084' : 'var(--text)',
+              border: `1px solid ${showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.3)' : 'var(--border)'}`,
+              display: 'flex', alignItems: 'center', gap: 8, height: '42px', padding: '0 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer'
+            }}
+          >
+            <Filter size={16} /> 
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span style={{ background: '#00D084', color: '#091a10', width: 18, height: 18, borderRadius: '50%', fontSize: 11, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* Filter Drawer */}
+        {showAdvFilters && (
+          <div className="card" style={{ padding: '16px 20px', marginBottom: '24px', background: 'var(--card)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ flex: '0 1 220px', minWidth: '180px' }}>
+                <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Priority Filter</label>
+                <select className="form-select" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} style={{ width: '100%', height: '40px', lineHeight: '40px', padding: '0 30px 0 12px', borderRadius: '8px', background: 'var(--bg)', color: 'var(--text)', fontSize: '13px', fontWeight: 600, border: '1px solid var(--border)', boxSizing: 'border-box' }}>
+                  <option value="all">Priority: All</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              <div style={{ flex: '0 1 220px', minWidth: '180px' }}>
+                <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Status Filter</label>
+                <select className="form-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ width: '100%', height: '40px', lineHeight: '40px', padding: '0 30px 0 12px', borderRadius: '8px', background: 'var(--bg)', color: 'var(--text)', fontSize: '13px', fontWeight: 600, border: '1px solid var(--border)', boxSizing: 'border-box' }}>
+                  <option value="all">Status: All</option>
+                  <option value="active">Active / Pending</option>
+                  <option value="in_process">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px dashed var(--border)' }}>
+                <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Filters:</span>
+                {priorityFilter !== 'all' && (
+                  <span style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    Priority: {priorityFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setPriorityFilter('all')} />
+                  </span>
+                )}
+                {statusFilter !== 'all' && (
+                  <span style={{ background: 'rgba(0,208,132,0.15)', color: '#00D084', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    Status: {statusFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('all')} />
+                  </span>
+                )}
+                <button onClick={resetFilters} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
+                  <RotateCcw size={12} /> Clear All
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="stats-row cols-4" style={{ marginBottom: '32px' }}>
             <div className="stat-card" style={{ borderBottom: '4px solid #15803d' }}><div className="stat-label">OPEN JOBS</div><div className="stat-value">{tasks.filter(t => t.status === 'active').length}</div></div>
@@ -142,9 +255,9 @@ const TaskBoard = () => {
           <div className="grid-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
             {loading ? (
               <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px', color: 'var(--text-muted)' }}>Loading real-time tasks...</div>
-            ) : tasks.length === 0 ? (
+            ) : filteredTasks.length === 0 ? (
               <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px', color: 'var(--text-muted)' }}>No tasks found in the pipeline.</div>
-            ) : tasks.map((task, i) => {
+            ) : filteredTasks.map((task, i) => {
               const display = getStatusDisplay(task.status);
               return (
               <div key={task._id} className="card card-hover stagger-card" style={{ padding: '20px', animationDelay: `${i * 0.05}s` }}>
@@ -194,7 +307,9 @@ const TaskBoard = () => {
                 <tbody>
                   {loading ? (
                     <tr><td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>Loading...</td></tr>
-                  ) : tasks.map((task, i) => {
+                  ) : filteredTasks.length === 0 ? (
+                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No tasks found in this view.</td></tr>
+                  ) : filteredTasks.map((task, i) => {
                     const display = getStatusDisplay(task.status);
                     return (
                     <tr key={task._id} className="stagger-card" style={{ animationDelay: `${i * 0.02}s` }}>
@@ -273,14 +388,18 @@ const TaskBoard = () => {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px' }}>Assign To (Employee)</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px' }}>Assign To (Partner / Staff)</label>
                   <select 
                     value={formData.assignedTo} 
                     onChange={e => setFormData({...formData, assignedTo: e.target.value})}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)' }}
                   >
                     <option value="">-- Unassigned --</option>
-                    {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
+                    {employees.map(emp => (
+                      <option key={emp._id} value={emp._id}>
+                        {emp.name} {emp.role ? `(${emp.role.replace('_', ' ').toUpperCase()})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

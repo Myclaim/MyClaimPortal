@@ -201,12 +201,21 @@ const PartnerForm = ({ defaultRole }) => {
         .pf-field { display: flex; flex-direction: column; gap: 5px; }
         .pf-field label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.01em; }
         .pf-req { color: #f43f5e; }
-        .pf-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; appearance: none; }
-        .pf-input::placeholder { color: #b0b6cc; }
-        .pf-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-        .pf-input.pf-error-input { border-color: #f43f5e; }
-        .pf-input.pf-error-input:focus { box-shadow: 0 0 0 3px rgba(244,63,94,0.15); }
-        .pf-error-msg { font-size: 11px; color: #f43f5e; margin-top: 2px; }
+        .pf-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; caret-color: var(--blue); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; appearance: none; color-scheme: dark; }
+        .pf-input::placeholder { color: #818cf8; opacity: 0.7; }
+        .pf-input:focus { border-color: var(--blue); background: var(--bg); color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.25); }
+        
+        .pf-input:-webkit-autofill,
+        .pf-input:-webkit-autofill:hover, 
+        .pf-input:-webkit-autofill:focus {
+          -webkit-text-fill-color: var(--text) !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--bg) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        .pf-input.pf-error-input { border-color: #f43f5e !important; }
+        .pf-input.pf-error-input:focus { box-shadow: 0 0 0 3px rgba(244,63,94,0.25); }
+        .pf-error-msg { font-size: 11px; color: #f43f5e; margin-top: 3px; font-weight: 500; }
         
         .pf-pw-wrap { position: relative; }
         .pf-pw-wrap .pf-input { padding-right: 42px; }
@@ -220,8 +229,8 @@ const PartnerForm = ({ defaultRole }) => {
         .pf-file-field { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); overflow: hidden; min-height: 42px; transition: border-color 0.18s; }
         .pf-file-field:focus-within { border-color: var(--blue); }
         .pf-file-field input[type="file"] { display: none; }
-        .pf-file-btn { padding: 9px 14px; background: #f1f5f9; border: none; border-right: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #000; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-        .pf-file-btn:hover { background: #e2e8f0; }
+        .pf-file-btn { padding: 9px 14px; background: rgba(255,255,255,0.08); border: none; border-right: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+        .pf-file-btn:hover { background: rgba(255,255,255,0.15); }
         .pf-file-name { padding: 9px 12px; font-size: 13px; color: var(--text-muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pf-file-name.picked { color: var(--text); font-weight: 500; }
         
@@ -229,7 +238,7 @@ const PartnerForm = ({ defaultRole }) => {
         .pf-radio-group { display: flex; gap: 20px; flex-wrap: wrap; padding: 4px 0; }
         .pf-radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text); user-select: none; }
         .pf-radio-label input[type="radio"] { display: none; }
-        .pf-radio-dot { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
+        .pf-radio-dot { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
         .pf-radio-label input[type="radio"]:checked ~ .pf-radio-dot { border-color: var(--blue); background: var(--blue); }
         .pf-radio-label input[type="radio"]:checked ~ .pf-radio-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
         

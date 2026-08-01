@@ -229,12 +229,21 @@ const EmployeeForm = ({ defaultRole }) => {
         .ef-field { display: flex; flex-direction: column; gap: 5px; }
         .ef-field label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.01em; }
         .ef-req { color: #f43f5e; }
-        .ef-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; appearance: none; }
-        .ef-input::placeholder { color: #b0b6cc; }
-        .ef-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-        .ef-input.ef-error-input { border-color: #f43f5e; }
-        .ef-input.ef-error-input:focus { box-shadow: 0 0 0 3px rgba(244,63,94,0.15); }
-        .ef-error-msg { font-size: 11px; color: #f43f5e; margin-top: 2px; }
+        .ef-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; caret-color: var(--blue); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; appearance: none; color-scheme: dark; }
+        .ef-input::placeholder { color: #818cf8; opacity: 0.7; }
+        .ef-input:focus { border-color: var(--blue); background: var(--bg); color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.25); }
+        
+        .ef-input:-webkit-autofill,
+        .ef-input:-webkit-autofill:hover, 
+        .ef-input:-webkit-autofill:focus {
+          -webkit-text-fill-color: var(--text) !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--bg) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        .ef-input.ef-error-input { border-color: #f43f5e !important; }
+        .ef-input.ef-error-input:focus { box-shadow: 0 0 0 3px rgba(244,63,94,0.25); }
+        .ef-error-msg { font-size: 11px; color: #f43f5e; margin-top: 3px; font-weight: 500; }
         
         .ef-pw-wrap { position: relative; }
         .ef-pw-wrap .ef-input { padding-right: 42px; }
@@ -248,8 +257,8 @@ const EmployeeForm = ({ defaultRole }) => {
         .ef-file-field { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); overflow: hidden; min-height: 42px; transition: border-color 0.18s; }
         .ef-file-field:focus-within { border-color: var(--blue); }
         .ef-file-field input[type="file"] { display: none; }
-        .ef-file-btn { padding: 9px 14px; background: #f1f5f9; border: none; border-right: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #000; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-        .ef-file-btn:hover { background: #e2e8f0; }
+        .ef-file-btn { padding: 9px 14px; background: rgba(255,255,255,0.08); border: none; border-right: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+        .ef-file-btn:hover { background: rgba(255,255,255,0.15); }
         .ef-file-name { padding: 9px 12px; font-size: 13px; color: var(--text-muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ef-file-name.picked { color: var(--text); font-weight: 500; }
         
@@ -257,7 +266,7 @@ const EmployeeForm = ({ defaultRole }) => {
         .ef-radio-group { display: flex; gap: 20px; flex-wrap: wrap; padding: 4px 0; }
         .ef-radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text); user-select: none; }
         .ef-radio-label input[type="radio"] { display: none; }
-        .ef-radio-dot { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
+        .ef-radio-dot { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
         .ef-radio-label input[type="radio"]:checked ~ .ef-radio-dot { border-color: var(--blue); background: var(--blue); }
         .ef-radio-label input[type="radio"]:checked ~ .ef-radio-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
         

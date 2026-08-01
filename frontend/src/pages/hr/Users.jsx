@@ -695,8 +695,23 @@ const Users = () => {
           padding: 0 16px; font-size: 14px; font-weight: 600; 
           color: var(--text); outline: none; 
           cursor: pointer; transition: all 0.3s; 
+          color-scheme: dark;
         }
         .um-filter-select:focus { border-color: var(--green); }
+        .um-filter-select option {
+          background: #0D1526;
+          color: #ffffff;
+          padding: 10px;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          filter: invert(1) hue-rotate(90deg);
+          cursor: pointer;
+          opacity: 0.85;
+          transition: opacity 0.2s;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+          opacity: 1;
+        }
 
         .um-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: start; }
         
@@ -1048,9 +1063,6 @@ const Users = () => {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => navigate('/users/add?role=admin')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: 'linear-gradient(135deg,#00D084,#17E6A1)', color: '#000', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>
-              <UserPlus size={16} /> Add User
-            </button>
             <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: 'rgba(255,255,255,.05)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               <Download size={15} /> Export
             </button>
@@ -1693,18 +1705,38 @@ const Users = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Service Type</label>
-                  <select className="um-filter-select" value={advFilters.serviceType} onChange={e => setAdvFilters({...advFilters, serviceType: e.target.value})} style={{ width: '100%', height: '44px', background: 'var(--bg)' }}>
+                  <select className="um-filter-select" value={advFilters.serviceType} onChange={e => setAdvFilters({...advFilters, serviceType: e.target.value})} style={{ width: '100%', height: '44px', background: '#0D1526', color: '#fff', border: '1px solid rgba(255,255,255,0.12)' }}>
                     <option value="">All Services</option>
                     {uniqueServices.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Date From</label>
-                  <input type="date" className="um-search-input" value={advFilters.dateFrom} onChange={e => setAdvFilters({...advFilters, dateFrom: e.target.value})} style={{ width: '100%', height: '44px', paddingLeft: 16, paddingRight: 16, background: 'var(--bg)' }} />
+                  <input
+                    type="date"
+                    value={advFilters.dateFrom}
+                    onChange={e => setAdvFilters({...advFilters, dateFrom: e.target.value})}
+                    style={{
+                      width: '100%', height: '44px', paddingLeft: 14, paddingRight: 14,
+                      background: '#0D1526', color: '#ffffff', colorScheme: 'dark',
+                      border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12,
+                      fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer'
+                    }}
+                  />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>Date To</label>
-                  <input type="date" className="um-search-input" value={advFilters.dateTo} onChange={e => setAdvFilters({...advFilters, dateTo: e.target.value})} style={{ width: '100%', height: '44px', paddingLeft: 16, paddingRight: 16, background: 'var(--bg)' }} />
+                  <input
+                    type="date"
+                    value={advFilters.dateTo}
+                    onChange={e => setAdvFilters({...advFilters, dateTo: e.target.value})}
+                    style={{
+                      width: '100%', height: '44px', paddingLeft: 14, paddingRight: 14,
+                      background: '#0D1526', color: '#ffffff', colorScheme: 'dark',
+                      border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12,
+                      fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer'
+                    }}
+                  />
                 </div>
               </div>
             </div>

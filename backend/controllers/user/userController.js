@@ -6,6 +6,7 @@ const Employee = require('../../models/employee/Employee');
 const Activity = require('../../models/Activity');
 const bcrypt = require('bcryptjs');
 const { sendWelcomeEmail } = require('../../utils/emailService');
+const { createActivityAndNotify } = require('../../utils/activityHelper');
 
 /** Omit password hash from Mongoose documents returned to the client */
 function userToPublicJSON(doc) {
@@ -416,9 +417,10 @@ const updateUser = async (req, res) => {
     actionText += ` - Department changed from ${oldDepartment || 'None'} to ${req.body.department}`;
   }
 
-  await Activity.create({
+  await createActivityAndNotify({
     action: actionText,
-    user: req.user._id,
+    user: user,
+    type: 'profile_updated'
   });
   bustCache(); // Bust server cache so next read reflects updated user
   res.json(userToPublicJSON(user));
@@ -635,6 +637,17 @@ const updateClientProfile = async (req, res) => {
 
     await client.save();
     bustCache();
+
+    const isPasswordChange = Boolean(currentPassword && newPassword);
+    const actionText = isPasswordChange 
+      ? `Client ${client.name} updated their security credentials (password)`
+      : `Client ${client.name} updated their profile information & contact details`;
+
+    await createActivityAndNotify({
+      action: actionText,
+      user: client,
+      type: isPasswordChange ? 'credential_updated' : 'profile_updated'
+    });
     
     res.json(userToPublicJSON(client));
   } catch (error) {
@@ -659,19 +672,22 @@ const getClientProfile = async (req, res) => {
 
 const addFamilyMember = async (req, res) => {
   try {
-    const { id } = req.params;
+    let targetId = req.params.id;
+    if (targetId === 'me' || targetId === 'client' || !targetId || targetId === 'undefined') {
+      targetId = req.user._id;
+    }
     const { name, relationWithHolder, phone, email, dob, aadharNo, panNo } = req.body;
 
     // Security check: Clients can only modify their own family members
-    if (req.user.role === 'client' && req.user._id.toString() !== id.toString()) {
+    if (req.user.role === 'client' && req.user._id.toString() !== targetId.toString()) {
       return res.status(403).json({ message: 'Not authorized to modify another user\'s family tree' });
     }
 
-    let user = await Admin.findById(id);
-    if (!user) user = await Partner.findById(id);
-    if (!user) user = await Client.findById(id);
-    if (!user) user = await Employee.findById(id);
-    if (!user) user = await User.findById(id);
+    let user = await Admin.findById(targetId);
+    if (!user) user = await Partner.findById(targetId);
+    if (!user) user = await Client.findById(targetId);
+    if (!user) user = await Employee.findById(targetId);
+    if (!user) user = await User.findById(targetId);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -695,6 +711,12 @@ const addFamilyMember = async (req, res) => {
     await user.save();
 
     bustCache();
+
+    await createActivityAndNotify({
+      action: `Family member ${name} (${relationWithHolder}) added for ${user.name}`,
+      user: user,
+      type: 'family_updated'
+    });
 
     res.status(201).json({ message: 'Family member added successfully', familyMembers: user.familyMembers });
   } catch (error) {

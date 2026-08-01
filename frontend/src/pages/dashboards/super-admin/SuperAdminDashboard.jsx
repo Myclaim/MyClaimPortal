@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Zap, TrendingUp, Users, CheckCircle, AlertTriangle,
   Plus, FileText, BarChart2, ShieldCheck, Building2,
-  ArrowUpRight, Activity, Clock, Target, Layers
+  ArrowUpRight, Activity, Clock, Target, Layers,
+  X, Search, Filter, Check, Download, Sparkles
 } from 'lucide-react';
 
 /* ── tiny sparkline ── */
@@ -127,7 +128,7 @@ const EnhancedStatCard = ({ label, value, sub, icon, color, sparkData, badge, de
   </div>
 );
 
-const ACTIVITY = [
+const RECENT_ACTIVITY_PREVIEW = [
   { icon: <Building2 size={14} />, color: '#17E6A1', label: 'New Organization Added', time: '2 mins ago' },
   { icon: <CheckCircle size={14} />, color: '#3b82f6', label: 'Claim Batch Approved', time: '5 mins ago' },
   { icon: <Users size={14} />, color: '#a78bfa', label: 'Manager Logged In', time: '8 mins ago' },
@@ -135,11 +136,24 @@ const ACTIVITY = [
   { icon: <ShieldCheck size={14} />, color: '#00D084', label: 'System-wide Audit Passed', time: '22 mins ago' },
 ];
 
+const FULL_ACTIVITY_LOGS = [
+  { id: 1, icon: <Building2 size={16} />, color: '#17E6A1', label: 'New Organization Added', desc: 'Apex Financial Technologies LLC onboarded with 250 enterprise seats.', category: 'Organizations', time: '2 mins ago', date: 'Today, 14:12', user: 'SuperAdmin' },
+  { id: 2, icon: <CheckCircle size={16} />, color: '#3b82f6', label: 'Claim Batch Approved', desc: 'Batch #MC-8842 with 48 claims (Total ₹18.4L) approved for disbursement.', category: 'Claims', time: '5 mins ago', date: 'Today, 14:09', user: 'Claims Desk' },
+  { id: 3, icon: <Users size={16} />, color: '#a78bfa', label: 'Manager Logged In', desc: 'Regional Partner Vikramaditya Singhania authenticated from Mumbai terminal.', category: 'Users', time: '8 mins ago', date: 'Today, 14:06', user: 'Partner Node' },
+  { id: 4, icon: <Target size={16} />, color: '#f59e0b', label: 'Recovery Prediction Updated', desc: 'AI engine recalculated recovery index to 92.4% prediction confidence.', category: 'Audit', time: '15 mins ago', date: 'Today, 13:59', user: 'Giliza AI Bot' },
+  { id: 5, icon: <ShieldCheck size={16} />, color: '#00D084', label: 'System-wide Audit Passed', desc: 'Automated SOC2 compliance check completed without security anomalies.', category: 'Audit', time: '22 mins ago', date: 'Today, 13:52', user: 'Security Bot' },
+  { id: 6, icon: <Building2 size={16} />, color: '#17E6A1', label: 'Organization Quota Expanded', desc: 'Shriram Finance transaction quota expanded to 10,000 monthly operations.', category: 'Organizations', time: '1 hour ago', date: 'Today, 13:10', user: 'SuperAdmin' },
+  { id: 7, icon: <CheckCircle size={16} />, color: '#3b82f6', label: 'Commission Brokerage Settled', desc: 'Partner monthly payout of ₹14.5L credited via automated banking gateway.', category: 'Claims', time: '2 hours ago', date: 'Today, 12:15', user: 'Finance Engine' },
+  { id: 8, icon: <Users size={16} />, color: '#a78bfa', label: 'New Manager Created', desc: 'Provisioned manager profile for Rajesh Verma (Northeast Region).', category: 'Users', time: '3 hours ago', date: 'Today, 11:30', user: 'SuperAdmin' },
+  { id: 9, icon: <AlertTriangle size={16} />, color: '#ef4444', label: 'High Volatility Alert', desc: 'Nifty VIX threshold spike triggered risk rebalancing alert.', category: 'System', time: '5 hours ago', date: 'Today, 09:20', user: 'System Guard' },
+  { id: 10, icon: <ShieldCheck size={16} />, color: '#00D084', label: 'Daily Database Snapshot', desc: 'Encrypted MongoDB backup snapshot synced to AWS S3 Mumbai vault.', category: 'System', time: '8 hours ago', date: 'Today, 06:00', user: 'Db Cron Job' }
+];
+
 const QUICK_ACTIONS = [
-  { icon: <Building2 size={16} />, label: '+ Add Organization', color: '#00D084' },
-  { icon: <Users size={16} />, label: '+ Create Manager', color: '#3b82f6' },
-  { icon: <FileText size={16} />, label: '+ Generate Report', color: '#a78bfa' },
-  { icon: <ShieldCheck size={16} />, label: '+ Run AI Audit', color: '#f59e0b' },
+  { id: 'org', icon: <Building2 size={16} />, label: '+ Add Organization', color: '#00D084' },
+  { id: 'mgr', icon: <Users size={16} />, label: '+ Create Manager', color: '#3b82f6' },
+  { id: 'rpt', icon: <FileText size={16} />, label: '+ Generate Report', color: '#a78bfa' },
+  { id: 'audit', icon: <ShieldCheck size={16} />, label: '+ Run AI Audit', color: '#f59e0b' },
 ];
 
 const RECOVERY_DATA_THIS_YEAR = [
@@ -176,8 +190,24 @@ const SuperAdminDashboard = ({ stats, loading }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('This Year');
   const [hoveredBarIndex, setHoveredBarIndex] = useState(11); // default active index (Dec)
 
+  // Recent Activity Modal state
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [activitySearch, setActivitySearch] = useState('');
+  const [activityCategory, setActivityCategory] = useState('All');
+
+  // Quick Action Modal state
+  const [activeQuickAction, setActiveQuickAction] = useState(null);
+
   const currentDataset = selectedTimeframe === 'This Year' ? RECOVERY_DATA_THIS_YEAR : RECOVERY_DATA_LAST_YEAR;
   const activeItem = currentDataset[hoveredBarIndex !== null ? hoveredBarIndex : 11] || currentDataset[11];
+
+  // Filtered Activity List for View All Modal
+  const filteredActivities = FULL_ACTIVITY_LOGS.filter((act) => {
+    const matchesCat = activityCategory === 'All' || act.category === activityCategory;
+    const q = activitySearch.toLowerCase();
+    const matchesSearch = !q || act.label.toLowerCase().includes(q) || act.desc.toLowerCase().includes(q) || act.user.toLowerCase().includes(q);
+    return matchesCat && matchesSearch;
+  });
 
   return (
     <>
@@ -189,52 +219,116 @@ const SuperAdminDashboard = ({ stats, loading }) => {
         .qa-btn:hover { background:rgba(255,255,255,.07) !important; transform:translateY(-1px); }
       `}</style>
 
-      {/* ── HERO ── */}
+      {/* ── HERO BANNER ── */}
       <div style={{
-        background: 'linear-gradient(135deg, #0a1628 0%, #0f1f3d 60%, #091420 100%)',
-        border: '1px solid rgba(255,255,255,.08)', borderRadius: 18,
-        padding: '36px 40px', marginBottom: 32, position: 'relative', overflow: 'hidden',
+        background: 'linear-gradient(135deg, #070e1b 0%, #0d1a30 50%, #070e1b 100%)',
+        border: '1px solid rgba(255,255,255,.09)',
+        borderRadius: 22,
+        padding: '32px 36px',
+        marginBottom: 32,
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
         animation: 'fadeInScale .6s both'
       }}>
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.07, backgroundImage: 'radial-gradient(circle at 2px 2px, #00D084 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.9 }}>
-          <AreaChart data={[32, 55, 42, 78, 61, 90, 74, 95, 83, 110]} labels={['Jan','Mar','May','Jul','Sep','Nov']} />
-        </div>
+        {/* Animated background radial mesh grid */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.08, backgroundImage: 'radial-gradient(circle at 2px 2px, #17E6A1 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+        <div style={{
+          position: 'absolute', top: '-40%', right: '-5%', width: '450px', height: '450px',
+          background: 'radial-gradient(circle, rgba(23,230,161,0.12) 0%, transparent 70%)',
+          pointerEvents: 'none', filter: 'blur(50px)'
+        }} />
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '52%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <Chip color="#00D084" label="🟢 LIVE" />
-            <Chip color="#3b82f6" label="🔵 AI Generated" />
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-light)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 10 }}>Enterprise Forecast</div>
+        <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.1fr', gap: 28, alignItems: 'center' }}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-            <div>
-              <div style={{ fontSize: 42, fontWeight: 800, color: '#17E6A1', letterSpacing: '-2px', lineHeight: 1 }}>₹4.2 Cr</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Projected Recovery</div>
+          {/* Column 1: Enterprise Forecast Heading & Recovery Total */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <Chip color="#00D084" label="🟢 LIVE" />
+              <Chip color="#3b82f6" label="🔵 AI GENERATED" />
             </div>
-            <div>
-              <div style={{ fontSize: 42, fontWeight: 800, color: 'var(--text)', letterSpacing: '-2px', lineHeight: 1 }}>92%</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Prediction Confidence</div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-light)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 8 }}>
+              ENTERPRISE FORECAST
             </div>
-            <div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#17E6A1', letterSpacing: '-1px', lineHeight: 1 }}>+18%</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>vs Last Month</div>
+            <div style={{ fontSize: 44, fontWeight: 900, color: '#17E6A1', letterSpacing: '-2px', lineHeight: 1, marginBottom: 8 }}>
+              ₹4.2 Cr
             </div>
-            <div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-1px', lineHeight: 1 }}>{loading ? '...' : stats?.leads?.total ?? 124}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Open Claims</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>Projected Recovery</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#00D084', background: 'rgba(0, 208, 132, 0.15)', padding: '2px 8px', borderRadius: 6 }}>
+                +18% vs Last Month
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button
+                className="topbar-btn"
+                onClick={() => setActiveQuickAction({ title: 'Enterprise Audit', icon: 'ShieldAlert', color: '#00D084', fields: ['Target Region', 'Audit Depth'] })}
+                style={{
+                  padding: '10px 20px', borderRadius: 12, fontSize: 12, fontWeight: 800,
+                  background: 'linear-gradient(135deg,#00D084,#17E6A1)', color: '#000',
+                  border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,208,132,.35)',
+                  transition: 'transform 0.2s'
+                }}
+              >
+                Enterprise Audit
+              </button>
+              <button
+                className="topbar-btn secondary"
+                onClick={() => setActiveQuickAction({ title: 'Node Projections', icon: 'Zap', color: '#3b82f6', fields: ['Node Identifier', 'Simulation Scale'] })}
+                style={{
+                  padding: '10px 20px', borderRadius: 12, fontSize: 12, fontWeight: 700,
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#fff', cursor: 'pointer', transition: 'background 0.2s'
+                }}
+              >
+                Node Projections
+              </button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button className="topbar-btn" style={{ padding: '11px 22px', borderRadius: 14, background: 'linear-gradient(135deg,#00D084,#17E6A1)', boxShadow: '0 4px 20px rgba(0,208,132,.35)' }}>
-              Enterprise Audit
-            </button>
-            <button className="topbar-btn secondary" style={{ padding: '11px 22px', borderRadius: 14 }}>
-              Node Projections
-            </button>
+          {/* Column 2: Key Metrics Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, background: 'rgba(255,255,255,0.02)', padding: '18px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1 }}>
+                92%
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginTop: 6 }}>
+                Prediction Confidence
+              </div>
+              <div style={{ fontSize: 10, color: '#17E6A1', marginTop: 4, fontWeight: 700 }}>
+                High Accuracy
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1 }}>
+                {loading ? '...' : stats?.leads?.total ?? 34}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginTop: 6 }}>
+                Open Claims
+              </div>
+              <div style={{ fontSize: 10, color: '#3b82f6', marginTop: 4, fontWeight: 700 }}>
+                Active Processing
+              </div>
+            </div>
           </div>
+
+          {/* Column 3: Interactive Dynamic Area Chart */}
+          <div style={{
+            background: 'rgba(7, 13, 24, 0.7)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            padding: '16px',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.4)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase' }}>Recovery Trend</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#17E6A1', background: 'rgba(23,230,161,0.1)', padding: '1px 6px', borderRadius: 4 }}>Real-Time</span>
+            </div>
+            <AreaChart data={[32, 55, 42, 78, 61, 90, 74, 95, 83, 110]} labels={['Jan','Mar','May','Jul','Sep','Nov']} />
+          </div>
+
         </div>
       </div>
 
@@ -433,10 +527,27 @@ const SuperAdminDashboard = ({ stats, loading }) => {
           <div className="sa-card" style={{ padding: 24, flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Recent Activity</div>
-              <span style={{ fontSize: 11, color: '#17E6A1', fontWeight: 700, cursor: 'pointer' }}>View All</span>
+              <button
+                onClick={() => setShowActivityModal(true)}
+                style={{
+                  background: 'rgba(23, 230, 161, 0.1)',
+                  border: '1px solid rgba(23, 230, 161, 0.25)',
+                  color: '#17E6A1',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  padding: '4px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#17E6A1'; e.currentTarget.style.color = '#000'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(23, 230, 161, 0.1)'; e.currentTarget.style.color = '#17E6A1'; }}
+              >
+                View All
+              </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {ACTIVITY.map((a, i) => (
+              {RECENT_ACTIVITY_PREVIEW.map((a, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 10, background: `${a.color}18`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {a.icon}
@@ -457,13 +568,18 @@ const SuperAdminDashboard = ({ stats, loading }) => {
           <div className="sa-card" style={{ padding: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 14 }}>Quick Actions</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {QUICK_ACTIONS.map((a, i) => (
-                <button key={i} className="qa-btn" style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
-                  background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)',
-                  borderRadius: 12, color: 'var(--text)', fontSize: 12, fontWeight: 600,
-                  cursor: 'pointer', transition: 'all .2s', textAlign: 'left'
-                }}>
+              {QUICK_ACTIONS.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => setActiveQuickAction(a)}
+                  className="qa-btn"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
+                    background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)',
+                    borderRadius: 12, color: 'var(--text)', fontSize: 12, fontWeight: 600,
+                    cursor: 'pointer', transition: 'all .2s', textAlign: 'left'
+                  }}
+                >
                   <span style={{ color: a.color }}>{a.icon}</span>{a.label}
                 </button>
               ))}
@@ -471,6 +587,183 @@ const SuperAdminDashboard = ({ stats, loading }) => {
           </div>
         </div>
       </div>
+
+      {/* ── RECENT ACTIVITY FULL AUDIT LOG MODAL ── */}
+      {showActivityModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div style={{
+            background: '#0B1220', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '24px', width: '100%', maxWidth: '780px', maxHeight: '85vh',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.6)'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '24px 28px', borderBottom: '1px solid rgba(255,255,255,0.08)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#fff' }}>Enterprise Activity Log</h3>
+                  <Chip color="#17E6A1" label="Live Real-Time" />
+                </div>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                  Complete historical trail of enterprise actions, system audits, and user events
+                </p>
+              </div>
+              <button
+                onClick={() => setShowActivityModal(false)}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div style={{ padding: '16px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.01)', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#070D18', border: '1px solid rgba(255,255,255,0.08)', padding: '8px 14px', borderRadius: '12px', flex: 1, minWidth: '220px' }}>
+                <Search size={16} color="var(--text-muted)" />
+                <input
+                  placeholder="Search activity by title, user, description..."
+                  value={activitySearch}
+                  onChange={(e) => setActivitySearch(e.target.value)}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '13px', outline: 'none', width: '100%' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+                {['All', 'Organizations', 'Claims', 'Users', 'Audit', 'System'].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActivityCategory(cat)}
+                    style={{
+                      padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800,
+                      border: activityCategory === cat ? '1px solid #17E6A1' : '1px solid rgba(255,255,255,0.08)',
+                      background: activityCategory === cat ? 'rgba(23, 230, 161, 0.15)' : 'rgba(255,255,255,0.03)',
+                      color: activityCategory === cat ? '#17E6A1' : 'var(--text-muted)',
+                      cursor: 'pointer', whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Activity List */}
+            <div style={{ padding: '20px 28px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+              {filteredActivities.length > 0 ? filteredActivities.map((act) => (
+                <div key={act.id} style={{
+                  display: 'flex', gap: '16px', alignItems: 'flex-start',
+                  padding: '14px 16px', background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px'
+                }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 12, background: `${act.color}18`, color: act.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {act.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{act.label}</span>
+                      <span style={{ fontSize: '11px', color: '#17E6A1', fontWeight: 700 }}>{act.time}</span>
+                    </div>
+                    <p style={{ margin: '0 0 6px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{act.desc}</p>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-light)', flexWrap: 'wrap' }}>
+                      <span>User: <strong style={{ color: '#fff' }}>{act.user}</strong></span>
+                      <span>•</span>
+                      <span>Timestamp: <strong>{act.date}</strong></span>
+                      <span>•</span>
+                      <span style={{ color: act.color, fontWeight: 700 }}>{act.category}</span>
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: '13px' }}>
+                  No activities found matching your search.
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#070D18', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Showing {filteredActivities.length} of {FULL_ACTIVITY_LOGS.length} records</span>
+              <button
+                onClick={() => setShowActivityModal(false)}
+                style={{ background: 'linear-gradient(135deg,#00D084,#17E6A1)', color: '#000', border: 'none', padding: '8px 20px', borderRadius: '10px', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}
+              >
+                Close Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── QUICK ACTION MODAL DIALOG ── */}
+      {activeQuickAction && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div style={{
+            background: '#0B1220', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '24px', width: '100%', maxWidth: '480px', padding: '28px',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.6)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${activeQuickAction.color}20`, color: activeQuickAction.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {activeQuickAction.icon}
+                </div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#fff' }}>{activeQuickAction.label.replace('+ ', '')}</h3>
+              </div>
+              <button
+                onClick={() => setActiveQuickAction(null)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Trigger direct administrative action for <strong>{activeQuickAction.label.replace('+ ', '')}</strong> across the enterprise portal.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              <input
+                placeholder="Enter Name / Title..."
+                style={{ width: '100%', padding: '10px 14px', background: '#070D18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none' }}
+              />
+              <textarea
+                placeholder="Operational notes or comments..."
+                rows={3}
+                style={{ width: '100%', padding: '10px 14px', background: '#070D18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', resize: 'none' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setActiveQuickAction(null)}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '10px', borderRadius: '10px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  alert(`${activeQuickAction.label.replace('+ ', '')} executed successfully!`);
+                  setActiveQuickAction(null);
+                }}
+                style={{ flex: 1, background: activeQuickAction.color, color: '#000', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}
+              >
+                Execute Action
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

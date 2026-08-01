@@ -3,7 +3,9 @@ import { Bell, Search, User, Clock, ShieldCheck, Activity as ActivityIcon, Sun, 
 import { io } from 'socket.io-client';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { SOCKET_URL } from '../../hooks/useSocket';
+
 const Topbar = ({ title }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentLogs, setRecentLogs] = useState([]);
@@ -23,12 +25,49 @@ const Topbar = ({ title }) => {
 
   useEffect(() => {
     fetchLogs();
-    const socket = io('https://myclaimportal.onrender.com');
-    socket.on('activity_created', () => {
-      setUnreadCount(prev => prev + 1);
-      fetchLogs();
+    const socket = io(SOCKET_URL, {
+      transports: ['websocket', 'polling']
     });
-    return () => socket.disconnect();
+
+    const handleRealtimeUpdate = (data) => {
+      setUnreadCount(prev => prev + 1);
+      if (data && data.action) {
+        setRecentLogs(prev => [data, ...prev.filter(l => l._id !== data._id).slice(0, 9)]);
+      } else if (data && (data.ticketNo || data.service)) {
+        const notifLog = {
+          _id: data._id || Date.now(),
+          action: `🎫 Ticket #${data.ticketNo || 'NEW'} (${data.service || 'Service'}) created for ${data.client?.name || 'Client'}`,
+          createdAt: data.createdAt || new Date().toISOString()
+        };
+        setRecentLogs(prev => [notifLog, ...prev.filter(l => l._id !== notifLog._id).slice(0, 9)]);
+      }
+      fetchLogs();
+    };
+
+    socket.on('activity_created', handleRealtimeUpdate);
+    socket.on('notification_created', handleRealtimeUpdate);
+    socket.on('notification', handleRealtimeUpdate);
+    socket.on('activity_logged', handleRealtimeUpdate);
+    socket.on('ticket_created', handleRealtimeUpdate);
+    socket.on('ticket_updated', handleRealtimeUpdate);
+    socket.on('proposal_created', handleRealtimeUpdate);
+    socket.on('proposal_updated', handleRealtimeUpdate);
+    socket.on('claim_created', handleRealtimeUpdate);
+    socket.on('claim_updated', handleRealtimeUpdate);
+
+    return () => {
+      socket.off('activity_created', handleRealtimeUpdate);
+      socket.off('notification_created', handleRealtimeUpdate);
+      socket.off('notification', handleRealtimeUpdate);
+      socket.off('activity_logged', handleRealtimeUpdate);
+      socket.off('ticket_created', handleRealtimeUpdate);
+      socket.off('ticket_updated', handleRealtimeUpdate);
+      socket.off('proposal_created', handleRealtimeUpdate);
+      socket.off('proposal_updated', handleRealtimeUpdate);
+      socket.off('claim_created', handleRealtimeUpdate);
+      socket.off('claim_updated', handleRealtimeUpdate);
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -49,21 +88,23 @@ const Topbar = ({ title }) => {
   };
   return (
     <header style={{ 
-      background: 'rgba(17, 24, 45, 0.8)', 
+      background: 'rgba(17, 24, 45, 0.85)', 
       backdropFilter: 'blur(16px)',
       borderBottom: '1px solid var(--glass-border)',
-      padding: '16px 32px',
+      padding: '20px 36px',
+      minHeight: '88px',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      boxShadow: '0 4px 24px rgba(0,0,0,0.2)'
+      boxShadow: '0 6px 30px rgba(0,0,0,0.25)',
+      boxSizing: 'border-box'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <h1 style={{ 
-          fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', 
+          fontSize: '24px', fontWeight: 900, color: 'var(--text-primary)', 
           fontFamily: 'Syne, sans-serif', letterSpacing: '-0.01em', margin: 0 
         }}>{title}</h1>
       </div>
@@ -71,39 +112,39 @@ const Topbar = ({ title }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         <div style={{ 
           display: 'flex', alignItems: 'center', background: 'var(--bg-primary)', 
-          borderRadius: '12px', padding: '8px 16px', border: '1px solid var(--glass-border)',
-          gap: '10px'
+          borderRadius: '14px', padding: '10px 18px', border: '1px solid var(--glass-border)',
+          gap: '12px'
         }}>
-          <Search size={16} color="var(--muted)" />
+          <Search size={18} color="var(--muted)" />
           <input 
             type="text" 
             placeholder="Global search..." 
             style={{ 
               background: 'transparent', border: 'none', color: 'var(--text-primary)', 
-              fontSize: '13px', outline: 'none', width: '200px' 
+              fontSize: '14px', outline: 'none', width: '220px', fontWeight: 600
             }} 
           />
         </div>
 
         <div onClick={toggleTheme} style={{
-          width: '40px', height: '40px', background: 'var(--bg-primary)',
-          borderRadius: '12px', display: 'flex', alignItems: 'center',
+          width: '46px', height: '46px', background: 'var(--bg-primary)',
+          borderRadius: '14px', display: 'flex', alignItems: 'center',
           justifyContent: 'center', border: '1px solid var(--glass-border)',
           color: 'var(--muted)', cursor: 'pointer', transition: '0.3s'
         }}>
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
         </div>
 
         <div style={{ position: 'relative', cursor: 'pointer' }} ref={dropdownRef}>
           <div onClick={handleBellClick} style={{ 
-            width: '40px', height: '40px', background: 'var(--bg-primary)', 
-            borderRadius: '12px', display: 'flex', alignItems: 'center', 
+            width: '46px', height: '46px', background: 'var(--bg-primary)', 
+            borderRadius: '14px', display: 'flex', alignItems: 'center', 
             justifyContent: 'center', border: '1px solid var(--glass-border)',
             color: 'var(--muted)', transition: '0.3s'
           }}>
-            <Bell size={20} />
+            <Bell size={22} />
             {unreadCount > 0 && (
-              <div style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, background: 'var(--accent-green)', borderRadius: '50%', border: '2px solid var(--card-bg)', fontSize: 10, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+              <div style={{ position: 'absolute', top: -5, right: -5, width: 18, height: 18, background: 'var(--accent-green)', borderRadius: '50%', border: '2px solid var(--card-bg)', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
                 {unreadCount > 9 ? '9+' : unreadCount}
               </div>
             )}

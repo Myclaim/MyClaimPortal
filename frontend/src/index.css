@@ -179,18 +179,13 @@
   }
 
   .sidebar-logo {
-    padding: 24px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .sidebar-logo {
-    padding: 24px 20px;
+    padding: 28px 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    text-align: center;
     gap: 12px;
   }
 
@@ -1314,6 +1309,44 @@
     transition: all 0.2s;
     background: var(--card);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+  }
+
+  /* Explicit high-contrast typing readability for modals & forms */
+  .modal input,
+  .modal select,
+  .modal textarea,
+  .form-modal input,
+  .form-modal select,
+  .form-modal textarea {
+    color: #0f172a !important;
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 600 !important;
+  }
+
+  .modal input:focus,
+  .modal select:focus,
+  .modal textarea:focus,
+  .form-modal input:focus,
+  .form-modal select:focus,
+  .form-modal textarea:focus {
+    background-color: #ffffff !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+  }
+
+  .modal select option,
+  .form-modal select option {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+  }
+
+  .modal input::placeholder,
+  .modal textarea::placeholder,
+  .form-modal input::placeholder,
+  .form-modal textarea::placeholder {
+    color: #64748b !important;
+    opacity: 0.8;
   }
 
   .form-input:focus,
@@ -2778,4 +2811,30 @@
     margin: -16px !important;
     padding: 16px !important;
   }
+}
+
+/* Global Form Select & Input Vertical Alignment & Text Visibility Fix */
+select.form-select,
+.form-select,
+select.form-input {
+  height: 40px !important;
+  line-height: 40px !important;
+  padding: 0 32px 0 12px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  outline: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+select.form-select option,
+.form-select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 8px 12px !important;
 }

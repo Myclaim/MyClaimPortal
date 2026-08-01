@@ -124,9 +124,18 @@ const SuperPartnerForm = () => {
         .spf-field label { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-muted, #64748b); }
         .spf-req { color: #f43f5e; }
         
-        .spf-input, .spf-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border, #e2e8f0); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text, #1e293b); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; background: var(--bg, #f8fafc); appearance: none; }
-        .spf-input:focus, .spf-select:focus { border-color: var(--blue, #5b6ef5); box-shadow: 0 0 0 3px rgba(91,110,245,0.15); }
-        .spf-input::placeholder { color: #b0b6cc; }
+        .spf-input, .spf-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border, #e2e8f0); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; caret-color: var(--blue, #5b6ef5); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; background: var(--bg); appearance: none; color-scheme: dark; }
+        .spf-input:focus, .spf-select:focus { border-color: var(--blue, #5b6ef5); background: var(--bg); color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; box-shadow: 0 0 0 3px rgba(91,110,245,0.25); }
+        .spf-input::placeholder { color: #818cf8; opacity: 0.7; }
+        
+        .spf-input:-webkit-autofill,
+        .spf-input:-webkit-autofill:hover, 
+        .spf-input:-webkit-autofill:focus,
+        .spf-select:-webkit-autofill {
+          -webkit-text-fill-color: var(--text) !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--bg) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
         
         .spf-pw-wrap { position: relative; }
         .spf-pw-wrap .spf-input { padding-right: 42px; }
@@ -135,18 +144,19 @@ const SuperPartnerForm = () => {
         
         .spf-select-wrap { position: relative; }
         .spf-select-wrap select { padding-right: 36px; cursor: pointer; }
+        .spf-select-wrap option { background: #0d1526; color: #ffffff; }
         .spf-select-wrap::after { content: ''; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid var(--text-muted, #64748b); pointer-events: none; }
         
-        .spf-file-wrapper { display: flex; align-items: center; border: 1.5px solid var(--border, #e2e8f0); border-radius: 10px; overflow: hidden; background: var(--bg, #f8fafc); transition: border-color 0.18s; min-height: 42px; }
+        .spf-file-wrapper { display: flex; align-items: center; border: 1.5px solid var(--border, #e2e8f0); border-radius: 10px; overflow: hidden; background: var(--bg); transition: border-color 0.18s; min-height: 42px; }
         .spf-file-wrapper:focus-within { border-color: var(--blue, #5b6ef5); box-shadow: 0 0 0 3px rgba(91,110,245,0.15); }
-        .spf-file-btn { background: #f1f5f9; border: none; border-right: 1.5px solid var(--border, #e2e8f0); padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #000; cursor: pointer; white-space: nowrap; height: 100%; transition: background 0.15s; }
-        .spf-file-btn:hover { background: #e2e8f0; }
+        .spf-file-btn { background: rgba(255,255,255,0.08); border: none; border-right: 1.5px solid var(--border, #e2e8f0); padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; white-space: nowrap; height: 100%; transition: background 0.15s; }
+        .spf-file-btn:hover { background: rgba(255,255,255,0.15); }
         .spf-file-name { padding: 9px 12px; font-size: 13px; color: var(--text-muted, #64748b); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .spf-radio-group { display: flex; gap: 20px; flex-wrap: wrap; padding: 4px 0; }
         .spf-radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text, #1e293b); user-select: none; }
         .spf-radio-label input[type="radio"] { display: none; }
-        .spf-radio-dot { width: 18px; height: 18px; border: 2px solid var(--border, #e2e8f0); border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
+        .spf-radio-dot { width: 18px; height: 18px; border: 2px solid var(--border, #e2e8f0); border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
         .spf-radio-label input[type="radio"]:checked ~ .spf-radio-dot { border-color: var(--blue, #5b6ef5); background: var(--blue, #5b6ef5); }
         .spf-radio-label input[type="radio"]:checked ~ .spf-radio-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
 

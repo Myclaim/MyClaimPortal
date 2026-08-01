@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import api from '../../services/api';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../hooks/useSocket';
 import { 
   Briefcase, Search, FileText, Download, Plus, Filter, 
   ChevronDown, MoreHorizontal, Eye, Clock, CheckCircle2, 
@@ -38,7 +40,7 @@ const Tickets = () => {
       ]);
       setTickets(ticketsRes.data);
       setClients(usersRes.data.filter(u => u.role === 'client'));
-      setTeamMembers(usersRes.data.filter(u => ['admin', 'super_admin', 'employee'].includes(u.role)));
+      setTeamMembers(usersRes.data.filter(u => u.role !== 'client'));
     } catch (err) {
       console.error('Failed to load tickets/clients:', err);
     } finally {
@@ -48,6 +50,19 @@ const Tickets = () => {
 
   useEffect(() => {
     load();
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    
+    socket.on('ticket_created', (newTicket) => {
+      setTickets(prev => [newTicket, ...prev.filter(t => t._id !== newTicket._id)]);
+    });
+
+    socket.on('ticket_updated', (updatedTicket) => {
+      setTickets(prev => prev.map(t => t._id === updatedTicket._id ? updatedTicket : t));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleCreateTicket = async () => {

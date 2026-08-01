@@ -1,5 +1,6 @@
 const Claim = require('../../models/Claim');
 const Activity = require('../../models/Activity');
+const { createActivityAndNotify } = require('../../utils/activityHelper');
 
 // @desc    Get all claims
 // @route   GET /api/claims
@@ -42,10 +43,12 @@ const createClaim = async (req, res) => {
     status: 'pending',
   });
 
-  // Log activity
-  await Activity.create({
-    action: `Claim created for ${clientName}`,
-    user: req.user._id,
+  // Log activity and notify SuperAdmin real-time
+  await createActivityAndNotify({
+    action: `Claim created for ${clientName} by ${req.user?.name || 'User'}`,
+    user: req.user,
+    claim: claim,
+    type: 'claim_created'
   });
 
   res.status(201).json(claim);
@@ -63,10 +66,12 @@ const updateClaimStatus = async (req, res) => {
     claim.status = status || claim.status;
     const updatedClaim = await claim.save();
 
-    // Log activity
-    await Activity.create({
-      action: `Claim status updated to ${status} for ${claim.clientName}`,
-      user: req.user._id,
+    // Log activity and notify SuperAdmin real-time
+    await createActivityAndNotify({
+      action: `Claim status updated to ${status} for ${claim.clientName} by ${req.user?.name || 'User'}`,
+      user: req.user,
+      claim: updatedClaim,
+      type: 'claim_created'
     });
 
     res.json(updatedClaim);

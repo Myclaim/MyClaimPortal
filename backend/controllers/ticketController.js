@@ -1,6 +1,7 @@
 const Ticket = require('../models/Ticket');
 const Activity = require('../models/Activity');
 const Notification = require('../models/Notification');
+const { createActivityAndNotify } = require('../utils/activityHelper');
 
 const getTickets = async (req, res) => {
   try {
@@ -162,16 +163,12 @@ const createTicket = async (req, res) => {
   const clientName = clientUser ? clientUser.name : 'Unknown';
   const creatorName = req.user.name || 'System';
 
-  await Activity.create({
-    action: `Ticket created for ${clientName} in ${ticket.hubType || 'Service Hub'} (${service}) by ${creatorName}`,
-    user: req.user._id,
-    ticket: ticket._id
+  await createActivityAndNotify({
+    action: `Ticket #${ticket.ticketNo || ticket._id} created for ${clientName} in ${ticket.hubType || 'Service Hub'} (${service}) by ${creatorName}`,
+    user: req.user,
+    ticket: ticket,
+    type: 'ticket_created'
   });
-
-  const io = req.app.get('io');
-  if (io) {
-    io.emit('ticket_created', ticket);
-  }
 
   res.status(201).json(ticket);
 };
@@ -202,10 +199,11 @@ const updateTicketStatus = async (req, res) => {
   const clientName = clientUser ? clientUser.name : 'Unknown';
   const updaterName = req.user.name || 'System';
 
-  await Activity.create({
-    action: `Ticket for ${clientName} in ${ticket.hubType || 'Service Hub'} (${ticket.service}) updated to ${updated.status} by ${updaterName}`,
-    user: req.user._id,
-    ticket: updated._id,
+  await createActivityAndNotify({
+    action: `Ticket #${ticket.ticketNo || ticket._id} for ${clientName} in ${ticket.hubType || 'Service Hub'} (${ticket.service}) updated to ${updated.status} by ${updaterName}`,
+    user: req.user,
+    ticket: updated,
+    type: 'ticket_updated'
   });
 
   if (req.user._id.toString() !== ticket.client.toString()) {

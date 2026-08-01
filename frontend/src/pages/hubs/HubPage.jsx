@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Eye, Edit2, ChevronDown, ChevronRight, X, Info } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../hooks/useSocket';
 
 const KanbanBoard = ({ vertical, tasks, onDropTask }) => {
   const columns = ['Open', 'In Progress', 'Waiting Client', 'Blocked', 'Completed'];
@@ -195,7 +196,7 @@ const HubPage = ({ title, vertical, subtitle }) => {
 
   useEffect(() => {
     fetchTickets();
-    const socket = io('https://myclaimportal.onrender.com');
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     socket.on('ticket_created', fetchTickets);
     socket.on('ticket_updated', fetchTickets);
     socket.on('ticket_comment', fetchTickets);
@@ -382,8 +383,8 @@ const HubPage = ({ title, vertical, subtitle }) => {
     .ch-topic-header { display: flex; align-items: center; padding: 16px 24px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); cursor: pointer; font-weight: 800; color: var(--text); }
     .ch-task-row { display: flex; align-items: center; padding: 12px 24px; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--text); cursor: pointer; }
     .ch-task-row:hover { background: rgba(255,255,255,0.02); }
-    .ch-add-task { padding: 12px 24px 12px 64px; font-size: 13px; font-weight: 700; color: #3b82f6; cursor: pointer; border-bottom: 1px solid var(--border); }
-    .ch-add-task:hover { text-decoration: underline; }
+    .ch-add-task { padding: 10px 24px 10px 64px; font-size: 13px; font-weight: 700; color: #3b82f6; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; user-select: none; }
+    .ch-add-task:hover { background: rgba(59, 130, 246, 0.08); color: #60a5fa; }
     
     .ch-col-task { flex: 2.5; display: flex; align-items: center; gap: 12px; }
     .ch-col-status { flex: 1.2; }
@@ -510,7 +511,10 @@ const HubPage = ({ title, vertical, subtitle }) => {
                                 <div className="ch-col-priority"><span className={`ch-badge ${getPriorityBadge(task.priority)}`}>{task.priority}</span></div>
                               </div>
                             ))}
-                            <div className="ch-add-task">+ Add task</div>
+                            <div className="ch-add-task" onClick={() => setIsAddMainTopicOpen(true)}>
+                              <Plus size={14} />
+                              <span>Add Task</span>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -556,7 +560,10 @@ const HubPage = ({ title, vertical, subtitle }) => {
                                 <div className="ch-col-priority"><span className={`ch-badge ${getPriorityBadge(task.priority)}`}>{task.priority}</span></div>
                               </div>
                             ))}
-                            <div className="ch-add-task">+ Add task</div>
+                            <div className="ch-add-task" onClick={() => setIsAddMainTopicOpen(true)}>
+                              <Plus size={14} />
+                              <span>Add Task</span>
+                            </div>
                           </div>
                         )}
                       </div>

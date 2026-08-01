@@ -1,4 +1,5 @@
 const Proposal = require('../../models/Proposal');
+const { createActivityAndNotify } = require('../../utils/activityHelper');
 
 // ─────────────────────────────────────────────
 // SERVER-SIDE CACHE for Proposals
@@ -43,6 +44,14 @@ const createProposal = async (req, res) => {
       status: status || 'Draft', notes, attachmentPath, createdBy: req.user._id
     });
     bustProposalsCache();
+
+    await createActivityAndNotify({
+      action: `Proposal created for ${clientName} (${serviceRequest}) by ${req.user.name || 'User'}`,
+      user: req.user,
+      proposal,
+      type: 'proposal_created'
+    });
+
     res.status(201).json(proposal);
   } catch (error) {
     res.status(500).json({ message: error.message || 'Error creating proposal' });
@@ -68,6 +77,13 @@ const updateProposal = async (req, res) => {
       .populate('createdBy', 'name role')
       .populate('assignedTo', 'name role')
       .lean();
+
+    await createActivityAndNotify({
+      action: `Proposal updated for ${proposal.clientName} (${proposal.serviceRequest}) - Status: ${proposal.status} by ${req.user.name || 'User'}`,
+      user: req.user,
+      proposal: populated,
+      type: 'proposal_created'
+    });
 
     res.json(populated);
   } catch (error) {

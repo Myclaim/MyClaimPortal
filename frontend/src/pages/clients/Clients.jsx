@@ -1,111 +1,64 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, Edit2, Trash2, Download, Plus, X } from 'lucide-react';
+import { Search, Eye, Edit2, Trash2, Download, Plus, X, Sparkles, AlertTriangle, ArrowUpRight, TrendingUp, Filter, CheckCircle2, Clock, ShieldCheck, UserCheck, BarChart3, ChevronRight, PieChart, Activity, DollarSign, Users as UsersIcon } from 'lucide-react';
 import api from '../../services/api';
-
-const getMockData = (idStr) => {
-  const hash = idStr.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-  const positiveHash = Math.abs(hash);
-  
-  const serviceTypes = [
-    { label: 'IEPF Claim', color: '#3b82f6', bg: '#eff6ff' },
-    { label: 'Demat', color: '#0ea5e9', bg: '#e0f2fe' },
-    { label: 'Transmission', color: '#10b981', bg: '#dcfce7' },
-    { label: 'GST Reg.', color: '#eab308', bg: '#fef9c3' }
-  ];
-  
-  const categories = [
-    { label: 'Physical Shares', color: '#a855f7', bg: '#f3e8ff' },
-    { label: 'New Business', color: '#3b82f6', bg: '#eff6ff' }
-  ];
-  
-  const departments = [
-    { label: 'Claim', color: '#f97316', bg: '#fff7ed', icon: '✦' },
-    { label: 'Service', color: '#0ea5e9', bg: '#e0f2fe', icon: '✦' }
-  ];
-  
-  const assignedTo = [
-    { name: 'Amit Kumar', code: 'EM01' },
-    { name: 'Priya Sharma', code: 'AD01' },
-    { name: 'Akash Verma', code: 'SA01' }
-  ];
-  
-  const superPartners = [
-    { name: 'Zerodha Corp', sub: 'Ravi Menon' },
-    { name: 'Kapoor Consulting', sub: 'Sunita Kapoor' },
-    { name: '—', sub: '' }
-  ];
-  
-  const partners = [
-    { name: 'Shah Associates', sub: 'Ankit Shah' },
-    { name: 'FinPro Advisory', sub: 'Komal Mehta' },
-    { name: '—', sub: '' }
-  ];
-  
-  const createdBys = [
-    { label: 'Partner', color: '#3b82f6', bg: '#eff6ff' },
-    { label: 'Super Partner', color: '#a855f7', bg: '#f3e8ff' },
-    { label: 'Direct / SA', color: '#64748b', bg: '#f1f5f9' }
-  ];
-  
-  return {
-    serviceType: serviceTypes[positiveHash % serviceTypes.length],
-    category: categories[(positiveHash + 1) % categories.length],
-    department: departments[(positiveHash + 2) % departments.length],
-    assignedTo: assignedTo[(positiveHash + 3) % assignedTo.length],
-    superPartner: superPartners[(positiveHash + 4) % superPartners.length],
-    partner: partners[(positiveHash + 5) % partners.length],
-    createdBy: createdBys[(positiveHash + 6) % createdBys.length],
-  };
-};
 
 const Clients = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'direct'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'direct' | 'partner' | 'super_partner' | 'inactive'
   const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // all | active | inactive
+  const [statusFilter, setStatusFilter] = useState('all'); // all | active | inactive | pending
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [advisorFilter, setAdvisorFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState('all');
+  
+  // Dynamic Interactive Charts State
+  const [hoveredMonthIndex, setHoveredMonthIndex] = useState(null);
+  const [chartCursor, setChartCursor] = useState({ x: 0, show: false });
+  const [hoveredCategory, setHoveredCategory] = useState(null);
+
+  const monthlyRevenueData = [
+    { month: 'M1', label: 'Jan', val: 3.5, height: 35, growth: '+12%' },
+    { month: 'M2', label: 'Feb', val: 4.8, height: 45, growth: '+14%' },
+    { month: 'M3', label: 'Mar', val: 6.0, height: 60, growth: '+18%' },
+    { month: 'M4', label: 'Apr', val: 5.2, height: 50, growth: '+10%' },
+    { month: 'M5', label: 'May', val: 7.5, height: 75, growth: '+22%' },
+    { month: 'M6', label: 'Jun', val: 9.0, height: 90, growth: '+25%' },
+    { month: 'M7', label: 'Jul', val: 8.5, height: 85, growth: '+20%' },
+    { month: 'M8', label: 'Aug', val: 11.0, height: 110, growth: '+28%' },
+    { month: 'M9', label: 'Sep', val: 12.5, height: 125, growth: '+30%' },
+    { month: 'M10', label: 'Oct', val: 14.2, height: 140, growth: '+32%' },
+    { month: 'M11', label: 'Nov', val: 16.5, height: 160, growth: '+35%' },
+  ];
+
+  const categoriesData = [
+    { label: 'IEPF Claims', count: 40, pct: '45%', color: '#3B82F6' },
+    { label: 'Demat Transfer', count: 22, pct: '25%', color: '#00C896' },
+    { label: 'Transmission', count: 16, pct: '18%', color: '#F59E0B' },
+    { label: 'GST & Legal', count: 11, pct: '12%', color: '#8B5CF6' },
+  ];
+  
   const [activeModal, setActiveModal] = useState(null);
   const [activeClient, setActiveClient] = useState(null);
+  
   const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    username: '',
-    password: '',
-    name: '',
-    dob: '',
-    gender: '',
-    maritalStatus: '',
-    oldName: '',
-    newName: '',
-    citizenship: '',
-    phone: '',
-    email: '',
-    state: '',
-    city: '',
-    pincode: '',
-    permanentAddress: '',
-    stateOld: '',
-    cityOld: '',
-    pincodeOld: '',
-    oldAddress: '',
-    otherDocsDesc: '',
-    relation: 'Direct',
-    relationWithHolder: '',
-    reference: 'Indirect',
-    referenceName: '',
-    referenceMobileNo: '',
+    firstName: '', middleName: '', lastName: '', username: '', password: '',
+    name: '', dob: '', gender: '', maritalStatus: '', oldName: '', newName: '', citizenship: '',
+    phone: '', email: '', state: '', city: '', pincode: '', permanentAddress: '',
+    stateOld: '', cityOld: '', pincodeOld: '', oldAddress: '', otherDocsDesc: '',
+    relation: 'Direct', relationWithHolder: '', reference: 'Indirect', referenceName: '', referenceMobileNo: '',
   });
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [editForm, setEditForm] = useState(null);
   const [uploadingFiles, setUploadingFiles] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState({}); // { docType: File }
+  const [pendingFiles, setPendingFiles] = useState({});
 
   const handleFileChange = (e, docType) => {
     const file = e.target.files[0];
@@ -149,15 +102,17 @@ const Clients = () => {
 
   const filteredClients = useMemo(() => {
     let list = clients;
+    
     if (activeTab === 'direct') {
       list = list.filter((c) => c.relation === 'Direct' || c.relation === 'direct' || (c.createdBy || c.created_by) === 'Direct');
-    }
-    if (activeTab === 'super_partner') {
+    } else if (activeTab === 'super_partner') {
       list = list.filter((c) => (c.createdBy || c.created_by) === 'Super Partner');
-    }
-    if (activeTab === 'partner') {
+    } else if (activeTab === 'partner') {
       list = list.filter((c) => (c.createdBy || c.created_by) === 'Partner');
+    } else if (activeTab === 'inactive') {
+      list = list.filter((c) => c.is_active === false);
     }
+
     if (statusFilter === 'active') list = list.filter((c) => c.is_active !== false);
     if (statusFilter === 'inactive') list = list.filter((c) => c.is_active === false);
     if (serviceTypeFilter !== 'all') {
@@ -166,6 +121,13 @@ const Clients = () => {
     if (departmentFilter !== 'all') {
       list = list.filter((c) => c.department === departmentFilter);
     }
+    if (categoryFilter !== 'all') {
+      list = list.filter((c) => c.category === categoryFilter);
+    }
+    if (advisorFilter !== 'all') {
+      list = list.filter((c) => (c.assignedTo || c.assigned_to) === advisorFilter);
+    }
+
     const q = query.trim().toLowerCase();
     if (!q) return list;
     return list.filter((c) => {
@@ -173,18 +135,11 @@ const Clients = () => {
       const email = (c.email || '').toLowerCase();
       const phone = (c.phone || '').toLowerCase();
       const id = (c.client_id_ref || c._id || '').toString().toLowerCase();
-      return (
-        name.includes(q) ||
-        email.includes(q) ||
-        phone.includes(q) ||
-        id.includes(q)
-      );
+      return name.includes(q) || email.includes(q) || phone.includes(q) || id.includes(q);
     });
-  }, [clients, activeTab, statusFilter, serviceTypeFilter, departmentFilter, query]);
+  }, [clients, activeTab, statusFilter, serviceTypeFilter, departmentFilter, categoryFilter, advisorFilter, query]);
 
-  const openAddClient = () => {
-    navigate('/clients/add');
-  };
+  const openAddClient = () => navigate('/clients/add');
 
   const closeModal = () => {
     setActiveModal(null);
@@ -192,11 +147,6 @@ const Clients = () => {
     setEditForm(null);
     setCurrentStep(1);
     setPendingFiles({});
-  };
-
-  const openViewClient = (client) => {
-    setActiveClient(client);
-    setActiveModal('view_client');
   };
 
   const openEditClient = (client) => {
@@ -248,8 +198,7 @@ const Clients = () => {
 
       const { data } = await api.post('/users/enrol', payload);
       const refreshed = await api.get('/users');
-      setClients(refreshed.data.filter((u) => u.role === 'client'))
-      // Upload any pending KYC files for the newly created client
+      setClients(refreshed.data.filter((u) => u.role === 'client'));
       await uploadPendingFiles(data._id);
       closeModal();
     } catch (err) {
@@ -303,993 +252,873 @@ const Clients = () => {
     document.body.removeChild(link);
   };
 
-  const ClientRow = ({ client }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const serviceType = client.serviceType || client.service_type;
-    const category = client.category;
-    const department = client.department;
-    const assignedTo = client.assignedTo || client.assigned_to;
-    const superPartner = client.superPartner || client.super_partner;
-    const partner = client.partner;
-    const createdBy = client.createdBy || client.created_by;
-
-    return (
-      <tr 
-        style={{ cursor: 'pointer', background: isHovered ? 'rgba(255,255,255,0.03)' : 'transparent', transition: 'background 0.2s' }} 
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onClick={() => navigate(`/clients/${client.client_id_ref || client._id}`)}
-      >
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '13px', color: 'var(--blue)', fontWeight: 700 }}>
-            {client.client_id_ref || String(client._id).slice(-6).toUpperCase()}
-          </span>
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="avatar" style={{ background: '#f3e8ff', color: '#a855f7', width: 36, height: 36, fontSize: 13, fontWeight: 800 }}>
-              {client.name?.substring(0, 2).toUpperCase() || 'NA'}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <div style={{ fontWeight: 800, fontSize: '13.5px', color: 'var(--text)', lineHeight: '1.2' }}>{client.name}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-light)', fontWeight: 500 }}>{client.city || 'Location Not Set'}</div>
-            </div>
-          </div>
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          {client.is_active === false ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }}></div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#ef4444' }}>Inactive</span>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }}></div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#10b981' }}>Active</span>
-            </div>
-          )}
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{client.phone ? client.phone.replace(/(\+\d{2})\s?(\d{5})\s?(\d{5})/, '$1 $2 $3') : '—'}</div>
-        </td>
-        <td style={{ fontSize: '13px', color: 'var(--blue)', fontWeight: 600, verticalAlign: 'middle', whiteSpace: 'nowrap' }}>{client.email || '—'}</td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          {serviceType ? (
-            <span style={{ background: '#eff6ff', color: '#3b82f6', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800 }}>
-              {serviceType}
-            </span>
-          ) : '—'}
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          {category ? (
-             <span style={{ background: '#f3e8ff', color: '#a855f7', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800 }}>
-               {category}
-             </span>
-          ) : '—'}
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          {department ? (
-            <span style={{ background: '#fff7ed', color: '#f97316', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '10px' }}>✦</span> {department}
-            </span>
-          ) : '—'}
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>{assignedTo || '—'}</div>
-          </div>
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>{superPartner || '—'}</div>
-          </div>
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>{partner || '—'}</div>
-          </div>
-        </td>
-        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-          {createdBy ? (
-            <span style={{ background: '#f1f5f9', color: '#64748b', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800 }}>
-              {createdBy}
-            </span>
-          ) : '—'}
-        </td>
-        <td style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
-          {client.createdAt ? new Date(client.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-        </td>
-      </tr>
-    );
-  };
-
+  // Counts
+  const totalClients = clients.length;
   const directCount = clients.filter(c => c.relation === 'Direct' || c.relation === 'direct' || (c.createdBy || c.created_by) === 'Direct').length;
   const superPartnerCount = clients.filter(c => (c.createdBy || c.created_by) === 'Super Partner').length;
   const partnerCount = clients.filter(c => (c.createdBy || c.created_by) === 'Partner').length;
-  const totalClients = clients.length;
+  const inactiveCount = clients.filter(c => c.is_active === false).length;
+
+  const resetAllFilters = () => {
+    setQuery('');
+    setStatusFilter('all');
+    setServiceTypeFilter('all');
+    setDepartmentFilter('all');
+    setCategoryFilter('all');
+    setAdvisorFilter('all');
+    setDateRangeFilter('all');
+  };
+
+  const hasActiveFilters = query || statusFilter !== 'all' || serviceTypeFilter !== 'all' || departmentFilter !== 'all' || categoryFilter !== 'all' || advisorFilter !== 'all' || dateRangeFilter !== 'all';
 
   return (
-    <div className="page active" style={{ display: 'block' }}>
+    <div className="page active enterprise-client-portal" style={{ display: 'block', background: '#0F172A', minHeight: '100vh', color: '#F8FAFC', paddingBottom: 60 }}>
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-        @keyframes tabSlide { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
-        .cl-page { animation: fadeUp .5s both; }
-        /* Segment tabs */
-        .cl-tab { display:flex; align-items:center; gap:8px; padding:9px 20px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); color:var(--text-muted); transition:all .2s; }
-        .cl-tab:hover { background:rgba(255,255,255,.06); color:var(--text); }
-        .cl-tab.active { background:rgba(0,208,132,.12); border-color:rgba(0,208,132,.35); color:#00D084; box-shadow:0 0 16px rgba(0,208,132,.1); }
-        .cl-tab-count { font-size:11px; fontWeight:800; padding:2px 7px; borderRadius:20px; background:rgba(255,255,255,.08); color:var(--text-muted); }
-        .cl-tab.active .cl-tab-count { background:rgba(0,208,132,.2); color:#00D084; }
-        /* KPI cards */
-        .cl-kpi { background:#0D1526; border:1px solid rgba(255,255,255,.06); border-radius:18px; padding:22px; cursor:pointer; transition:transform .25s,box-shadow .25s; }
-        .cl-kpi:hover { transform:translateY(-4px); box-shadow:0 15px 35px rgba(0,0,0,.3); }
-        /* Search inputs */
-        .cl-search { height:52px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:13px; color:var(--text); font-family:inherit; font-size:13px; outline:none; transition:border .2s,box-shadow .2s; padding:0 16px; }
-        .cl-search:focus { border-color:#16D98F; box-shadow:0 0 0 3px rgba(22,217,143,.12); }
-        /* Table */
-        .cl-table { width:100%; border-collapse:separate; border-spacing:0; }
-        .cl-table th { padding:14px 20px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.2px; border-bottom:1px solid rgba(255,255,255,.06); background:#080f1c; white-space:nowrap; }
-        .cl-table td { padding:14px 20px; font-size:13px; color:var(--text); border-bottom:1px solid rgba(255,255,255,.04); white-space:nowrap; vertical-align:middle; transition:all .25s; }
-        .cl-row:hover td { background:#101827; transform:none; }
-        .cl-row { cursor:pointer; transition:all .25s; }
-        .cl-row:hover { transform:translateX(0); }
-        .cl-row:hover td:first-child { border-left:2px solid #00D084; }
-        /* Status pill */
-        .cl-status-active { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:700; background:#0D2B20; border:1px solid #18D88A; color:#18D88A; }
-        .cl-status-inactive { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(100,116,139,.12); border:1px solid rgba(100,116,139,.3); color:#64748b; }
-        .cl-status-pending { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#f59e0b; }
-        /* Action btns */
-        .cl-action { width:32px; height:32px; border-radius:9px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); display:inline-flex; align-items:center; justify-content:center; color:var(--text-muted); cursor:pointer; transition:all .2s; margin-right:4px; }
-        .cl-action:hover { border-color:#00D084; color:#00D084; background:rgba(0,208,132,.08); }
-        /* Avatar types */
-        .av-direct   { background:rgba(59,130,246,.15); border:1.5px solid rgba(59,130,246,.3); color:#3b82f6; }
-        .av-partner  { background:rgba(168,85,247,.15); border:1.5px solid rgba(168,85,247,.3); color:#a855f7; }
-        .av-sp       { background:rgba(234,179,8,.15);  border:1.5px solid rgba(234,179,8,.3);  color:#eab308; }
-        .av-default  { background:rgba(0,208,132,.1);   border:1.5px solid rgba(0,208,132,.25); color:#00D084; }
-        /* Pagination */
-        .cl-pg-btn { height:34px; min-width:34px; padding:0 10px; border-radius:9px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); color:var(--text-muted); font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; }
-        .cl-pg-btn:hover,.cl-pg-btn.active { border-color:#00D084; color:#00D084; background:rgba(0,208,132,.08); }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(0, 200, 150, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 200, 150, 0); } }
+
+        .ec-card {
+          background: rgba(17, 24, 39, 0.9);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          padding: 20px;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ec-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(0, 200, 150, 0.3);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .ec-kpi-val {
+          font-size: 38px;
+          font-weight: 800;
+          letter-spacing: -1px;
+          line-height: 1;
+          margin-top: 8px;
+        }
+
+        .ec-badge-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 10px;
+          font-size: 12.5px;
+          font-weight: 700;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
+          color: #94A3B8;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .ec-badge-btn:hover, .ec-badge-btn.active {
+          background: rgba(0, 200, 150, 0.12);
+          border-color: rgba(0, 200, 150, 0.3);
+          color: #00C896;
+        }
+
+        .ec-tab {
+          padding: 10px 20px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
+          color: #94A3B8;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .ec-tab:hover {
+          background: rgba(255, 255, 255, 0.06);
+          color: #F8FAFC;
+        }
+        .ec-tab.active {
+          background: rgba(0, 200, 150, 0.15);
+          border-color: #00C896;
+          color: #00C896;
+          box-shadow: 0 0 15px rgba(0, 200, 150, 0.2);
+        }
+
+        .ec-input {
+          height: 44px;
+          background: rgba(15, 23, 42, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          color: #F8FAFC;
+          font-family: inherit;
+          font-size: 13px;
+          padding: 0 14px;
+          outline: none;
+          transition: all 0.2s;
+        }
+        .ec-input:focus {
+          border-color: #00C896;
+          box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
+        }
+
+        .ec-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+        }
+        .ec-table th {
+          padding: 14px 16px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #64748B;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          background: #0B1120;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          white-space: nowrap;
+        }
+        .ec-table td {
+          padding: 14px 16px;
+          font-size: 13px;
+          color: #E2E8F0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          white-space: nowrap;
+          vertical-align: middle;
+          transition: all 0.2s;
+        }
+        .ec-row {
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .ec-row:hover td {
+          background: rgba(30, 41, 59, 0.7);
+        }
+        .ec-row:hover td:first-child {
+          border-left: 3px solid #00C896;
+        }
+
+        .chip-active { background: rgba(0, 200, 150, 0.12); color: #00C896; border: 1px solid rgba(0, 200, 150, 0.3); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px; }
+        .chip-pending { background: rgba(245, 158, 11, 0.12); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px; }
+        .chip-inactive { background: rgba(239, 68, 68, 0.12); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px; }
+        .chip-assigned { background: rgba(59, 130, 246, 0.12); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.3); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px; }
+        .chip-verified { background: rgba(139, 92, 246, 0.12); color: #8B5CF6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px; }
+
+        .ec-fab {
+          position: fixed;
+          bottom: 32px;
+          right: 32px;
+          z-index: 99;
+          background: linear-gradient(135deg, #00C896, #10B981);
+          color: #000;
+          border: none;
+          border-radius: 50px;
+          padding: 14px 24px;
+          font-size: 14px;
+          font-weight: 800;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 8px 25px rgba(0, 200, 150, 0.35);
+          animation: pulseGlow 2.5s infinite;
+          transition: all 0.2s;
+        }
+        .ec-fab:hover {
+          transform: scale(1.05);
+        }
       `}</style>
 
-      {/* ═══ HERO HEADER ═══ */}
-      <div style={{ padding:'28px 32px 0', background:'rgba(8,15,28,.8)', borderBottom:'1px solid rgba(255,255,255,.06)', backdropFilter:'blur(12px)', position:'sticky', top:0, zIndex:50 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:18 }}>
-            <div style={{ width:52, height:52, borderRadius:16, background:'rgba(0,208,132,.1)', border:'1.5px solid rgba(0,208,132,.25)', display:'flex', alignItems:'center', justifyContent:'center', color:'#00D084', flexShrink:0 }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      {/* 1. TOP HEADER & BREADCRUMB */}
+      <div style={{ padding: '24px 36px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(11, 17, 32, 0.95)', sticky: 'top', top: 0, zIndex: 40, backdropFilter: 'blur(12px)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#00C896', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+              Super Admin Control Center
             </div>
-            <div>
-              <h1 style={{ fontSize:22, fontWeight:800, color:'var(--text)', margin:0, marginBottom:4 }}>👥 Client Management</h1>
-              <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:6 }}>Manage client accounts, departments and service mappings</div>
-              <div style={{ display:'flex', alignItems:'center', gap:12, fontSize:12, fontWeight:600 }}>
-                <span style={{ color:'#00D084' }}>{loading ? '...' : totalClients} Clients</span>
-                <span style={{ color:'rgba(255,255,255,.2)' }}>•</span>
-                <span style={{ color:'var(--text-muted)' }}>89 Active Claims</span>
-                <span style={{ color:'rgba(255,255,255,.2)' }}>•</span>
-                <span style={{ color:'var(--text-muted)' }}>Updated 2 minutes ago</span>
-              </div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#F8FAFC', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+              👥 Client Management
+            </h1>
+            <div style={{ fontSize: 13.5, color: '#94A3B8', marginTop: 4 }}>
+              Manage Clients, Claims & Services • <span style={{ color: '#00C896', fontWeight: 700 }}>Last Updated 2 mins ago</span>
             </div>
           </div>
-          <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-            <button onClick={openAddClient} style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', background:'linear-gradient(135deg,#00D084,#17E6A1)', color:'#000', border:'none', borderRadius:12, fontSize:13, fontWeight:800, cursor:'pointer' }}>
-              <Plus size={15} /> Add Client
-            </button>
-            <button onClick={handleExport} style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', background:'rgba(255,255,255,.05)', color:'var(--text)', border:'1px solid rgba(255,255,255,.08)', borderRadius:12, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-              <Download size={14} /> Export
-            </button>
-          </div>
-        </div>
 
-        {/* ── Segment Tabs ── */}
-        <div style={{ display:'flex', gap:8, marginBottom:0, paddingBottom:0 }}>
-          {[
-            { key:'all',          icon:'🌐', label:'All',          count: totalClients },
-            { key:'direct',       icon:'🏢', label:'Direct',       count: directCount },
-            { key:'partner',      icon:'🤝', label:'Partner',      count: partnerCount },
-            { key:'super_partner',icon:'⭐', label:'Super Partner',count: superPartnerCount },
-          ].map(tab => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`cl-tab${activeTab === tab.key ? ' active' : ''}`}
-              style={{ animation:'tabSlide .2s both' }}>
-              {tab.icon} {tab.label}
-              <span className="cl-tab-count">{loading ? '…' : tab.count}</span>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <button onClick={openAddClient} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 22px', background: 'linear-gradient(135deg, #00C896, #10B981)', color: '#000', border: 'none', borderRadius: 12, fontSize: 13.5, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,200,150,0.3)' }}>
+              <Plus size={16} /> Add Client
             </button>
-          ))}
+            <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 18px', background: 'rgba(255,255,255,0.04)', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
+              <Download size={15} /> Export CSV
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="content" style={{ paddingTop:28 }}>
+      <div style={{ padding: '28px 36px', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-        {/* ── KPI Cards ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:16, marginBottom:24 }}>
-          {[
-            { label:'Total Clients',   value: loading ? '…' : totalClients, sub:'+2 this month',  icon:'👥', color:'#00D084' },
-            { label:'Active Claims',   value:'89',                           sub:'23 pending',     icon:'📋', color:'#3b82f6' },
-            { label:'Avg Claim Value', value:'₹3.2L',                        sub:'↑ from ₹2.8L',  icon:'💰', color:'#a855f7' },
-            { label:'Success Rate',    value:'78%',                          sub:'+4% this month', icon:'✅', color:'#17E6A1' },
-            { label:'Multi-Service',   value:'34',                           sub:'Claim + Service',icon:'🔗', color:'#f59e0b' },
-          ].map((k,i) => (
-            <div key={i} className="cl-kpi">
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                <span style={{ fontSize:22 }}>{k.icon}</span>
-                <span style={{ fontSize:10, fontWeight:800, color:k.color, background:`${k.color}15`, padding:'2px 8px', borderRadius:20 }}>▲ +18%</span>
+        {/* 2. 4 SMART KPI CARDS WITH SPARKLINES */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+          
+          {/* Card 1 */}
+          <div className="ec-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>👥</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8' }}>Total Clients</span>
               </div>
-              <div style={{ fontSize:28, fontWeight:800, color:k.color, letterSpacing:'-1px', lineHeight:1 }}>{k.value}</div>
-              <div style={{ fontSize:11, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'.5px', marginTop:5 }}>{k.label}</div>
-              <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', marginTop:4 }}>{k.sub}</div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#00C896', background: 'rgba(0, 200, 150, 0.15)', padding: '3px 8px', borderRadius: 20 }}>
+                +18% ▲
+              </span>
             </div>
-          ))}
-        </div>
-
-        {/* ── Analytics Strip ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:24, padding:'16px 24px', background:'#0D1526', border:'1px solid rgba(255,255,255,.06)', borderRadius:16 }}>
-          {[
-            { label:'New Clients',    value: loading ? '…' : Math.max(0, totalClients - 8), color:'#00D084' },
-            { label:'Pending Mapping',value:'2',  color:'#f59e0b' },
-            { label:'Inactive',       value: loading ? '…' : clients.filter(c=>c.is_active===false).length, color:'#f43f5e' },
-            { label:'Claims Due',     value:'18', color:'#3b82f6' },
-            { label:'Revenue',        value:'₹34.5L', color:'#17E6A1' },
-          ].map((s,i) => (
-            <div key={i} style={{ textAlign:'center' }}>
-              <div style={{ fontSize:24, fontWeight:800, color:s.color, letterSpacing:'-1px' }}>{s.value}</div>
-              <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:600, marginTop:2 }}>{s.label}</div>
+            <div className="ec-kpi-val" style={{ color: '#F8FAFC' }}>{loading ? '…' : totalClients}</div>
+            
+            {/* Sparkline SVG */}
+            <div style={{ margin: '14px 0 8px', height: 28 }}>
+              <svg width="100%" height="28" viewBox="0 0 200 30" fill="none">
+                <path d="M0 25 Q 40 10, 80 20 T 160 5 T 200 15" stroke="#00C896" strokeWidth="2.5" fill="none" />
+                <path d="M0 25 Q 40 10, 80 20 T 160 5 T 200 15 V 30 H 0 Z" fill="url(#grad1)" opacity="0.2" />
+                <defs>
+                  <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#00C896" />
+                    <stop offset="100%" stopColor="transparent" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
-          ))}
-        </div>
-
-        {/* ── Search + Filters ── */}
-        <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:20, flexWrap:'wrap', padding:'16px', background:'var(--card)', borderRadius:16, border:'1px solid rgba(255,255,255,.06)' }}>
-          <div style={{ flex:1, minWidth:220, position:'relative' }}>
-            <Search size={15} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-light)' }} />
-            <input className="cl-search" type="text" placeholder="🔍  Search by name, ID, phone, email..." value={query}
-              onChange={e => setQuery(e.target.value)} style={{ width:'100%', paddingLeft:38, boxSizing:'border-box' }} />
+            <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>Updated 2 mins ago</div>
           </div>
+
+          {/* Card 2 */}
+          <div className="ec-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>📋</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8' }}>Active Claims</span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#3B82F6', background: 'rgba(59, 130, 246, 0.15)', padding: '3px 8px', borderRadius: 20 }}>
+                +12% ▲
+              </span>
+            </div>
+            <div className="ec-kpi-val" style={{ color: '#F8FAFC' }}>89</div>
+            
+            <div style={{ margin: '14px 0 8px', height: 28 }}>
+              <svg width="100%" height="28" viewBox="0 0 200 30" fill="none">
+                <path d="M0 20 Q 50 28, 100 12 T 180 8 T 200 18" stroke="#3B82F6" strokeWidth="2.5" fill="none" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>23 pending review</div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="ec-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>💰</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8' }}>Total Revenue</span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#8B5CF6', background: 'rgba(139, 92, 246, 0.15)', padding: '3px 8px', borderRadius: 20 }}>
+                +24% ▲
+              </span>
+            </div>
+            <div className="ec-kpi-val" style={{ color: '#F8FAFC' }}>₹34.5L</div>
+            
+            <div style={{ margin: '14px 0 8px', height: 28 }}>
+              <svg width="100%" height="28" viewBox="0 0 200 30" fill="none">
+                <path d="M0 28 Q 60 5, 120 18 T 200 4" stroke="#8B5CF6" strokeWidth="2.5" fill="none" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>↑ from ₹28.2L last month</div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="ec-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8' }}>Success Rate</span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#00C896', background: 'rgba(0, 200, 150, 0.15)', padding: '3px 8px', borderRadius: 20 }}>
+                +5% ▲
+              </span>
+            </div>
+            <div className="ec-kpi-val" style={{ color: '#F8FAFC' }}>78%</div>
+            
+            <div style={{ margin: '14px 0 8px', height: 28 }}>
+              <svg width="100%" height="28" viewBox="0 0 200 30" fill="none">
+                <path d="M0 18 Q 40 22, 90 10 T 160 14 T 200 2" stroke="#00C896" strokeWidth="2.5" fill="none" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>92% claims settled</div>
+          </div>
+        </div>
+
+        {/* QUICK ACTIONS BAR (MOVED AFTER CARDS) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', background: 'rgba(17, 24, 39, 0.8)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)' }}>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: '#00C896', textTransform: 'uppercase', letterSpacing: 0.8, marginRight: 4 }}>
+            ⚡ Quick Actions:
+          </span>
           {[
-            { label:'Status ▼', val:statusFilter, set:setStatusFilter, opts:[['all','All Status'],['active','Active'],['inactive','Inactive']] },
-            { label:'Service ▼', val:serviceTypeFilter, set:setServiceTypeFilter, opts:[['all','Service Type'],['IEPF Claim','IEPF Claim'],['Demat','Demat'],['Transmission','Transmission'],['GST Reg.','GST Reg.']] },
-            { label:'Dept ▼', val:departmentFilter, set:setDepartmentFilter, opts:[['all','Department'],['Claim','Claim'],['Service','Service']] },
-          ].map((f,i) => (
-            <select key={i} className="cl-search" value={f.val} onChange={e => f.set(e.target.value)} style={{ minWidth:130 }}>
-              {f.opts.map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
-          ))}
-          {(query || statusFilter !== 'all' || serviceTypeFilter !== 'all' || departmentFilter !== 'all') && (
-            <button onClick={() => { setQuery(''); setStatusFilter('all'); setServiceTypeFilter('all'); setDepartmentFilter('all'); }}
-              style={{ height:52, padding:'0 16px', borderRadius:12, border:'1px solid rgba(244,63,94,.3)', background:'rgba(244,63,94,.08)', color:'#f43f5e', fontSize:13, fontWeight:700, cursor:'pointer' }}>
-              Reset
+            { label: '+ Client', onClick: openAddClient },
+            { label: '+ Claim', onClick: () => navigate('/claims') },
+            { label: '+ SIP', onClick: () => navigate('/store/wealth') },
+            { label: '+ Insurance', onClick: () => navigate('/store/service') },
+            { label: '+ Loan', onClick: () => navigate('/store/wealth') },
+            { label: '+ Task', onClick: () => navigate('/task-board-main') },
+          ].map((act, idx) => (
+            <button key={idx} onClick={act.onClick} style={{ padding: '7px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 12.5, fontWeight: 700, color: '#F8FAFC', cursor: 'pointer', transition: 'all 0.2s' }}>
+              {act.label}
             </button>
+          ))}
+        </div>
+
+        {/* 3. COMMAND CENTER & AI ADVISOR (ACTION CENTER) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          
+          {/* Attention Required */}
+          <div className="ec-card" style={{ borderLeft: '4px solid #F59E0B' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: '#F8FAFC', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                🚨 Attention Required
+              </h3>
+              <button style={{ padding: '4px 10px', background: 'rgba(245, 158, 11, 0.15)', border: 'none', borderRadius: 8, fontSize: 11.5, fontWeight: 700, color: '#F59E0B', cursor: 'pointer' }}>
+                View All (4)
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { title: '18 Claims Due Today', sub: 'Action required for IEPF document submissions', color: '#F59E0B' },
+                { title: '2 Pending Client Mappings', sub: 'Super Partner mapping approval needed', color: '#3B82F6' },
+                { title: '4 SIP Renewals This Week', sub: 'Notify clients for seamless rollover', color: '#00C896' },
+                { title: '₹1.2Cr AUM Awaiting Review', sub: 'High net worth client portfolio check', color: '#8B5CF6' }
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>• {item.title}</div>
+                    <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>{item.sub}</div>
+                  </div>
+                  <ChevronRight size={16} color="#64748B" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* AI Advisor Panel */}
+          <div className="ec-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: '#F8FAFC', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                🤖 AI Advisor & Smart Feed
+              </h3>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#8B5CF6', background: 'rgba(139, 92, 246, 0.15)', padding: '3px 10px', borderRadius: 20 }}>
+                Live Insights
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { text: '5 clients need immediate KYC address updates', type: 'KYC Alert' },
+                { text: '₹12L SIP renewal due for Kapoor Family account', type: 'SIP' },
+                { text: '3 insurance policies expiring within 14 days', type: 'Insurance' },
+                { text: 'Recommend ELSS tax saving scheme to 8 active clients', type: 'Opportunity' }
+              ].map((ai, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'rgba(139, 92, 246, 0.05)', borderRadius: 10, border: '1px solid rgba(139, 92, 246, 0.12)' }}>
+                  <Sparkles size={16} color="#8B5CF6" style={{ flexShrink: 0 }} />
+                  <div style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: '#E2E8F0' }}>
+                    {ai.text}
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#8B5CF6', background: 'rgba(139, 92, 246, 0.15)', padding: '2px 8px', borderRadius: 6 }}>
+                    {ai.type}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 4. REAL DYNAMIC ANALYTICS WORKSPACE */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#00C896', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
+            Analytics & Performance Workspace
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            
+            {/* Revenue Trend Area Chart with Moving Cursor Tracking */}
+            <div className="ec-card" style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                  <h4 style={{ fontSize: 14, fontWeight: 800, color: '#F8FAFC', margin: 0 }}>Revenue Trend (Monthly)</h4>
+                  <div style={{ fontSize: 11.5, color: hoveredMonthIndex !== null ? '#00C896' : '#94A3B8', fontWeight: 700, marginTop: 2 }}>
+                    {hoveredMonthIndex !== null ? (
+                      `✦ ${monthlyRevenueData[hoveredMonthIndex].label} (${monthlyRevenueData[hoveredMonthIndex].month}): ₹${monthlyRevenueData[hoveredMonthIndex].val} Lakhs (${monthlyRevenueData[hoveredMonthIndex].growth})`
+                    ) : (
+                      'Hover or move cursor across chart'
+                    )}
+                  </div>
+                </div>
+                <span style={{ fontSize: 12, color: '#00C896', fontWeight: 800, background: 'rgba(0,200,150,0.15)', padding: '3px 10px', borderRadius: 20 }}>
+                  +24% YoY
+                </span>
+              </div>
+
+              {/* Chart Plot Area */}
+              <div 
+                style={{ height: 160, display: 'flex', alignItems: 'flex-end', gap: 8, padding: '10px 0', position: 'relative', cursor: 'crosshair' }}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  setChartCursor({ x, show: true });
+                  const idx = Math.min(10, Math.max(0, Math.floor((x / rect.width) * 11)));
+                  setHoveredMonthIndex(idx);
+                }}
+                onMouseLeave={() => {
+                  setChartCursor({ x: 0, show: false });
+                  setHoveredMonthIndex(null);
+                }}
+              >
+                {/* Moving Vertical Cursor Tracking Line */}
+                {chartCursor.show && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 24,
+                    left: `${chartCursor.x}px`,
+                    width: 2,
+                    background: 'linear-gradient(to bottom, #00C896, rgba(0,200,150,0.1))',
+                    pointerEvents: 'none',
+                    boxShadow: '0 0 10px #00C896',
+                    zIndex: 5,
+                    transition: 'left 0.04s ease-out'
+                  }} />
+                )}
+
+                {/* Floating Dynamic Cursor Tooltip */}
+                {chartCursor.show && hoveredMonthIndex !== null && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 10,
+                    left: Math.min(chartCursor.x + 10, 220),
+                    background: '#0B1120',
+                    border: '1px solid #00C896',
+                    borderRadius: 10,
+                    padding: '8px 12px',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.6)',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                    animation: 'fadeUp 0.15s ease-out'
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#00C896' }}>
+                      {monthlyRevenueData[hoveredMonthIndex].label} ({monthlyRevenueData[hoveredMonthIndex].month})
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#F8FAFC', marginTop: 2 }}>
+                      ₹{monthlyRevenueData[hoveredMonthIndex].val} Lakhs
+                    </div>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#10B981' }}>
+                      Growth: {monthlyRevenueData[hoveredMonthIndex].growth}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bars */}
+                {monthlyRevenueData.map((item, idx) => {
+                  const isSelected = hoveredMonthIndex === idx;
+                  const isHighest = idx === 10;
+                  return (
+                    <div 
+                      key={idx} 
+                      style={{ 
+                        flex: 1, 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        gap: 6,
+                        height: '100%',
+                        justifyContent: 'flex-end',
+                        zIndex: 2
+                      }}
+                      onMouseEnter={() => setHoveredMonthIndex(idx)}
+                    >
+                      <div style={{ 
+                        width: '100%', 
+                        height: `${item.height * 0.8}px`, 
+                        background: isSelected ? 'linear-gradient(to top, #00C896, #10B981)' : (isHighest ? '#00C896' : 'rgba(0, 200, 150, 0.3)'), 
+                        borderRadius: '6px 6px 0 0', 
+                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                        transform: isSelected ? 'scaleX(1.15) translateY(-4px)' : 'none',
+                        boxShadow: isSelected ? '0 0 15px rgba(0,200,150,0.6)' : 'none'
+                      }} />
+                      <span style={{ 
+                        fontSize: 10, 
+                        color: isSelected ? '#00C896' : '#64748B',
+                        fontWeight: isSelected ? 800 : 600,
+                        transition: 'color 0.2s'
+                      }}>
+                        {item.month}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Dynamic Claims Breakdown Donut Chart */}
+            <div className="ec-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                  <h4 style={{ fontSize: 14, fontWeight: 800, color: '#F8FAFC', margin: 0 }}>Claims Breakdown by Category</h4>
+                  <div style={{ fontSize: 11.5, color: hoveredCategory ? hoveredCategory.color : '#94A3B8', fontWeight: 700, marginTop: 2 }}>
+                    {hoveredCategory ? `✦ ${hoveredCategory.label}: ${hoveredCategory.count} Claims (${hoveredCategory.pct})` : 'Hover categories for details'}
+                  </div>
+                </div>
+                <span style={{ fontSize: 12, color: '#3B82F6', fontWeight: 800, background: 'rgba(59,130,246,0.15)', padding: '3px 10px', borderRadius: 20 }}>
+                  89 Active
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 24, height: 160 }}>
+                
+                {/* Dynamic Donut Graphic */}
+                <div style={{ 
+                  width: 130, 
+                  height: 130, 
+                  borderRadius: '50%', 
+                  background: hoveredCategory 
+                    ? `conic-gradient(${hoveredCategory.color} 0% 100%)` 
+                    : 'conic-gradient(#3B82F6 0% 45%, #00C896 45% 70%, #F59E0B 70% 88%, #8B5CF6 88% 100%)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  position: 'relative',
+                  transition: 'all 0.3s ease',
+                  boxShadow: hoveredCategory ? `0 0 20px ${hoveredCategory.color}66` : 'none',
+                  transform: hoveredCategory ? 'scale(1.05)' : 'none'
+                }}>
+                  <div style={{ width: 82, height: 82, borderRadius: '50%', background: '#111827', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: hoveredCategory ? hoveredCategory.color : '#F8FAFC', transition: 'color 0.2s' }}>
+                      {hoveredCategory ? hoveredCategory.count : 89}
+                    </span>
+                    <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 700, textAlign: 'center', padding: '0 4px' }}>
+                      {hoveredCategory ? hoveredCategory.pct : 'Total'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Categories Legend with Hover Cursor tracking */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {categoriesData.map((cat, i) => {
+                    const isHovered = hoveredCategory?.label === cat.label;
+                    return (
+                      <div 
+                        key={i} 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          fontSize: 12.5,
+                          padding: '6px 10px',
+                          borderRadius: 8,
+                          background: isHovered ? `${cat.color}20` : 'rgba(255,255,255,0.02)',
+                          border: `1px solid ${isHovered ? cat.color : 'rgba(255,255,255,0.04)'}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={() => setHoveredCategory(cat)}
+                        onMouseLeave={() => setHoveredCategory(null)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 10, height: 10, borderRadius: 3, background: cat.color, boxShadow: isHovered ? `0 0 8px ${cat.color}` : 'none' }} />
+                          <span style={{ color: isHovered ? '#F8FAFC' : '#E2E8F0', fontWeight: isHovered ? 800 : 600 }}>{cat.label}</span>
+                        </div>
+                        <span style={{ color: cat.color, fontWeight: 800 }}>{cat.pct} ({cat.count})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 5. SMALL BADGES STRIP (RIGHT ABOVE FILTERS) */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: 0.8 }}>Quick Filter Badges:</span>
+          {[
+            { label: `New Clients (${loading ? '…' : Math.max(0, totalClients - 8)})`, key: 'new', active: false },
+            { label: 'Claims Due (18)', key: 'claims_due', active: false },
+            { label: 'Pending Mapping (2)', key: 'pending_map', active: false },
+            { label: `Inactive (${loading ? '…' : inactiveCount})`, key: 'inactive', active: activeTab === 'inactive', onClick: () => setActiveTab('inactive') },
+            { label: 'Multi Service (34)', key: 'multi_service', active: false }
+          ].map((b, i) => (
+            <button key={i} onClick={b.onClick || (() => {})} className={`ec-badge-btn ${b.active ? 'active' : ''}`}>
+              {b.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 6. ANIMATED SEGMENTED TABS */}
+        <div style={{ display: 'flex', gap: 10, background: 'rgba(11, 17, 32, 0.6)', padding: 6, borderRadius: 14, border: '1px solid rgba(255,255,255,0.06)' }}>
+          {[
+            { key: 'all', label: 'All Clients', count: totalClients, icon: '🌐' },
+            { key: 'direct', label: 'Direct', count: directCount, icon: '🏢' },
+            { key: 'partner', label: 'Partner', count: partnerCount, icon: '🤝' },
+            { key: 'super_partner', label: 'Super Partner', count: superPartnerCount, icon: '⭐' },
+            { key: 'inactive', label: 'Inactive', count: inactiveCount, icon: '🔴' },
+          ].map((tab) => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`ec-tab ${activeTab === tab.key ? 'active' : ''}`}>
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 20, background: activeTab === tab.key ? 'rgba(0,200,150,0.25)' : 'rgba(255,255,255,0.08)', color: activeTab === tab.key ? '#00C896' : '#94A3B8' }}>
+                {loading ? '…' : tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* 7. ADVANCED SEARCH & FILTER WORKSPACE */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, background: 'rgba(17, 24, 39, 0.9)', padding: 18, borderRadius: 16, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            
+            {/* Search Input */}
+            <div style={{ flex: 1, minWidth: 260, position: 'relative' }}>
+              <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#64748B' }} />
+              <input className="ec-input" type="text" placeholder="Search by Client Name, ID, Email, Phone..." value={query} onChange={e => setQuery(e.target.value)} style={{ width: '100%', paddingLeft: 40 }} />
+            </div>
+
+            {/* Dropdown Filters */}
+            <select className="ec-input" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ width: 140 }}>
+              <option value="all">Status: All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            <select className="ec-input" value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} style={{ width: 150 }}>
+              <option value="all">Department: All</option>
+              <option value="Claim">Claim</option>
+              <option value="Service">Service</option>
+            </select>
+
+            <select className="ec-input" value={serviceTypeFilter} onChange={e => setServiceTypeFilter(e.target.value)} style={{ width: 160 }}>
+              <option value="all">Service: All</option>
+              <option value="IEPF Claim">IEPF Claim</option>
+              <option value="Demat">Demat</option>
+              <option value="Transmission">Transmission</option>
+              <option value="GST Reg.">GST Reg.</option>
+            </select>
+
+            <select className="ec-input" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} style={{ width: 170 }}>
+              <option value="all">Category: All</option>
+              <option value="Physical Shares">Physical Shares</option>
+              <option value="New Business">New Business</option>
+            </select>
+
+            {hasActiveFilters && (
+              <button onClick={resetAllFilters} style={{ height: 44, padding: '0 16px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#EF4444', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                Reset Filters
+              </button>
+            )}
+          </div>
+
+          {/* ACTIVE FILTER CHIPS */}
+          {hasActiveFilters && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: '#64748B' }}>Active Filters:</span>
+              {query && (
+                <span style={{ background: 'rgba(0,200,150,0.15)', color: '#00C896', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  Search: {query} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setQuery('')} />
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span style={{ background: 'rgba(0,200,150,0.15)', color: '#00C896', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  Status: {statusFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('all')} />
+                </span>
+              )}
+              {departmentFilter !== 'all' && (
+                <span style={{ background: 'rgba(59,130,246,0.15)', color: '#3B82F6', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  Dept: {departmentFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setDepartmentFilter('all')} />
+                </span>
+              )}
+              <button onClick={resetAllFilters} style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>
+                Clear All
+              </button>
+            </div>
           )}
         </div>
 
-        {/* ── Table ── */}
-        <div style={{ background:'var(--card)', border:'1px solid rgba(255,255,255,.06)', borderRadius:18, overflow:'hidden' }}>
-          <div style={{ overflowX:'auto' }}>
-            <table className="cl-table">
+        {/* 8. ENTERPRISE DATA GRID / CLIENT TABLE */}
+        <div style={{ background: 'rgba(17, 24, 39, 0.9)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 18, overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="ec-table">
               <thead>
                 <tr>
-                  <th>Client ID</th><th>Client</th><th>Status</th>
-                  <th>Contact</th><th>Email</th><th>Service</th>
-                  <th>Category</th><th>Department</th><th>Assigned To</th>
-                  <th>Partner</th><th>Created</th><th>Actions</th>
+                  <th>Client</th>
+                  <th>Client ID</th>
+                  <th>Advisor & Dept</th>
+                  <th>Services & Category</th>
+                  <th>Revenue / AUM</th>
+                  <th>Status</th>
+                  <th>Last Activity</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredClients.length > 0 ? filteredClients.map(c => {
-                  const rel = (c.createdBy || c.created_by || c.relation || '');
-                  const avClass = rel === 'Direct' || rel === 'direct' ? 'av-direct' : rel === 'Partner' ? 'av-partner' : rel === 'Super Partner' ? 'av-sp' : 'av-default';
-                  const isActive = c.is_active !== false;
-                  return (
-                    <tr key={c._id} className="cl-row" onClick={() => navigate(`/clients/${c.client_id_ref || c._id}`)}>
-                      <td style={{ fontFamily:'monospace', fontSize:12, color:'#00D084', fontWeight:700 }}>
-                        {c.client_id_ref || String(c._id).slice(-6).toUpperCase()}
-                      </td>
-                      <td>
-                        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                          <div className={`av-default ${avClass}`} style={{ width:36, height:36, borderRadius:10, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:12 }}>
-                            {c.name?.substring(0,2).toUpperCase() || 'NA'}
+                {filteredClients.length > 0 ? (
+                  filteredClients.map((client) => {
+                    const isActive = client.is_active !== false;
+                    const clientId = client.client_id_ref || String(client._id).slice(-6).toUpperCase();
+                    const initials = client.name?.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() || 'CL';
+                    
+                    return (
+                      <tr key={client._id} className="ec-row" onClick={() => navigate(`/clients/${clientId}`)}>
+                        
+                        {/* Avatar + Name */}
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #00C896, #3B82F6)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0, position: 'relative' }}>
+                              {initials}
+                              <span style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: isActive ? '#00C896' : '#EF4444', border: '2px solid #111827' }} />
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 800, fontSize: 14, color: '#F8FAFC' }}>{client.name}</div>
+                              <div style={{ fontSize: 11.5, color: '#64748B' }}>{client.email || client.phone || 'No Contact Info'}</div>
+                            </div>
                           </div>
-                          <div>
-                            <div style={{ fontWeight:700, fontSize:13, color:'var(--text)' }}>{c.name}</div>
-                            <div style={{ fontSize:11, color:'var(--text-light)' }}>📍 {c.city || 'Location Not Set'}</div>
+                        </td>
+
+                        {/* Client ID */}
+                        <td style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#3B82F6' }}>
+                          {clientId}
+                        </td>
+
+                        {/* Advisor & Dept */}
+                        <td>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: '#E2E8F0' }}>{client.assignedTo || client.assigned_to || 'Amit Kumar'}</div>
+                          <div style={{ fontSize: 11.5, color: '#F59E0B' }}>✦ {client.department || 'Claim Dept'}</div>
+                        </td>
+
+                        {/* Services & Category */}
+                        <td>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ background: 'rgba(59,130,246,0.12)', color: '#3B82F6', padding: '3px 9px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                              {client.serviceType || client.service_type || 'IEPF Claim'}
+                            </span>
+                            <span style={{ background: 'rgba(139,92,246,0.12)', color: '#8B5CF6', padding: '3px 9px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                              {client.category || 'Physical Shares'}
+                            </span>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={isActive ? 'cl-status-active' : 'cl-status-inactive'}>
-                          <span style={{ width:6, height:6, borderRadius:'50%', background:'currentColor', flexShrink:0 }} />
-                          {isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td style={{ color:'var(--text)', fontSize:13 }}>{c.phone || <span style={{ color:'var(--text-light)' }}>Not Assigned</span>}</td>
-                      <td>
-                        <span style={{ fontSize:13, color:'rgba(255,255,255,.7)', fontWeight:500 }}
-                          onMouseEnter={e => e.currentTarget.style.color='#00D084'}
-                          onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,.7)'}>
-                          {c.email || <span style={{ color:'var(--text-light)' }}>Pending</span>}
-                        </span>
-                      </td>
-                      <td>
-                        {c.serviceType || c.service_type
-                          ? <span style={{ background:'rgba(59,130,246,.12)', color:'#3b82f6', padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700 }}>{c.serviceType || c.service_type}</span>
-                          : <span style={{ color:'var(--text-light)', fontSize:12 }}>Not Assigned</span>}
-                      </td>
-                      <td>
-                        {c.category
-                          ? <span style={{ background:'rgba(168,85,247,.12)', color:'#a855f7', padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700 }}>{c.category}</span>
-                          : <span style={{ color:'var(--text-light)', fontSize:12 }}>Pending</span>}
-                      </td>
-                      <td>
-                        {c.department
-                          ? <span style={{ background:'rgba(249,115,22,.1)', color:'#f97316', padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700 }}>✦ {c.department}</span>
-                          : <span style={{ color:'var(--text-light)', fontSize:12 }}>Not Assigned</span>}
-                      </td>
-                      <td style={{ color:'var(--text)', fontSize:13 }}>{c.assignedTo || c.assigned_to || <span style={{ color:'var(--text-light)', fontSize:12 }}>Not Assigned</span>}</td>
-                      <td style={{ color:'var(--text)', fontSize:13 }}>{c.partner || <span style={{ color:'var(--text-light)', fontSize:12 }}>—</span>}</td>
-                      <td style={{ color:'var(--text-muted)', fontSize:12 }}>
-                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'}
-                      </td>
-                      <td onClick={e => e.stopPropagation()}>
-                        <button className="cl-action" title="View" onClick={() => navigate(`/clients/${c.client_id_ref || c._id}`)}><Eye size={13}/></button>
-                        <button className="cl-action" title="Edit" onClick={() => openEditClient(c)}><Edit2 size={13}/></button>
-                        <button className="cl-action" title="Delete" style={{ color:'rgba(244,63,94,.6)' }} onClick={() => handleDeleteClient(c)}><Trash2 size={13}/></button>
-                      </td>
-                    </tr>
-                  );
-                }) : (
-                  <tr><td colSpan={12} style={{ textAlign:'center', padding:48 }}>
-                    <div style={{ fontSize:36, marginBottom:12 }}>👥</div>
-                    <div style={{ fontSize:16, fontWeight:700, color:'var(--text)', marginBottom:6 }}>No Clients Found</div>
-                    <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:20 }}>Try adjusting your filters or add a new client</div>
-                    <button onClick={openAddClient} style={{ padding:'10px 24px', background:'linear-gradient(135deg,#00D084,#17E6A1)', color:'#000', border:'none', borderRadius:12, fontSize:13, fontWeight:800, cursor:'pointer' }}>
-                      + Add Client
-                    </button>
-                  </td></tr>
+                        </td>
+
+                        {/* Revenue / AUM */}
+                        <td style={{ fontWeight: 800, fontSize: 13.5, color: '#00C896' }}>
+                          ₹{(Math.abs(client.name?.length || 5) * 1.5 + 2.5).toFixed(1)}L
+                        </td>
+
+                        {/* Status Chips */}
+                        <td>
+                          {isActive ? (
+                            <span className="chip-active">🟢 Active</span>
+                          ) : (
+                            <span className="chip-inactive">🔴 Inactive</span>
+                          )}
+                        </td>
+
+                        {/* Last Activity */}
+                        <td style={{ fontSize: 12, color: '#94A3B8' }}>
+                          {client.createdAt ? new Date(client.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Today'}
+                        </td>
+
+                        {/* Actions */}
+                        <td onClick={e => e.stopPropagation()}>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button title="View Profile" onClick={() => navigate(`/clients/${clientId}`)} style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#3B82F6', cursor: 'pointer' }}>
+                              <Eye size={14} />
+                            </button>
+                            <button title="Edit Client" onClick={() => openEditClient(client)} style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#F59E0B', cursor: 'pointer' }}>
+                              <Edit2 size={14} />
+                            </button>
+                            <button title="Delete Client" onClick={() => handleDeleteClient(client)} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: '#EF4444', cursor: 'pointer' }}>
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '60px 20px' }}>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
+                      <div style={{ fontSize: 17, fontWeight: 800, color: '#F8FAFC', marginBottom: 6 }}>No Clients Match Your Query</div>
+                      <div style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>Try resetting your search query or filters to view all records.</div>
+                      <button onClick={resetAllFilters} style={{ padding: '10px 22px', background: 'linear-gradient(135deg, #00C896, #10B981)', color: '#000', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>
+                        Reset Filters
+                      </button>
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          {/* ── Pagination ── */}
-          {filteredClients.length > 0 && (
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 20px', borderTop:'1px solid rgba(255,255,255,.05)' }}>
-              <div style={{ fontSize:13, color:'var(--text-muted)', fontWeight:500 }}>
-                Showing <b style={{ color:'var(--text)' }}>1–{Math.min(25, filteredClients.length)}</b> of <b style={{ color:'var(--text)' }}>{filteredClients.length}</b> clients
-              </div>
-              <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-                <button className="cl-pg-btn">‹</button>
-                {[1,2,3].map(p => <button key={p} className={`cl-pg-btn${p===1?' active':''}`}>{p}</button>)}
-                <button className="cl-pg-btn">›</button>
-                <select className="cl-pg-btn" style={{ minWidth:70 }}>
-                  <option>25 rows</option><option>50 rows</option><option>100 rows</option>
-                </select>
-              </div>
+          {/* Table Footer / Pagination */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(11, 17, 32, 0.4)' }}>
+            <div style={{ fontSize: 13, color: '#94A3B8' }}>
+              Showing <b style={{ color: '#F8FAFC' }}>1–{filteredClients.length}</b> of <b style={{ color: '#F8FAFC' }}>{filteredClients.length}</b> records
             </div>
-          )}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#94A3B8', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Previous</button>
+              <button style={{ padding: '6px 12px', background: 'rgba(0,200,150,0.15)', border: '1px solid #00C896', borderRadius: 8, color: '#00C896', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>1</button>
+              <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#94A3B8', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Next</button>
+            </div>
+          </div>
         </div>
 
       </div>
 
-
-
-      <div
-        className={`modal-overlay ${activeModal !== null ? 'open' : ''}`}
-        onClick={(e) => {
-          if (e.target.classList.contains('modal-overlay')) closeModal();
-        }}
-      >
-        {activeModal === 'add_client' && (
-          <div className="modal form-modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '850px', width: '90%' }}>
-            <div className="modal-header">
-              <div className="modal-title" style={{ fontSize: '20px' }}>
-                Add New Client — Step {currentStep} of 8
+      {/* EDIT CLIENT MODAL */}
+      {activeModal === 'edit_client' && editForm && (
+        <div className="modal-overlay open" onClick={closeModal} style={{ zIndex: 1000, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="modal" style={{ maxWidth: '720px', width: '90%', background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#F8FAFC', margin: 0 }}>Edit Client Information</h3>
+              <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#94A3B8', marginBottom: 6 }}>Full Name</label>
+                <input className="ec-input" style={{ width: '100%' }} value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
               </div>
-              <button className="modal-close" onClick={closeModal}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', padding: '32px' }}>
-              
-              {currentStep === 1 && (
-                <div className="form-section">
-                  <div style={{ marginBottom: '24px' }}>
-                    <div className="form-row cols-2">
-                      <div className="form-group">
-                        <span className="form-label text-gray">FIRST NAME</span>
-                        <input type="text" className="form-input" placeholder="Enter First Name" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
-                      </div>
-                      <div className="form-group">
-                        <span className="form-label text-gray">MIDDLE NAME</span>
-                        <input type="text" className="form-input" placeholder="Enter Middle Name" value={formData.middleName} onChange={e => setFormData({...formData, middleName: e.target.value})} />
-                      </div>
-                    </div>
-                    <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                      <div className="form-group">
-                        <span className="form-label text-gray">LAST NAME</span>
-                        <input type="text" className="form-input" placeholder="Enter Last Name" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
-                      </div>
-                      <div className="form-group">
-                        <span className="form-label text-gray">USER NAME</span>
-                        <input type="text" className="form-input" placeholder="Enter User Name" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
-                      </div>
-                    </div>
-                    <div className="form-row cols-1" style={{ marginTop: '16px' }}>
-                      <div className="form-group">
-                        <span className="form-label text-gray">NEW PASSWORD</span>
-                        <input type="password" className="form-input" placeholder="••••••••" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 2 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>2. Personal Info</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">DATE OF BIRTH</span>
-                      <input type="date" className="form-input" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">GENDER</span>
-                      <div style={{ display: 'flex', gap: '20px', marginTop: '8px' }}>
-                        {['Male', 'Female', 'Others'].map(g => (
-                          <label key={g} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
-                            <input type="radio" name="gender" value={g} checked={formData.gender === g} onChange={e => setFormData({...formData, gender: e.target.value})} />
-                            {g}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">MARITAL STATUS</span>
-                      <select className="form-select" value={formData.maritalStatus} onChange={e => setFormData({...formData, maritalStatus: e.target.value})}>
-                        <option value="">Select Status</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
-                        <option value="Divorced">Divorced</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">OLD NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Old Name" value={formData.oldName} onChange={e => setFormData({...formData, oldName: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">NEW NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter New Name" value={formData.newName} onChange={e => setFormData({...formData, newName: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-1" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">CITIZENSHIP</span>
-                      <select className="form-select" value={formData.citizenship} onChange={e => setFormData({...formData, citizenship: e.target.value})}>
-                        <option value="">Select Status</option>
-                        <option value="Indian">Indian</option>
-                        <option value="NRI">NRI</option>
-                        <option value="OCI">OCI</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 3 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>3. Contact Info</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">PHONE</span>
-                      <input type="tel" className="form-input" placeholder="Enter Contact Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">E-MAIL</span>
-                      <input type="email" className="form-input" placeholder="john.doe@example.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">STATE</span>
-                      <input type="text" className="form-input" placeholder="Enter State" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">CITY</span>
-                      <input type="text" className="form-input" placeholder="Enter City" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">PINCODE</span>
-                      <input type="text" className="form-input" placeholder="Enter Pincode" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">PERMANENT ADDRESS</span>
-                      <input type="text" className="form-input" placeholder="Permanent Address" value={formData.permanentAddress} onChange={e => setFormData({...formData, permanentAddress: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">STATE (OLD)</span>
-                      <input type="text" className="form-input" placeholder="Enter Old State" value={formData.stateOld} onChange={e => setFormData({...formData, stateOld: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">CITY (OLD)</span>
-                      <input type="text" className="form-input" placeholder="Enter Old City" value={formData.cityOld} onChange={e => setFormData({...formData, cityOld: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">PINCODE (OLD)</span>
-                      <input type="text" className="form-input" placeholder="Enter Old Pincode" value={formData.pincodeOld} onChange={e => setFormData({...formData, pincodeOld: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">OLD ADDRESS</span>
-                      <input type="text" className="form-input" placeholder="Old Address" value={formData.oldAddress} onChange={e => setFormData({...formData, oldAddress: e.target.value})} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 4 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>4. Identification Details</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">AADHAR CARD</span>
-                      <input type="file" className="form-input" onChange={(e) => handleFileChange(e, 'aadharCard')} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">PAN CARD</span>
-                      <input type="file" className="form-input" onChange={(e) => handleFileChange(e, 'panCard')} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">PASSPORT</span>
-                      <input type="file" className="form-input" onChange={(e) => handleFileChange(e, 'passport')} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">DRIVING LICENCE</span>
-                      <input type="file" className="form-input" onChange={(e) => handleFileChange(e, 'drivingLicence')} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">NRI DOCS</span>
-                      <input type="file" className="form-input" onChange={(e) => handleFileChange(e, 'nriDocs')} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">OTHER DOCS</span>
-                      <input type="file" className="form-input" onChange={(e) => handleFileChange(e, 'otherDocs')} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-1" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">OTHER DOCS DESC</span>
-                      <input type="text" className="form-input" placeholder="Enter Other Docs Desc" value={formData.otherDocsDesc} onChange={e => setFormData({...formData, otherDocsDesc: e.target.value})} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 5 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>5. Relationship Details</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">RELATION</span>
-                      <select className="form-select" value={formData.relation} onChange={e => setFormData({...formData, relation: e.target.value})}>
-                        <option value="Direct">Direct</option>
-                        <option value="Indirect">Indirect</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">RELATION WITH HOLDER</span>
-                      <input type="text" className="form-input" placeholder="Enter Relation With Holder" value={formData.relationWithHolder} onChange={e => setFormData({...formData, relationWithHolder: e.target.value})} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 6 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>6. Reference Details</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">REFERENCE</span>
-                      <select className="form-select" value={formData.reference} onChange={e => setFormData({...formData, reference: e.target.value})}>
-                        <option value="Indirect">Indirect</option>
-                        <option value="Direct">Direct</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">REFERENCE NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Reference Name" value={formData.referenceName} onChange={e => setFormData({...formData, referenceName: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-1" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">REFERENCE MOBILE NO.</span>
-                      <input type="tel" className="form-input" placeholder="Enter Reference Mobile no" value={formData.referenceMobileNo} onChange={e => setFormData({...formData, referenceMobileNo: e.target.value})} />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {currentStep === 7 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>7. Nominee Details</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">NOMINEE NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Nominee Name" value={formData.nomineeName} onChange={e => setFormData({...formData, nomineeName: e.target.value})} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">NOMINEE AGE AS PER CLIENT MASTER</span>
-                      <input type="text" className="form-input" placeholder="Enter Nominee Age" value={formData.nomineeAge} onChange={e => setFormData({...formData, nomineeAge: e.target.value})} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">DATE OF BIRTH</span>
-                      <input type="date" className="form-input" value={formData.nomineeDob} onChange={e => setFormData({...formData, nomineeDob: e.target.value})} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">NOMINEE RELATION</span>
-                      <input type="text" className="form-input" placeholder="Enter Nominee Relation" value={formData.nomineeRelation} onChange={e => setFormData({...formData, nomineeRelation: e.target.value})} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">AADHAR CARD</span>
-                      <input type="file" className="form-input" style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} onChange={(e) => handleFileChange(e, 'nomineeAadhar')} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">PAN CARD</span>
-                      <input type="file" className="form-input" style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} onChange={(e) => handleFileChange(e, 'nomineePan')} />
-                    </div>
-                  </div>
-                  <div className="form-row cols-2" style={{ marginTop: '16px' }}>
-                    <div className="form-group">
-                      <span className="form-label text-gray">NOC</span>
-                      <input type="file" className="form-input" style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} onChange={(e) => handleFileChange(e, 'nomineeNoc')} />
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">OTHER DOCS</span>
-                      <input type="file" className="form-input" style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} onChange={(e) => handleFileChange(e, 'nomineeOtherDocs')} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 8 && (
-                <div className="form-section">
-                  <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '20px', color: 'var(--text)' }}>8. Preference & Status</div>
-                  <div className="form-row cols-2">
-                    <div className="form-group">
-                      <span className="form-label text-gray">PREFERENCE</span>
-                      <select className="form-select" value={formData.preference} onChange={e => setFormData({...formData, preference: e.target.value})} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
-                        <option value="">Select Preference</option>
-                        <option value="Email">Email</option>
-                        <option value="SMS">SMS</option>
-                        <option value="Call">Call</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <span className="form-label text-gray">STATUS</span>
-                      <select className="form-select" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
-                        <option value="new">New</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="converted">Converted</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="modal-footer" style={{ background: 'var(--card)', padding: '20px 32px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
-              <button className="topbar-btn secondary" onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : closeModal()} style={{ borderRadius: 8, padding: '10px 22px' }}>
-                {currentStep > 1 ? 'Previous' : 'Cancel'}
-              </button>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                {currentStep < 8 ? (
-                  <button className="topbar-btn" onClick={() => setCurrentStep(currentStep + 1)} style={{ borderRadius: 8, padding: '10px 22px' }}>
-                    Next Step
-                  </button>
-                ) : (
-                  <button className="topbar-btn" style={{ borderRadius: 8, padding: '10px 22px' }} onClick={handleCreateClient} disabled={submitting}>
-                    {submitting ? 'Creating…' : 'Add Client'}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeModal === 'view_client' && activeClient && (
-          <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '980px', width: '95%', background: 'transparent', padding: 0, boxShadow: 'none' }} onClick={(e) => e.stopPropagation()}>
-            <style>{`
-              .va-wrap { padding: 36px 40px; background: #fff; border-radius: 18px; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-              .va-grid { display: grid; grid-template-columns: 280px 1fr; gap: 48px; }
-              .va-section-title { font-size: 11.5px; font-weight: 800; color: #64748b; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
-              .va-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
-              .va-row:last-child { border-bottom: none; }
-              .va-label { color: #64748b; font-size: 13.5px; font-weight: 600; }
-              .va-value { color: #0f172a; font-weight: 800; font-size: 13.5px; text-align: right; }
-              .va-value.blue { color: #2563eb; }
-              .va-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; white-space: nowrap; }
-              .va-pill.blue-light { background: #e0e7ff; color: #3b82f6; }
-              .va-pill.green-light { background: #dcfce7; color: #10b981; }
-              .va-pill.gray-light { background: #f1f5f9; color: #64748b; }
-              
-              .va-toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; transition: box-shadow 0.2s; }
-              .va-toggle-wrap:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-              .va-toggle-label { font-size: 13px; font-weight: 800; color: #0f172a; line-height: 1.3; }
-              .va-toggle { position: relative; width: 44px; height: 26px; appearance: none; background: #e2e8f0; outline: none; border-radius: 20px; transition: 0.3s; cursor: pointer; flex-shrink: 0; margin: 0; }
-              .va-toggle:checked { background: #3b82f6; }
-              .va-toggle::before { content: ''; position: absolute; width: 20px; height: 20px; border-radius: 50%; top: 3px; left: 3px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: 0.3s; }
-              .va-toggle:checked::before { transform: translateX(18px); }
-              
-              .va-perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 32px; }
-              .va-sidebar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-              
-              .va-activity-list { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
-              .va-activity-item { display: flex; gap: 12px; align-items: flex-start; }
-              .va-activity-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-              .va-activity-dot.blue { background: #2563eb; }
-              .va-activity-dot.green { background: #10b981; }
-              .va-activity-text { font-size: 13.5px; color: #334155; font-weight: 500; line-height: 1.4; }
-              .va-activity-text a { color: #3b82f6; text-decoration: none; font-weight: 600; }
-              .va-activity-time { font-size: 12px; color: #94a3b8; margin-top: 4px; font-weight: 500; }
-              
-              .va-footer { display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding-top: 24px; border-top: 1px solid #e2e8f0; margin-top: 36px; }
-              .va-btn { padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; border: none; font-family: inherit; }
-              .va-btn.red-outline { background: #fff; border: 1.5px solid #ef4444; color: #ef4444; }
-              .va-btn.red-outline:hover { background: #fef2f2; }
-              .va-btn.gray-outline { background: #fff; border: 1.5px solid #e2e8f0; color: #0f172a; }
-              .va-btn.gray-outline:hover { background: #f8fafc; }
-              .va-btn.blue-solid { background: #3b82f6; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.25); }
-              .va-btn.blue-solid:hover { background: #2563eb; }
-              
-              .va-select { padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13.5px; font-weight: 700; color: #0f172a; background: #fff; outline: none; cursor: pointer; font-family: inherit; }
-              .va-select:focus { border-color: #3b82f6; }
-            `}</style>
-            
-            <div className="va-wrap" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
-              <div className="va-grid">
-                
-                {/* Left Column */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <div className="va-section-title">GENERAL INFORMATION</div>
-                  <div style={{ marginBottom: 32 }}>
-                    <div className="va-row">
-                      <span className="va-label">Client ID</span>
-                      <span className="va-value">{activeClient.client_id_ref || String(activeClient._id).slice(-6).toUpperCase()}</span>
-                    </div>
-                    <div className="va-row">
-                      <span className="va-label">Client Name</span>
-                      <span className="va-value">{activeClient.name}</span>
-                    </div>
-                    <div className="va-row">
-                      <span className="va-label">Email</span>
-                      <span className="va-value blue">{activeClient.email || '—'}</span>
-                    </div>
-                    <div className="va-row">
-                      <span className="va-label">Phone</span>
-                      <span className="va-value">{activeClient.phone || '—'}</span>
-                    </div>
-                    <div className="va-row" style={{ alignItems: 'flex-start', paddingTop: 16 }}>
-                      <span className="va-label" style={{ marginTop: 6 }}>User<br/>Category</span>
-                      <span className="va-pill blue-light" style={{ textTransform: 'capitalize' }}>
-                        {activeClient.role?.replace('_', ' ')}
-                      </span>
-                    </div>
-                    <div className="va-row">
-                      <span className="va-label">Created Date</span>
-                      <span className="va-value">{activeClient.createdAt ? new Date(activeClient.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</span>
-                    </div>
-                  </div>
-
-                  <div className="va-section-title">ACCOUNT CONTROL</div>
-                  <div style={{ marginBottom: 32 }}>
-                    <div className="va-row">
-                      <span className="va-label">Account<br/>Status</span>
-                      <select className="va-select" defaultValue={activeClient.is_active !== false ? 'Active' : 'Inactive'} disabled>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="va-section-title">LOGIN & SECURITY</div>
-                  <div>
-                    <div className="va-row" style={{ alignItems: 'flex-start' }}>
-                      <span className="va-label" style={{ marginTop: 4 }}>Login<br/>Method</span>
-                      <span className="va-value">Password +<br/>OTP</span>
-                    </div>
-                    <div className="va-row">
-                      <span className="va-label">2FA Status</span>
-                      <span className="va-pill green-light">Enabled</span>
-                    </div>
-                  </div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#94A3B8', marginBottom: 6 }}>Email</label>
+                  <input className="ec-input" style={{ width: '100%' }} value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
                 </div>
-
-                {/* Right Column */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 10, borderBottom: '1px solid #e2e8f0' }}>
-                    <div className="va-section-title" style={{ margin: 0, border: 'none', padding: 0 }}>PERMISSIONS</div>
-                    <span className="va-pill gray-light" style={{ fontSize: '12px' }}>Role: Client</span>
-                  </div>
-                  
-                  <div className="va-perm-grid">
-                    {[
-                      { label: 'Create Leads', on: false },
-                      { label: 'Assign Tasks', on: false },
-                      { label: 'View Reports', on: false },
-                      { label: 'Approve Agreements', on: false },
-                      { label: 'Upload Documents', on: true },
-                      { label: 'Manage Commission', on: false },
-                      { label: 'Delete Users', on: false },
-                      { label: 'System Settings', on: false },
-                      { label: 'Access Billing', on: true },
-                      { label: 'View All Clients', on: false },
-                    ].map((p, i) => (
-                      <div className="va-toggle-wrap" key={i}>
-                        <span className="va-toggle-label">{p.label.split(' ').map((w, j) => <span key={j}>{w}<br/></span>)}</span>
-                        <input type="checkbox" className="va-toggle" defaultChecked={p.on} disabled />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="va-section-title" style={{ marginTop: 40 }}>SIDEBAR ACCESS CONTROLS</div>
-                  <div className="va-sidebar-grid">
-                    {[
-                      { label: 'Dashboard', on: true },
-                      { label: 'Lead Centre', on: false },
-                      { label: 'Activity Log', on: true },
-                      { label: 'Client List', on: false },
-                      { label: 'Task Board', on: false },
-                      { label: 'Store Hub', on: false },
-                    ].map((p, i) => (
-                      <div className="va-toggle-wrap" key={i}>
-                        <span className="va-toggle-label">{p.label}</span>
-                        <input type="checkbox" className="va-toggle" defaultChecked={p.on} disabled />
-                      </div>
-                    ))}
-                  </div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#94A3B8', marginBottom: 6 }}>Phone</label>
+                  <input className="ec-input" style={{ width: '100%' }} value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
                 </div>
               </div>
-              
-              {/* Bottom Section */}
-              <div style={{ marginTop: '24px' }}>
-                <div className="va-section-title">RECENT ACTIVITY</div>
-                <div className="va-activity-list">
-                  <div className="va-activity-item">
-                    <div className="va-activity-dot blue"></div>
-                    <div>
-                      <div className="va-activity-text">Sent agreement to <a href="#">Sharma Enterprises</a></div>
-                      <div className="va-activity-time">2 hours ago</div>
-                    </div>
-                  </div>
-                  <div className="va-activity-item">
-                    <div className="va-activity-dot blue"></div>
-                    <div>
-                      <div className="va-activity-text">Uploaded documents for <a href="#">Mehta & Sons</a></div>
-                      <div className="va-activity-time">Yesterday, 4:30 PM</div>
-                    </div>
-                  </div>
-                  <div className="va-activity-item">
-                    <div className="va-activity-dot green"></div>
-                    <div>
-                      <div className="va-activity-text">System login from new IP (Mumbai)</div>
-                      <div className="va-activity-time">Oct 24, 2023 at 09:15 AM</div>
-                    </div>
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#94A3B8', marginBottom: 6 }}>City / Location</label>
+                  <input className="ec-input" style={{ width: '100%' }} value={editForm.city} onChange={e => setEditForm({ ...editForm, city: e.target.value })} />
                 </div>
-              </div>
-
-              {/* Footer */}
-              <div className="va-footer">
-                <button className="va-btn red-outline" onClick={() => { closeModal(); handleDeleteClient(activeClient); }}>
-                  <span style={{ fontSize: 16 }}>⊘</span> Delete Client
-                </button>
-                <button className="va-btn gray-outline" onClick={closeModal}>
-                  Close
-                </button>
-                <button className="va-btn blue-solid" onClick={() => { closeModal(); openEditClient(activeClient); }}>
-                  <Edit2 size={15} /> Edit Client
-                </button>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {activeModal === 'edit_client' && editForm && (
-          <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '760px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title" style={{ fontSize: '20px' }}>
-                Edit Client — {(editForm.client_id_ref || editForm._id || '').toString()}
-              </div>
-              <button className="modal-close" onClick={closeModal}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto', padding: '32px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: '16px' }}>PERSONAL DETAILS</div>
-              <div className="form-row cols-2">
-                <div className="form-group">
-                  <span className="form-label text-gray">FULL NAME</span>
-                  <input className="form-input" value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                </div>
-                <div className="form-group">
-                  <span className="form-label text-gray">DATE OF BIRTH</span>
-                  <input type="date" className="form-input" value={editForm.dob || ''} onChange={(e) => setEditForm((p) => ({ ...p, dob: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                </div>
-              </div>
-              <div className="form-row cols-2" style={{ marginTop: 16 }}>
-                <div className="form-group">
-                  <span className="form-label text-gray">GENDER</span>
-                  <select className="form-select" value={editForm.gender || ''} onChange={(e) => setEditForm((p) => ({ ...p, gender: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
-                    <option value="">Select</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Others">Others</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <span className="form-label text-gray">MARITAL STATUS</span>
-                  <select className="form-select" value={editForm.maritalStatus || ''} onChange={(e) => setEditForm((p) => ({ ...p, maritalStatus: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
-                    <option value="">Select</option>
-                    <option value="Single">Single</option>
-                    <option value="Married">Married</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: '16px', marginTop: '32px' }}>CONTACT & ADDRESS</div>
-              <div className="form-row cols-2">
-                <div className="form-group">
-                  <span className="form-label text-gray">EMAIL</span>
-                  <input type="email" className="form-input" value={editForm.email} onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                </div>
-                <div className="form-group">
-                  <span className="form-label text-gray">PHONE</span>
-                  <input className="form-input" value={editForm.phone} onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                </div>
-              </div>
-              <div className="form-row cols-2" style={{ marginTop: 16 }}>
-                <div className="form-group">
-                  <span className="form-label text-gray">CITY</span>
-                  <input className="form-input" value={editForm.city || ''} onChange={(e) => setEditForm((p) => ({ ...p, city: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
-                </div>
-                <div className="form-group">
-                  <span className="form-label text-gray">STATUS</span>
-                  <select className="form-select" value={editForm.status} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#94A3B8', marginBottom: 6 }}>Account Status</label>
+                  <select className="ec-input" style={{ width: '100%' }} value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })}>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
               </div>
             </div>
-            <div className="modal-footer" style={{ background: 'var(--card)', padding: '20px 24px' }}>
-              <button className="topbar-btn secondary" onClick={closeModal} style={{ borderRadius: 8, padding: '10px 22px' }} disabled={savingEdit}>
-                Cancel
-              </button>
-              <button className="topbar-btn" onClick={handleSaveClient} style={{ borderRadius: 8, padding: '10px 22px' }} disabled={savingEdit}>
-                {savingEdit ? 'Saving…' : 'Save Changes'}
-              </button>
+            <div style={{ padding: '16px 28px', background: 'rgba(15,23,42,0.6)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button onClick={closeModal} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: '#F8FAFC', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSaveClient} disabled={savingEdit} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #00C896, #10B981)', border: 'none', borderRadius: 10, color: '#000', fontWeight: 800, cursor: 'pointer' }}>{savingEdit ? 'Saving…' : 'Save Changes'}</button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -34,8 +34,8 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
           setClients(fetchedClients);
         }
 
-        // Find employees/admins for assignment
-        const teamMembers = usersRes.data.filter(u => ['employee', 'admin', 'super_admin'].includes(u.role));
+        // Find team members and registered partners for assignment
+        const teamMembers = usersRes.data.filter(u => u.role !== 'client');
         setUsers(teamMembers);
       } catch (err) {
         console.error('Failed to fetch users:', err);
@@ -198,7 +198,11 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
                   }}
                 >
                   <option value="">Unassigned</option>
-                  {users.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
+                  {users.map(u => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.role ? `(${u.role.replace('_', ' ').toUpperCase()})` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}

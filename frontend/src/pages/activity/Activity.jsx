@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Download, Clock, User, ShieldCheck, Activity as ActivityIcon, Filter } from 'lucide-react';
 import { io } from 'socket.io-client';
 import api from '../../services/api';
+import { SOCKET_URL } from '../../hooks/useSocket';
 
 // Module-level SWR cache
 let _activityCache = null;
@@ -35,9 +36,29 @@ const Activity = () => {
       fetchLogs(false);
     }
 
-    const socket = io('https://myclaimportal.onrender.com');
-    socket.on('activity_created', () => fetchLogs(true));
-    return () => socket.disconnect();
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    const handleUpdate = () => fetchLogs(true);
+
+    socket.on('activity_created', handleUpdate);
+    socket.on('ticket_created', handleUpdate);
+    socket.on('ticket_updated', handleUpdate);
+    socket.on('proposal_created', handleUpdate);
+    socket.on('proposal_updated', handleUpdate);
+    socket.on('claim_created', handleUpdate);
+    socket.on('claim_updated', handleUpdate);
+    socket.on('notification_created', handleUpdate);
+
+    return () => {
+      socket.off('activity_created', handleUpdate);
+      socket.off('ticket_created', handleUpdate);
+      socket.off('ticket_updated', handleUpdate);
+      socket.off('proposal_created', handleUpdate);
+      socket.off('proposal_updated', handleUpdate);
+      socket.off('claim_created', handleUpdate);
+      socket.off('claim_updated', handleUpdate);
+      socket.off('notification_created', handleUpdate);
+      socket.disconnect();
+    };
   }, []);
 
   const filteredLogs = logs.filter(log => {

@@ -1,11 +1,12 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import {
   LayoutDashboard, Users, UserCircle, Ticket, Activity, Plus, Search,
   Filter, Download, Eye, TrendingUp, Network, Award,
   FileText, CheckCircle, Clock, AlertCircle, ArrowUpRight, X,
   BarChart3, Briefcase, Phone, Mail, MapPin, Lock, Shield,
   Settings, LogOut, Bell, ChevronRight, Star, Zap, Users2,
-  PieChart, LineChart, RefreshCw, UserCheck, Layers, Loader
+  PieChart, LineChart, RefreshCw, UserCheck, Layers, Loader, Sun, Moon
 } from 'lucide-react';
 import useAuth from '../../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +14,8 @@ import axios from 'axios';
 import api from '../../../services/api';
 import CreateTicketModal from '../../../components/forms/CreateTicketModal';
 import { downloadCSV } from '../../../utils/exportUtils';
+import { SOCKET_URL } from '../../../hooks/useSocket';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // ============================================================
 // SUPER PARTNER DASHBOARD — STANDALONE LAYOUT
@@ -757,21 +760,21 @@ const LeadsModule = () => {
                   <div className="form-row cols-2">
                     <div className="form-group">
                       <span className="form-label text-gray">FIRST NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter First Name" value={form.firstName} onChange={e => set('firstName')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter First Name" value={form.firstName} onChange={e => set('firstName')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">MIDDLE NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Middle Name" value={form.middleName} onChange={e => set('middleName')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter Middle Name" value={form.middleName} onChange={e => set('middleName')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                   </div>
                   <div className="form-row cols-2" style={{ marginTop: '16px' }}>
                     <div className="form-group">
                       <span className="form-label text-gray">LAST NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Last Name" value={form.lastName} onChange={e => set('lastName')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter Last Name" value={form.lastName} onChange={e => set('lastName')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">USER NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter User Name" value={form.username} onChange={e => set('username')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter User Name" value={form.username} onChange={e => set('username')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                   </div>
                 </div>
@@ -782,11 +785,11 @@ const LeadsModule = () => {
                   <div className="form-row cols-2">
                     <div className="form-group">
                       <span className="form-label text-gray">NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Name" value={form.name} onChange={e => set('name')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter Name" value={form.name} onChange={e => set('name')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">DATE OF BIRTH</span>
-                      <input type="date" className="form-input" value={form.dob} onChange={e => set('dob')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="date" className="form-input" value={form.dob} onChange={e => set('dob')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                   </div>
                   <div className="form-row cols-2" style={{ marginTop: '16px' }}>
@@ -810,11 +813,11 @@ const LeadsModule = () => {
                   <div className="form-row cols-2">
                     <div className="form-group">
                       <span className="form-label text-gray">PHONE</span>
-                      <input type="tel" className="form-input" value={form.phone} onChange={e => set('phone')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="tel" className="form-input" value={form.phone} onChange={e => set('phone')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">EMAIL</span>
-                      <input type="email" className="form-input" value={form.email} onChange={e => set('email')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="email" className="form-input" value={form.email} onChange={e => set('email')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                   </div>
                 </div>
@@ -831,11 +834,11 @@ const LeadsModule = () => {
                   <div className="form-row cols-2">
                     <div className="form-group">
                       <span className="form-label text-gray">SERVICE REQUEST</span>
-                      <input type="text" className="form-input" value={form.serviceRequest} onChange={e => set('serviceRequest')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" value={form.serviceRequest} onChange={e => set('serviceRequest')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">PRIORITY</span>
-                      <select className="form-select" value={form.priority} onChange={e => set('priority')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
+                      <select className="form-select" value={form.priority} onChange={e => set('priority')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}}>
                         <option value="Medium">Medium</option>
                         <option value="High">High</option>
                         <option value="Low">Low</option>
@@ -851,21 +854,21 @@ const LeadsModule = () => {
                   <div className="form-row cols-2">
                     <div className="form-group">
                       <span className="form-label text-gray">NOMINEE NAME</span>
-                      <input type="text" className="form-input" placeholder="Enter Nominee Name" value={form.nomineeName} onChange={e => set('nomineeName')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter Nominee Name" value={form.nomineeName} onChange={e => set('nomineeName')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">NOMINEE AGE AS PER CLIENT MASTER</span>
-                      <input type="text" className="form-input" placeholder="Enter Nominee Age" value={form.nomineeAge} onChange={e => set('nomineeAge')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter Nominee Age" value={form.nomineeAge} onChange={e => set('nomineeAge')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                   </div>
                   <div className="form-row cols-2" style={{ marginTop: '16px' }}>
                     <div className="form-group">
                       <span className="form-label text-gray">DATE OF BIRTH</span>
-                      <input type="date" className="form-input" value={form.nomineeDob} onChange={e => set('nomineeDob')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="date" className="form-input" value={form.nomineeDob} onChange={e => set('nomineeDob')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">NOMINEE RELATION</span>
-                      <input type="text" className="form-input" placeholder="Enter Nominee Relation" value={form.nomineeRelation} onChange={e => set('nomineeRelation')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}} />
+                      <input type="text" className="form-input" placeholder="Enter Nominee Relation" value={form.nomineeRelation} onChange={e => set('nomineeRelation')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}} />
                     </div>
                   </div>
                 </div>
@@ -877,7 +880,7 @@ const LeadsModule = () => {
                   <div className="form-row cols-2">
                     <div className="form-group">
                       <span className="form-label text-gray">PREFERENCE</span>
-                      <select className="form-select" value={form.preference} onChange={e => set('preference')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color:'var(--text)'}}>
+                      <select className="form-select" value={form.preference} onChange={e => set('preference')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color:'#0f172a'}}>
                         <option value="">Select Preference</option>
                         <option value="Email">Email</option>
                         <option value="SMS">SMS</option>
@@ -886,7 +889,7 @@ const LeadsModule = () => {
                     </div>
                     <div className="form-group">
                       <span className="form-label text-gray">STATUS</span>
-                      <select className="form-select" value={form.status} onChange={e => set('status')(e.target.value)} style={{background:'var(--card)', borderColor:'rgba(255,255,255,0.1)', color: 'var(--text)'}}>
+                      <select className="form-select" value={form.status} onChange={e => set('status')(e.target.value)} style={{background:'#ffffff', borderColor:'#cbd5e1', color: '#0f172a'}}>
                         <option value="new">New</option>
                         <option value="in_discussion">In Discussion</option>
                         <option value="not_interested">Not Interested</option>
@@ -2100,8 +2103,58 @@ const PAGE_META = {
   profile: { title: 'Profile & Settings', sub: 'Manage your account' },
 };
 
-const SPTopbar = ({ page, user }) => {
+const SPTopbar = ({ page, user, setPage }) => {
   const meta = PAGE_META[page] || PAGE_META.dashboard;
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(3);
+  const [notifications, setNotifications] = useState([
+    { id: 'n1', text: 'New lead "Ramesh Agarwal" registered in network', time: 'Just now', type: 'lead', unread: true },
+    { id: 'n2', text: 'Ticket TK-501 updated to In Progress', time: '10 mins ago', type: 'ticket', unread: true },
+    { id: 'n3', text: 'New service ticket requested by Partner Rahul Mehta', time: '1 hour ago', type: 'service', unread: true },
+    { id: 'n4', text: 'Proposal MC-892 generated successfully', time: '3 hours ago', type: 'proposal', unread: false },
+  ]);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const socket = io(SOCKET_URL, {
+      transports: ['websocket', 'polling']
+    });
+
+    const handleRealtimeEvent = (data) => {
+      const newNotif = {
+        id: Date.now().toString(),
+        text: data?.action || data?.text || data?.message || data?.title || 'New network activity recorded',
+        time: 'Just now',
+        type: data?.type || 'activity',
+        unread: true
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+      setUnreadCount(c => c + 1);
+    };
+
+    socket.on('notification', handleRealtimeEvent);
+    socket.on('activity_created', handleRealtimeEvent);
+    socket.on('notification_created', handleRealtimeEvent);
+    socket.on('ticket_created', (data) => handleRealtimeEvent({ action: `New Ticket created: ${data?.ticketNo || data?.serviceInterest || 'Service Request'}`, type: 'ticket' }));
+    socket.on('lead_created', (data) => handleRealtimeEvent({ action: `New Lead onboarded: ${data?.name || 'New Lead'}`, type: 'lead' }));
+    socket.on('activity_logged', (data) => handleRealtimeEvent({ action: data?.text || data?.action || 'New activity logged', type: 'activity' }));
+    socket.on('proposal_created', (data) => handleRealtimeEvent({ action: `New Proposal created: ${data?.proposalId || 'Proposal'}`, type: 'proposal' }));
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', background: 'var(--card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50, backdropFilter: 'blur(12px)', boxSizing: 'border-box' }}>
       <div>
@@ -2139,15 +2192,113 @@ const SPTopbar = ({ page, user }) => {
           </>
         )}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* Network badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', background: SP.primaryLight, color: SP.primary, border: `1px solid ${SP.primary}30`, borderRadius: '10px', padding: '8px 14px', fontSize: '12px', fontWeight: 700 }}>
-          <Network size={13} />My Network
-        </div>
-        {/* Bell */}
-        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-          <Bell size={16} style={{ color: 'var(--text-muted)' }} />
-          <div style={{ position: 'absolute', top: '8px', right: '8px', width: '8px', height: '8px', borderRadius: '50%', background: SP.primary, border: '2px solid var(--card)' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Active My Network button (Enlarged) */}
+        <button 
+          onClick={() => setPage && setPage('partners')}
+          title="View Network Partners"
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: '10px', 
+            background: SP.primaryLight, color: SP.primary, 
+            border: `1.5px solid ${SP.primary}40`, borderRadius: '12px', 
+            padding: '11px 22px', fontSize: '14px', fontWeight: 800,
+            cursor: 'pointer', transition: 'all 0.2s ease', userSelect: 'none',
+            boxShadow: '0 4px 14px rgba(34,197,94,0.15)'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34, 197, 94, 0.25)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = SP.primaryLight; e.currentTarget.style.transform = 'none'; }}
+        >
+          <Network size={18} />My Network
+        </button>
+
+        {/* Light / Dark Mode Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          style={{ 
+            width: '46px', height: '46px', borderRadius: '12px', 
+            background: 'var(--bg)', border: '1.5px solid var(--border)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            cursor: 'pointer', outline: 'none',
+            transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = SP.primary; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}
+        >
+          {theme === 'dark' ? <Sun size={20} style={{ color: '#f59e0b' }} /> : <Moon size={20} style={{ color: '#6366f1' }} />}
+        </button>
+
+        {/* Realtime Socket Notification Bell (Enlarged) */}
+        <div style={{ position: 'relative' }} ref={dropdownRef}>
+          <button 
+            onClick={() => {
+              setShowNotifications(prev => !prev);
+              if (!showNotifications) setUnreadCount(0);
+            }}
+            title="Real-time Socket Notifications"
+            style={{ 
+              width: '46px', height: '46px', borderRadius: '12px', 
+              background: 'var(--bg)', border: '1.5px solid var(--border)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              cursor: 'pointer', position: 'relative', outline: 'none',
+              transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = SP.primary; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}
+          >
+            <Bell size={20} style={{ color: 'var(--text)' }} />
+            {unreadCount > 0 && (
+              <span style={{ 
+                position: 'absolute', top: '-6px', right: '-6px', 
+                minWidth: '20px', height: '20px', borderRadius: '50%', 
+                background: '#22c55e', color: '#ffffff', fontSize: '11px', 
+                fontWeight: 800, display: 'flex', alignItems: 'center', 
+                justifyContent: 'center', padding: '0 5px', border: '2.5px solid var(--card)' 
+              }}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Realtime Notifications Dropdown Drawer */}
+          {showNotifications && (
+            <div style={{ 
+              position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: '360px', 
+              background: '#0b1120', border: '1px solid var(--border)', borderRadius: '16px', 
+              boxShadow: '0 16px 40px rgba(0,0,0,0.6)', overflow: 'hidden', zIndex: 1000 
+            }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34, 197, 94, 0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#f8fafc' }}>Live Notifications</span>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 8px #22c55e' }} title="Realtime Socket Active" />
+                </div>
+                <button 
+                  onClick={() => { setUnreadCount(0); setNotifications(prev => prev.map(n => ({ ...n, unread: false }))); }}
+                  style={{ fontSize: '11px', color: SP.primary, background: 'none', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Mark all read
+                </button>
+              </div>
+
+              <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
+                {notifications.length > 0 ? (
+                  notifications.map((n) => (
+                    <div key={n.id} style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '12px', alignItems: 'flex-start', background: n.unread ? 'rgba(34, 197, 94, 0.06)' : 'transparent' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(34, 197, 94, 0.12)', color: SP.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Zap size={15} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '13px', fontWeight: n.unread ? 700 : 500, color: '#f8fafc', lineHeight: 1.4 }}>{n.text}</div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{n.time}</div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>No recent notifications</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -2198,7 +2349,7 @@ const SuperPartnerDashboard = () => {
 
       {/* Main Content Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-        <SPTopbar page={page} user={user} />
+        <SPTopbar page={page} user={user} setPage={setPage} />
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg)' }}>
           <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
             {renderPage()}

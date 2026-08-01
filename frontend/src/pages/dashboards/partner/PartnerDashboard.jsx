@@ -18,6 +18,7 @@ import useAuth from '../../../hooks/useAuth';
 import ClientProfile from '../../clients/ClientProfile';
 import api from '../../../services/api';
 import CreateTicketModal from '../../../components/forms/CreateTicketModal';
+import { SOCKET_URL } from '../../../hooks/useSocket';
 import ServiceStore from '../../store/ServiceStore';
 import PartnerServiceHubTab from './PartnerServiceHubTab';
 import WealthManagementStore from '../../store/WealthManagementStore';
@@ -2572,6 +2573,32 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
     }
   }, [tickets, selectedTicket]);
 
+  React.useEffect(() => {
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    socket.on('ticket_created', (data) => {
+      if (!data) return;
+      const clientId = normalizeClientId(data.client || data.clientId);
+      const nameFromClient = resolveClientName(data.client);
+      const clientName = nameFromClient || clients.find(c => String(c._id) === clientId)?.name || 'Client';
+
+      const newTk = {
+        id: String(data._id || Date.now()).substring(18, 24).toUpperCase(),
+        clientId,
+        client: clientName,
+        service: data.service,
+        vertical: data.hubType || 'Service Hub',
+        status: data.status === 'in_process' ? 'In Process' : data.status === 'completed' ? 'Completed' : 'Active',
+        created: new Date(data.createdAt || Date.now()).toLocaleDateString('en-GB'),
+        lastUpdate: 'Just now',
+        rawTicket: data
+      };
+
+      setTickets(prev => [newTk, ...prev.filter(t => t.rawTicket?._id !== data._id)]);
+    });
+
+    return () => socket.disconnect();
+  }, [clients]);
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -2583,7 +2610,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           <button className="topbar-btn secondary" style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--border)', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--card)' }}>
             <Download size={16} /> Export
           </button>
-          <button className="topbar-btn" style={{ background: '#22c55e', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => onNavigate ? onNavigate('tickets') : setShowModal(true)}>
+          <button className="topbar-btn" style={{ background: '#22c55e', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setShowModal(true)}>
             <Plus size={16} /> New Ticket
           </button>
         </div>
@@ -3208,11 +3235,32 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
 
   useEffect(() => {
     fetchLogs();
-    const socket = io('https://myclaimportal.onrender.com');
-    socket.on('activity_created', () => {
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+
+    const handleRealtimeUpdate = (data) => {
       setUnreadCount(prev => prev + 1);
+      if (data) {
+        const text = data.action || data.text || data.message || (data.ticketNo ? `🎫 Ticket #${data.ticketNo} (${data.service || 'Service'}) created` : 'New network activity recorded');
+        const notifItem = {
+          _id: data._id || Date.now().toString(),
+          action: text,
+          createdAt: data.createdAt || new Date().toISOString()
+        };
+        setNotifications(prev => [notifItem, ...prev.filter(n => n._id !== notifItem._id).slice(0, 9)]);
+      }
       fetchLogs();
-    });
+    };
+
+    socket.on('activity_created', handleRealtimeUpdate);
+    socket.on('notification_created', handleRealtimeUpdate);
+    socket.on('notification', handleRealtimeUpdate);
+    socket.on('activity_logged', handleRealtimeUpdate);
+    socket.on('ticket_created', handleRealtimeUpdate);
+    socket.on('ticket_updated', handleRealtimeUpdate);
+    socket.on('lead_created', handleRealtimeUpdate);
+    socket.on('client_created', handleRealtimeUpdate);
+    socket.on('proposal_created', handleRealtimeUpdate);
+
     return () => socket.disconnect();
   }, []);
 
@@ -3414,13 +3462,13 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
         <div style={{ position: 'relative' }} ref={dropdownRef}>
           <div 
             onClick={handleBellClick}
-            style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+            style={{ width: '46px', height: '46px', borderRadius: '12px', background: 'var(--bg)', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           >
             <div className={showNotifications ? "" : "bell-animate"} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bell size={16} style={{ color: 'var(--text-muted)' }} />
+              <Bell size={20} style={{ color: 'var(--text)' }} />
             </div>
             {unreadCount > 0 && (
-              <div style={{ position: 'absolute', top: '-4px', right: '-4px', minWidth: '16px', height: '16px', borderRadius: '50%', background: '#15803d', border: '2px solid var(--card)', color: '#fff', fontSize: '9px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', animation: 'ringPulse 2s infinite' }}>
+              <div style={{ position: 'absolute', top: '-6px', right: '-6px', minWidth: '20px', height: '20px', borderRadius: '50%', background: '#22c55e', border: '2.5px solid var(--card)', color: '#fff', fontSize: '11px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', animation: 'ringPulse 2s infinite' }}>
                 {unreadCount > 9 ? '9+' : unreadCount}
               </div>
             )}
@@ -3656,6 +3704,48 @@ export default function PartnerDashboard() {
       }
     };
     fetchAllData();
+  }, [user]);
+
+  React.useEffect(() => {
+    if (!user?.token) return;
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+
+    const refreshData = async () => {
+      try {
+        const [leadsRes, usersRes, ticketsRes] = await Promise.all([
+          api.get('/leads'),
+          api.get('/users'),
+          api.get('/tickets')
+        ]);
+
+        const myLeads = leadsRes.data.filter(l => String(l.sourceUserId?._id || l.sourceUserId) === String(user._id));
+        const myClients = usersRes.data.filter(u => u.role === 'client');
+        const myEmployees = usersRes.data.filter(u => u.role === 'employee');
+        const myTickets = ticketsRes.data;
+
+        setDbData({
+          leads: myLeads,
+          clients: myClients,
+          employees: myEmployees,
+          tickets: myTickets,
+          loading: false
+        });
+      } catch (err) {
+        console.error('PartnerDashboard Realtime Sync Error:', err);
+      }
+    };
+
+    socket.on('ticket_created', refreshData);
+    socket.on('ticket_updated', refreshData);
+    socket.on('lead_created', refreshData);
+    socket.on('client_created', refreshData);
+    socket.on('activity_created', refreshData);
+    socket.on('notification_created', refreshData);
+    socket.on('notification', refreshData);
+    socket.on('activity_logged', refreshData);
+    socket.on('proposal_created', refreshData);
+
+    return () => socket.disconnect();
   }, [user]);
 
   const handleLogout = () => {

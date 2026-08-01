@@ -63,14 +63,7 @@ export const DocumentUploadZone = ({
   // Handle file selection
   const handleFiles = useCallback(
     (files) => {
-      const fileArray = Array.from(files);
-      const validFiles = fileArray.filter((file) => {
-        if (file.size > maxSize) {
-          alert(`File ${file.name} exceeds maximum size of ${formatFileSize(maxSize)}`);
-          return false;
-        }
-        return true;
-      });
+      const validFiles = Array.from(files);
 
       if (validFiles.length > 0) {
         setIsUploading(true);

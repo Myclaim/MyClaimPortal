@@ -87,10 +87,6 @@ const AdminForm = ({ role }) => {
   const previewPhoto = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 800 * 1024) {
-      setError('File exceeds 800KB limit.');
-      return;
-    }
     const reader = new FileReader();
     reader.onload = ev => setAvatarPreview(ev.target.result);
     reader.readAsDataURL(file);
@@ -193,12 +189,23 @@ const AdminForm = ({ role }) => {
         /* ── Field ── */
         .field { display: flex; flex-direction: column; gap: 5px; }
         .field label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.01em; }
-        .field input, .field select, .field textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; appearance: none; }
-        .field input::placeholder, .field textarea::placeholder { color: #b0b6cc; }
-        .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-        .field input.error { border-color: #f43f5e; }
-        .field input.error:focus { box-shadow: 0 0 0 3px rgba(244,63,94,0.15); }
-        .err-msg { font-size: 11px; color: #f43f5e; margin-top: 2px; }
+        .field input, .field select, .field textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; caret-color: var(--blue); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; appearance: none; color-scheme: dark; }
+        .field input::placeholder, .field textarea::placeholder { color: #818cf8; opacity: 0.7; }
+        .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); background: var(--bg); color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.25); }
+        
+        .field input:-webkit-autofill,
+        .field input:-webkit-autofill:hover, 
+        .field input:-webkit-autofill:focus,
+        .field textarea:-webkit-autofill,
+        .field select:-webkit-autofill {
+          -webkit-text-fill-color: var(--text) !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--bg) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        .field input.error, .field select.error { border-color: #f43f5e !important; }
+        .field input.error:focus, .field select.error:focus { box-shadow: 0 0 0 3px rgba(244,63,94,0.25); }
+        .err-msg { font-size: 11px; color: #f43f5e; margin-top: 3px; font-weight: 500; }
         
         .pw-wrap { position: relative; }
         .pw-wrap input { padding-right: 42px; }
@@ -212,8 +219,8 @@ const AdminForm = ({ role }) => {
         .file-field { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); overflow: hidden; min-height: 42px; transition: border-color 0.18s; }
         .file-field:focus-within { border-color: var(--blue); }
         .file-field input[type="file"] { display: none; }
-        .file-btn { padding: 9px 14px; background: #f1f5f9; border: none; border-right: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #000; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-        .file-btn:hover { background: #e2e8f0; }
+        .file-btn { padding: 9px 14px; background: rgba(255,255,255,0.08); border: none; border-right: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+        .file-btn:hover { background: rgba(255,255,255,0.15); }
         .file-name { padding: 9px 12px; font-size: 13px; color: var(--text-muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .file-name.picked { color: var(--text); font-weight: 500; }
         
@@ -221,7 +228,7 @@ const AdminForm = ({ role }) => {
         .radio-group { display: flex; gap: 20px; flex-wrap: wrap; padding: 4px 0; }
         .radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text); user-select: none; }
         .radio-label input[type="radio"] { display: none; }
-        .radio-custom { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
+        .radio-custom { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s; }
         .radio-label input[type="radio"]:checked ~ .radio-custom { border-color: var(--blue); background: var(--blue); }
         .radio-label input[type="radio"]:checked ~ .radio-custom::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
         
@@ -262,7 +269,7 @@ const AdminForm = ({ role }) => {
                 <button type="button" className="btn btn-primary" onClick={() => document.getElementById('photoInput').click()}>Upload new photo</button>
                 <button type="button" className="btn btn-reset" onClick={resetPhoto}>Reset</button>
               </div>
-              <p className="hint">Allowed JPG, GIF or PNG. Max size of 800K</p>
+              <p className="hint">Allowed JPG, GIF or PNG</p>
             </div>
             <input type="file" id="photoInput" accept="image/jpeg,image/gif,image/png" onChange={previewPhoto} style={{ display: 'none' }} />
           </div>

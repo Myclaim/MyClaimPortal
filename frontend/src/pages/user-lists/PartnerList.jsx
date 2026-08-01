@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Search, Download, Eye, Edit2, Trash2, Building2, MapPin, Phone, Mail, Plus, X } from 'lucide-react';
+import { Users, Search, Download, Eye, Edit2, Trash2, Building2, MapPin, Phone, Mail, Plus, X, Filter, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -9,6 +9,9 @@ const PartnerList = () => {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [cityFilter, setCityFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [showAdvFilters, setShowAdvFilters] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const [activePartner, setActivePartner] = useState(null);
   const [editForm, setEditForm] = useState(null);
@@ -75,10 +78,37 @@ const PartnerList = () => {
     fetchUsers();
   }, []);
 
+  const uniqueCities = useMemo(() => {
+    return [...new Set(partners.map(p => p.city).filter(Boolean))];
+  }, [partners]);
+
+  const uniqueCategories = useMemo(() => {
+    return [...new Set(partners.map(p => p.category).filter(Boolean))];
+  }, [partners]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (query) count++;
+    if (statusFilter !== 'all') count++;
+    if (cityFilter !== 'all') count++;
+    if (categoryFilter !== 'all') count++;
+    return count;
+  }, [query, statusFilter, cityFilter, categoryFilter]);
+
+  const resetFilters = () => {
+    setQuery('');
+    setStatusFilter('all');
+    setCityFilter('all');
+    setCategoryFilter('all');
+  };
+
   const filtered = useMemo(() => {
     let result = partners;
     if (statusFilter === 'active') result = result.filter((u) => u.is_active !== false);
     if (statusFilter === 'inactive') result = result.filter((u) => u.is_active === false);
+    if (cityFilter !== 'all') result = result.filter((u) => (u.city || '').toLowerCase() === cityFilter.toLowerCase());
+    if (categoryFilter !== 'all') result = result.filter((u) => (u.category || '').toLowerCase() === categoryFilter.toLowerCase());
+
     const q = query.trim().toLowerCase();
     if (!q) return result;
     return result.filter((u) => {
@@ -86,14 +116,16 @@ const PartnerList = () => {
       const email = (u.email || '').toLowerCase();
       const company = (u.companyName || '').toLowerCase();
       const phone = (u.phone || '').toLowerCase();
+      const city = (u.city || '').toLowerCase();
       return (
         name.includes(q) ||
         email.includes(q) ||
         company.includes(q) ||
-        phone.includes(q)
+        phone.includes(q) ||
+        city.includes(q)
       );
     });
-  }, [partners, query, statusFilter]);
+  }, [partners, query, statusFilter, cityFilter, categoryFilter]);
 
   const handleDeletePartner = async (user) => {
     if (!window.confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) return;
@@ -206,29 +238,95 @@ const PartnerList = () => {
         </div>
 
         <div className="card animate-slide-up" style={{ padding: 0, overflow: 'hidden', animationDelay: '0.2s' }}>
-          <div className="search-bar" style={{ padding: '16px', margin: 0, borderBottom: '1px solid var(--border)' }}>
-            <div className="search-input" style={{ flex: 1 }}>
+          <div className="search-bar" style={{ padding: '14px 18px', margin: 0, borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="search-input" style={{ flex: 1, minWidth: '220px' }}>
               <Search size={18} />
               <input
                 type="text"
-                placeholder="Search by name, company, email..."
+                placeholder="Search by name, company, email, city..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <select className="form-select" style={{ width: '130px' }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option value="all">All Status</option>
+            <select className="form-select" style={{ width: '130px', height: '38px', borderRadius: '10px' }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">Status: All</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+
+            <button 
+              onClick={() => setShowAdvFilters(prev => !prev)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, height: '38px', padding: '0 16px',
+                borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                background: showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.15)' : 'var(--bg)',
+                color: showAdvFilters || activeFilterCount > 0 ? '#00D084' : 'var(--text)',
+                border: `1px solid ${showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.3)' : 'var(--border)'}`,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Filter size={15} />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span style={{
+                  background: '#00D084', color: '#091a10', width: 18, height: 18, borderRadius: '50%',
+                  fontSize: 11, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
             <button 
               className="topbar-btn secondary" 
               onClick={handleExport}
-              style={{ padding: '8px 16px', fontSize: '12px', height: '36px', borderRadius: '8px' }}
+              style={{ padding: '8px 16px', fontSize: '12px', height: '38px', borderRadius: '10px' }}
             >
               <Download size={14} /> Export
             </button>
           </div>
+
+          {/* Expanded Filter Workspace */}
+          {showAdvFilters && (
+            <div style={{ padding: '16px 20px', background: 'var(--bg)', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ flex: '0 1 220px', minWidth: '180px' }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>City / Location</label>
+                  <select className="form-select" style={{ width: '100%', height: '38px', borderRadius: '8px' }} value={cityFilter} onChange={e => setCityFilter(e.target.value)}>
+                    <option value="all">All Cities</option>
+                    {uniqueCities.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ flex: '0 1 220px', minWidth: '180px' }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Category</label>
+                  <select className="form-select" style={{ width: '100%', height: '38px', borderRadius: '8px' }} value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                    <option value="all">All Categories</option>
+                    {uniqueCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {activeFilterCount > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px dashed var(--border)' }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Filters:</span>
+                  {cityFilter !== 'all' && (
+                    <span style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      City: {cityFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setCityFilter('all')} />
+                    </span>
+                  )}
+                  {categoryFilter !== 'all' && (
+                    <span style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      Category: {categoryFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setCategoryFilter('all')} />
+                    </span>
+                  )}
+                  <button onClick={resetFilters} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
+                    <RotateCcw size={12} /> Clear All
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           
           <div className="table-wrap">
             <table>

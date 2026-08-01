@@ -1,8 +1,10 @@
-﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../hooks/useSocket';
 import {
   Ticket, Search, RefreshCw, X, AlertTriangle,
   CheckCircle2, Loader2, Clock, Upload, MessageSquare, UserCheck,
-  Eye, Paperclip, Send,
+  Eye, Paperclip, Send, Filter, RotateCcw
 } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
@@ -125,6 +127,12 @@ const AdminTicketManagement = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [assignedFilter, setAssignedFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [showAdvFilters, setShowAdvFilters] = useState(false);
+
   const [activePanel, setActivePanel] = useState(null); // selected ticket for side panel
   const [panelTab, setPanelTab] = useState('details'); // 'details' | 'notes' | 'files'
   const [note, setNote] = useState('');
@@ -153,7 +161,7 @@ const AdminTicketManagement = () => {
   const fetchEmployees = useCallback(async () => {
     try {
       const { data } = await api.get('/users');
-      let emps = data.filter(u => ['employee', 'team', 'staff'].includes(u.role));
+      let emps = data.filter(u => u.role !== 'client');
       // Scope employees to admin's department too
       if (currentUser?.role === 'admin' && dept) {
         emps = emps.filter(u => (u.department || '').toLowerCase() === dept);
@@ -169,21 +177,64 @@ const AdminTicketManagement = () => {
       setLoading(false);
     };
     init();
+
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    socket.on('ticket_created', () => fetchTickets());
+    socket.on('ticket_updated', () => fetchTickets());
+
+    return () => {
+      socket.disconnect();
+    };
   }, [fetchTickets, fetchEmployees]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (search) count++;
+    if (priorityFilter !== 'all') count++;
+    if (statusFilter !== 'all') count++;
+    if (assignedFilter !== 'all') count++;
+    if (dateFrom) count++;
+    if (dateTo) count++;
+    return count;
+  }, [search, priorityFilter, statusFilter, assignedFilter, dateFrom, dateTo]);
+
+  const resetFilters = () => {
+    setSearch('');
+    setPriorityFilter('all');
+    setStatusFilter('all');
+    setAssignedFilter('all');
+    setDateFrom('');
+    setDateTo('');
+  };
 
   // ── Filtering ──────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = tickets;
     if (priorityFilter !== 'all') list = list.filter(t => t.priority === priorityFilter);
+    if (statusFilter !== 'all') list = list.filter(t => t.status === statusFilter);
+    if (assignedFilter === 'unassigned') list = list.filter(t => !t.assignedTo);
+    else if (assignedFilter !== 'all') list = list.filter(t => String(t.assignedTo?._id || t.assignedTo) === String(assignedFilter));
+
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      list = list.filter(t => new Date(t.createdAt) >= from);
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      list = list.filter(t => new Date(t.createdAt) <= to);
+    }
+
     const q = search.trim().toLowerCase();
     if (q) list = list.filter(t =>
       (t.service || '').toLowerCase().includes(q) ||
       (t.client?.name || '').toLowerCase().includes(q) ||
       (t.client?.companyName || '').toLowerCase().includes(q) ||
+      (t.ticketNo || '').toLowerCase().includes(q) ||
       String(new Date(t.createdAt).getTime()).includes(q)
     );
     return list;
-  }, [tickets, search, priorityFilter]);
+  }, [tickets, search, priorityFilter, statusFilter, assignedFilter, dateFrom, dateTo]);
 
   const byStatus = (status) => filtered.filter(t => t.status === status);
   const active = byStatus('active');
@@ -619,13 +670,37 @@ const AdminTicketManagement = () => {
         </div>
 
         {/* Priority filter */}
-        <select className="form-select" style={{ width: 140 }} value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+        <select className="form-select" style={{ width: 140, height: 38, borderRadius: 10 }} value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
           <option value="all">All Priorities</option>
           <option value="urgent">Urgent</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
+
+        {/* Filters Toggle Button */}
+        <button 
+          onClick={() => setShowAdvFilters(prev => !prev)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px',
+            borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            background: showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.15)' : 'var(--bg)',
+            color: showAdvFilters || activeFilterCount > 0 ? '#00D084' : 'var(--text)',
+            border: `1px solid ${showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.3)' : 'var(--border)'}`,
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <Filter size={15} />
+          <span>Filters</span>
+          {activeFilterCount > 0 && (
+            <span style={{
+              background: '#00D084', color: '#091a10', width: 18, height: 18, borderRadius: '50%',
+              fontSize: 11, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
 
         {/* View toggle */}
         <div style={{ display: 'flex', gap: 4, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 9, padding: 3 }}>
@@ -641,6 +716,82 @@ const AdminTicketManagement = () => {
           <RefreshCw size={14} /> Refresh
         </button>
       </div>
+
+      {/* Expanded Filter Panel */}
+      {showAdvFilters && (
+        <div style={{
+          padding: '16px 24px', background: 'var(--card)', borderBottom: '1px solid var(--border)',
+          display: 'flex', flexDirection: 'column', gap: 14
+        }}>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ flex: '0 1 210px', minWidth: '170px' }}>
+              <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Status Filter</label>
+              <select className="form-select" style={{ width: '100%', height: 38, borderRadius: 8 }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="in_process">In Process</option>
+                <option value="completed">Completed</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+
+            <div style={{ flex: '0 1 210px', minWidth: '170px' }}>
+              <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Assigned Employee</label>
+              <select className="form-select" style={{ width: '100%', height: 38, borderRadius: 8 }} value={assignedFilter} onChange={e => setAssignedFilter(e.target.value)}>
+                <option value="all">All Assignments</option>
+                <option value="unassigned">Unassigned</option>
+                {employees.map(emp => (
+                  <option key={emp._id} value={emp._id}>{emp.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ flex: '0 1 190px', minWidth: '150px' }}>
+              <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Created From</label>
+              <input type="date" className="form-input" style={{ width: '100%', height: 38, borderRadius: 8, padding: '0 10px', fontSize: 13 }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+            </div>
+
+            <div style={{ flex: '0 1 190px', minWidth: '150px' }}>
+              <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Created To</label>
+              <input type="date" className="form-input" style={{ width: '100%', height: 38, borderRadius: 8, padding: '0 10px', fontSize: 13 }} value={dateTo} onChange={e => setDateTo(e.target.value)} />
+            </div>
+          </div>
+
+          {activeFilterCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px dashed var(--border)' }}>
+              <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Filters:</span>
+              {priorityFilter !== 'all' && (
+                <span style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  Priority: {priorityFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setPriorityFilter('all')} />
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span style={{ background: 'rgba(0,208,132,0.15)', color: '#00D084', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  Status: {statusFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('all')} />
+                </span>
+              )}
+              {assignedFilter !== 'all' && (
+                <span style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  Assigned: {assignedFilter === 'unassigned' ? 'Unassigned' : employees.find(e => String(e._id) === String(assignedFilter))?.name || 'Assigned'} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setAssignedFilter('all')} />
+                </span>
+              )}
+              {dateFrom && (
+                <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  From: {dateFrom} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setDateFrom('')} />
+                </span>
+              )}
+              {dateTo && (
+                <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  To: {dateTo} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setDateTo('')} />
+                </span>
+              )}
+              <button onClick={resetFilters} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
+                <RotateCcw size={12} /> Clear All
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="atm-body">
         {/* Stat cards */}

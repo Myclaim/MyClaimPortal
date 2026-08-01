@@ -725,15 +725,13 @@ const Sidebar = ({ isOpen = false, onClose }) => {
 
   return (
     <nav className={`sidebar ${isOpen ? 'open' : ''}`} style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--glass-border)', boxShadow: '4px 0 24px rgba(0,0,0,0.2)' }}>
-      <div className="sidebar-logo" style={{ padding: '32px 24px', borderBottom: '1px solid var(--glass-border)' }}>
-        <div style={{ marginRight: '14px' }}>
-          <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src="/logo.png" alt="MyClaim India" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
+      <div className="sidebar-logo" style={{ padding: '28px 20px', borderBottom: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '12px' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <img src="/logo.png" alt="MyClaim India" style={{ width: '160px', height: 'auto', maxHeight: '72px', objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }} />
         </div>
-        <div>
-          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em' }}>MyClaim India</div>
-          <div className="sidebar-logo-sub" style={{ color: 'var(--accent-green)', fontWeight: 800, fontSize: '9px', letterSpacing: '0.1em' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '17px', letterSpacing: '-0.02em' }}>MyClaim India</div>
+          <div className="sidebar-logo-sub" style={{ color: 'var(--accent-green)', fontWeight: 800, fontSize: '10px', letterSpacing: '0.12em', marginTop: '4px' }}>
             {user?.role === 'client' ? 'CLIENT PORTAL' : `${user?.role?.replace('_', ' ').toUpperCase()} PORTAL`}
           </div>
         </div>
@@ -780,8 +778,31 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         })
       )}
 
-      {user?.role !== 'client' && (
-        <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="sidebar-footer" style={{ borderTop: '1px solid var(--border)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Dark/Light Mode Theme Toggle Row */}
+        <div 
+          onClick={toggleTheme}
+          style={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'var(--bg-primary, rgba(255,255,255,0.03))', padding: '10px 16px', 
+            borderRadius: '14px', border: '1px solid var(--glass-border, rgba(255,255,255,0.08))',
+            cursor: 'pointer', transition: 'all 0.2s ease', userSelect: 'none'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent-green)'}
+          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border, rgba(255,255,255,0.08))'}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {theme === 'dark' ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#6366f1" />}
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </span>
+          </div>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-green)', background: 'rgba(34, 197, 94, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>
+            {theme === 'dark' ? 'DARK' : 'LIGHT'}
+          </span>
+        </div>
+
+        {user?.role !== 'client' && (
           <div 
             onClick={handleLogout}
             style={{ 
@@ -814,8 +835,8 @@ const Sidebar = ({ isOpen = false, onClose }) => {
               <LogOut size={16} />
             </span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
 };

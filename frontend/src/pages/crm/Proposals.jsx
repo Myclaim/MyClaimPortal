@@ -418,7 +418,7 @@ const Proposals = () => {
                     placeholder="Enter client name"
                     value={formData.clientName} 
                     onChange={e => setFormData({...formData, clientName: e.target.value})} 
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div className="form-group">
@@ -428,7 +428,7 @@ const Proposals = () => {
                     placeholder="e.g. IEPF Claim"
                     value={formData.serviceRequest} 
                     onChange={e => setFormData({...formData, serviceRequest: e.target.value})} 
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -440,13 +440,13 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.category} 
                     onChange={e => setFormData({...formData, category: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">Select Category</option>
-                    <option value="Physical Shares">Physical Shares</option>
-                    <option value="New Business">New Business</option>
-                    <option value="Taxation">Taxation</option>
-                    <option value="IEPF Claims">IEPF Claims</option>
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>Select Category</option>
+                    <option value="Physical Shares" style={{ color: '#0f172a', background: '#fff' }}>Physical Shares</option>
+                    <option value="New Business" style={{ color: '#0f172a', background: '#fff' }}>New Business</option>
+                    <option value="Taxation" style={{ color: '#0f172a', background: '#fff' }}>Taxation</option>
+                    <option value="IEPF Claims" style={{ color: '#0f172a', background: '#fff' }}>IEPF Claims</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -455,11 +455,11 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.priority} 
                     onChange={e => setFormData({...formData, priority: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+                    <option value="High" style={{ color: '#0f172a', background: '#fff' }}>High</option>
+                    <option value="Medium" style={{ color: '#0f172a', background: '#fff' }}>Medium</option>
+                    <option value="Low" style={{ color: '#0f172a', background: '#fff' }}>Low</option>
                   </select>
                 </div>
               </div>
@@ -471,11 +471,11 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.sendToUserType} 
                     onChange={e => setFormData({...formData, sendToUserType: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="Admin">Admin</option>
-                    <option value="Partner">Partner</option>
-                    <option value="Super Partner">Super Partner</option>
+                    <option value="Admin" style={{ color: '#0f172a', background: '#fff' }}>Admin</option>
+                    <option value="Partner" style={{ color: '#0f172a', background: '#fff' }}>Partner</option>
+                    <option value="Super Partner" style={{ color: '#0f172a', background: '#fff' }}>Super Partner</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -497,10 +497,10 @@ const Proposals = () => {
                         admin: formData.sendToUserType === 'Admin' ? selectedName : formData.admin
                       });
                     }}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">Select user to send proposal</option>
-                    {users.map(u => <option key={u._id} value={u._id}>{u.name} ({u.role})</option>)}
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>Select user to send proposal</option>
+                    {users.map(u => <option key={u._id} value={u._id} style={{ color: '#0f172a', background: '#fff' }}>{u.name} ({u.role})</option>)}
                   </select>
                 </div>
               </div>
@@ -512,10 +512,10 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.superPartner} 
                     onChange={e => setFormData({...formData, superPartner: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">—</option>
-                    {users.filter(u => u.role === 'super_partner').map(u => <option key={u._id} value={u.name}>{u.name}</option>)}
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>—</option>
+                    {users.filter(u => u.role === 'super_partner').map(u => <option key={u._id} value={u.name} style={{ color: '#0f172a', background: '#fff' }}>{u.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -524,10 +524,10 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.partner} 
                     onChange={e => setFormData({...formData, partner: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">—</option>
-                    {users.filter(u => u.role === 'partner').map(u => <option key={u._id} value={u.name}>{u.name}</option>)}
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>—</option>
+                    {users.filter(u => u.role === 'partner').map(u => <option key={u._id} value={u.name} style={{ color: '#0f172a', background: '#fff' }}>{u.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -539,10 +539,10 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.admin} 
                     onChange={e => setFormData({...formData, admin: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">Select Admin</option>
-                    {users.filter(u => ['admin', 'super_admin'].includes(u.role)).map(u => <option key={u._id} value={u.name}>{u.name}</option>)}
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>Select Admin</option>
+                    {users.filter(u => ['admin', 'super_admin'].includes(u.role)).map(u => <option key={u._id} value={u.name} style={{ color: '#0f172a', background: '#fff' }}>{u.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -551,18 +551,18 @@ const Proposals = () => {
                     className="form-select" 
                     value={formData.status} 
                     onChange={e => setFormData({...formData, status: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="Draft">Draft</option>
-                    <option value="Sent">Sent</option>
-                    <option value="Under Review">Under Review</option>
+                    <option value="Draft" style={{ color: '#0f172a', background: '#fff' }}>Draft</option>
+                    <option value="Sent" style={{ color: '#0f172a', background: '#fff' }}>Sent</option>
+                    <option value="Under Review" style={{ color: '#0f172a', background: '#fff' }}>Under Review</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block', letterSpacing: '0.5px' }}>ATTACHMENT</label>
-                <div style={{ border: '1.5px solid #edf2f7', borderRadius: '10px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: '#fff' }}>
                   <input 
                     type="file" 
                     ref={fileInputRef} 
@@ -571,11 +571,11 @@ const Proposals = () => {
                   />
                   <button 
                     onClick={() => fileInputRef.current.click()}
-                    style={{ padding: '6px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', color: '#0f172a' }}
                   >
                     Choose file
                   </button>
-                  <span style={{ fontSize: '13px', color: '#94a3b8' }}>{selectedFile ? selectedFile.name : 'No file chosen'}</span>
+                  <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>{selectedFile ? selectedFile.name : 'No file chosen'}</span>
                 </div>
               </div>
 
@@ -587,7 +587,7 @@ const Proposals = () => {
                   rows="4" 
                   value={formData.notes} 
                   onChange={e => setFormData({...formData, notes: e.target.value})}
-                  style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', resize: 'none', width: '100%', boxSizing: 'border-box' }}
+                  style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, resize: 'none', width: '100%', boxSizing: 'border-box' }}
                 />
               </div>
             </div>
@@ -633,7 +633,7 @@ const Proposals = () => {
                     className="form-input" 
                     value={editForm.clientName} 
                     onChange={e => setEditForm({...editForm, clientName: e.target.value})} 
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div className="form-group">
@@ -642,7 +642,7 @@ const Proposals = () => {
                     className="form-input" 
                     value={editForm.serviceRequest} 
                     onChange={e => setEditForm({...editForm, serviceRequest: e.target.value})} 
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -654,13 +654,13 @@ const Proposals = () => {
                     className="form-select" 
                     value={editForm.status} 
                     onChange={e => setEditForm({...editForm, status: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="Draft">Draft</option>
-                    <option value="Active">Active</option>
-                    <option value="Under Review">Under Review</option>
-                    <option value="Converted">Converted</option>
-                    <option value="Sent">Sent</option>
+                    <option value="Draft" style={{ color: '#0f172a', background: '#fff' }}>Draft</option>
+                    <option value="Active" style={{ color: '#0f172a', background: '#fff' }}>Active</option>
+                    <option value="Under Review" style={{ color: '#0f172a', background: '#fff' }}>Under Review</option>
+                    <option value="Converted" style={{ color: '#0f172a', background: '#fff' }}>Converted</option>
+                    <option value="Sent" style={{ color: '#0f172a', background: '#fff' }}>Sent</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -669,11 +669,11 @@ const Proposals = () => {
                     className="form-select" 
                     value={editForm.priority} 
                     onChange={e => setEditForm({...editForm, priority: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+                    <option value="High" style={{ color: '#0f172a', background: '#fff' }}>High</option>
+                    <option value="Medium" style={{ color: '#0f172a', background: '#fff' }}>Medium</option>
+                    <option value="Low" style={{ color: '#0f172a', background: '#fff' }}>Low</option>
                   </select>
                 </div>
               </div>
@@ -685,10 +685,10 @@ const Proposals = () => {
                     className="form-select" 
                     value={editForm.assignedTo} 
                     onChange={e => setEditForm({...editForm, assignedTo: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">Select User</option>
-                    {users.map(u => <option key={u._id} value={u._id}>{u.name} ({u.role})</option>)}
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>Select User</option>
+                    {users.map(u => <option key={u._id} value={u._id} style={{ color: '#0f172a', background: '#fff' }}>{u.name} ({u.role})</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -697,25 +697,25 @@ const Proposals = () => {
                     className="form-select" 
                     value={editForm.admin} 
                     onChange={e => setEditForm({...editForm, admin: e.target.value})}
-                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', width: '100%' }}
+                    style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, width: '100%' }}
                   >
-                    <option value="">Select Admin</option>
-                    {users.filter(u => ['admin', 'super_admin'].includes(u.role)).map(u => <option key={u._id} value={u.name}>{u.name}</option>)}
+                    <option value="" style={{ color: '#0f172a', background: '#fff' }}>Select Admin</option>
+                    {users.filter(u => ['admin', 'super_admin'].includes(u.role)).map(u => <option key={u._id} value={u.name} style={{ color: '#0f172a', background: '#fff' }}>{u.name}</option>)}
                   </select>
                 </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block', letterSpacing: '0.5px' }}>ATTACHMENT</label>
-                <div style={{ border: '1.5px solid #edf2f7', borderRadius: '10px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: '#fff' }}>
                   <input type="file" ref={fileInputRef} hidden onChange={e => setSelectedFile(e.target.files[0])} />
                   <button 
                     onClick={() => fileInputRef.current.click()}
-                    style={{ padding: '6px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', color: '#0f172a' }}
                   >
                     Update file
                   </button>
-                  <span style={{ fontSize: '13px', color: '#94a3b8' }}>{selectedFile ? selectedFile.name : 'Choose new file to replace'}</span>
+                  <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>{selectedFile ? selectedFile.name : 'Choose new file to replace'}</span>
                 </div>
               </div>
 
@@ -726,7 +726,7 @@ const Proposals = () => {
                   rows="4" 
                   value={editForm.notes} 
                   onChange={e => setEditForm({...editForm, notes: e.target.value})}
-                  style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #edf2f7', background: '#fff', resize: 'none', width: '100%', boxSizing: 'border-box' }}
+                  style={{ borderRadius: '10px', padding: '12px 16px', border: '1.5px solid #cbd5e1', background: '#fff', color: '#0f172a', fontWeight: 600, resize: 'none', width: '100%', boxSizing: 'border-box' }}
                 />
               </div>
             </div>

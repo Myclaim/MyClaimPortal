@@ -113,10 +113,6 @@ const EmployeeProfile = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showNotification('error', 'Image size must be less than 2MB');
-        return;
-      }
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
     }

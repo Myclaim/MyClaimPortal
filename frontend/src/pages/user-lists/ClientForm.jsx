@@ -220,9 +220,21 @@ const ClientForm = () => {
         .cf-group { display: flex; flex-direction: column; gap: 7px; }
         .cf-label { font-size: 11px; font-weight: 700; color: var(--text-muted); }
         .cf-label span { color: #f43f5e; }
-        .cf-input { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 11px; font-size: 13.5px; color: var(--text); background: var(--bg); outline: none; transition: 0.2s; width: 100%; box-sizing: border-box; font-family: inherit; }
-        .cf-input:focus { border-color: var(--blue, #10b981); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.07); background: var(--card); }
-        .cf-select { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 11px; font-size: 13.5px; color: var(--text); background: var(--bg); outline: none; width: 100%; font-family: inherit; cursor: pointer; }
+        .cf-input { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 11px; font-size: 13.5px; color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; caret-color: var(--blue, #10b981); background: var(--bg); outline: none; transition: 0.2s; width: 100%; box-sizing: border-box; font-family: inherit; color-scheme: dark; }
+        .cf-input:focus { border-color: var(--blue, #10b981); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18); background: var(--bg); color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; }
+        .cf-input::placeholder { color: #818cf8; opacity: 0.7; }
+        
+        .cf-input:-webkit-autofill,
+        .cf-input:-webkit-autofill:hover, 
+        .cf-input:-webkit-autofill:focus,
+        .cf-select:-webkit-autofill {
+          -webkit-text-fill-color: var(--text) !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--bg) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .cf-select { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 11px; font-size: 13.5px; color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; background: var(--bg); outline: none; width: 100%; font-family: inherit; cursor: pointer; color-scheme: dark; }
+        .cf-select option { background: #0d1526; color: #ffffff; }
         .cf-radio-row { display: flex; gap: 20px; padding: 8px 0; }
         .cf-radio { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--text); cursor: pointer; }
         .cf-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 36px; padding-top: 28px; border-top: 1.5px solid var(--border); }

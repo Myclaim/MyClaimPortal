@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { UserCircle, Search, Download, Eye, Edit2, Trash2, Plus, X } from 'lucide-react';
+import { UserCircle, Search, Download, Eye, Edit2, Trash2, Plus, X, Filter, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -11,6 +11,11 @@ const AdminList = () => {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [showAdvFilters, setShowAdvFilters] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const [activeAdmin, setActiveAdmin] = useState(null);
   const [editForm, setEditForm] = useState(null);
@@ -74,10 +79,48 @@ const AdminList = () => {
     fetchUsers();
   }, []);
 
+  const uniqueDepartments = useMemo(() => {
+    const depts = admins.map(u => u.department).filter(Boolean);
+    return [...new Set(depts)];
+  }, [admins]);
+
+  const resetFilters = () => {
+    setQuery('');
+    setStatusFilter('all');
+    setRoleFilter('all');
+    setDepartmentFilter('all');
+    setDateFrom('');
+    setDateTo('');
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (query) count++;
+    if (statusFilter !== 'all') count++;
+    if (roleFilter !== 'all') count++;
+    if (departmentFilter !== 'all') count++;
+    if (dateFrom) count++;
+    if (dateTo) count++;
+    return count;
+  }, [query, statusFilter, roleFilter, departmentFilter, dateFrom, dateTo]);
+
   const filtered = useMemo(() => {
     let result = admins;
     if (statusFilter === 'active') result = result.filter((u) => u.is_active !== false);
     if (statusFilter === 'inactive') result = result.filter((u) => u.is_active === false);
+    if (roleFilter !== 'all') result = result.filter((u) => u.role === roleFilter);
+    if (departmentFilter !== 'all') result = result.filter((u) => (u.department || '').toLowerCase() === departmentFilter.toLowerCase());
+    
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      result = result.filter((u) => new Date(u.createdAt) >= from);
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      result = result.filter((u) => new Date(u.createdAt) <= to);
+    }
+
     const q = query.trim().toLowerCase();
     if (!q) return result;
     return result.filter((u) => {
@@ -97,7 +140,7 @@ const AdminList = () => {
         String(u._id || '').slice(-6).toLowerCase().includes(q)
       );
     });
-  }, [admins, query]);
+  }, [admins, query, statusFilter, roleFilter, departmentFilter, dateFrom, dateTo]);
 
   const handleDeleteAdmin = async (user) => {
     if (!window.confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) return;
@@ -208,8 +251,8 @@ const AdminList = () => {
         </div>
 
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
-            <div className="search-input" style={{ flex: 1, minWidth: '200px' }}>
+          <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
+            <div className="search-input" style={{ flex: 1, minWidth: '220px' }}>
               <Search size={16} color="var(--text-light)" />
               <input
                 type="text"
@@ -218,11 +261,36 @@ const AdminList = () => {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <select className="form-select" style={{ width: '130px' }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option value="all">All Status</option>
+            
+            <select className="form-select" style={{ width: '130px', height: '38px', borderRadius: '10px' }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">Status: All</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+
+            <button 
+              onClick={() => setShowAdvFilters(prev => !prev)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, height: '38px', padding: '0 16px',
+                borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                background: showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.15)' : 'var(--bg)',
+                color: showAdvFilters || activeFilterCount > 0 ? '#00D084' : 'var(--text)',
+                border: `1px solid ${showAdvFilters || activeFilterCount > 0 ? 'rgba(0, 208, 132, 0.3)' : 'var(--border)'}`,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Filter size={15} />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span style={{
+                  background: '#00D084', color: '#091a10', width: 18, height: 18, borderRadius: '50%',
+                  fontSize: 11, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
             <button 
               className="topbar-btn secondary" 
               onClick={handleExport}
@@ -231,6 +299,115 @@ const AdminList = () => {
               <Download size={14} /> Export CSV
             </button>
           </div>
+
+          {/* Expanded Filter Panel */}
+          {showAdvFilters && (
+            <div style={{
+              padding: '16px 20px', background: 'var(--bg)', borderBottom: '1px solid var(--border)',
+              display: 'flex', flexDirection: 'column', gap: 14
+            }}>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ flex: '0 1 200px', minWidth: '160px' }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Role</label>
+                  <select 
+                    className="form-select" 
+                    style={{ width: '100%', height: '38px', borderRadius: '8px' }} 
+                    value={roleFilter} 
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="admin">Admin</option>
+                    <option value="claim_admin">Claim Admin</option>
+                    <option value="service_admin">Service Admin</option>
+                    <option value="store_admin">Store Admin</option>
+                    <option value="team">Team Member</option>
+                  </select>
+                </div>
+
+                <div style={{ flex: '0 1 200px', minWidth: '160px' }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Department</label>
+                  <select 
+                    className="form-select" 
+                    style={{ width: '100%', height: '38px', borderRadius: '8px' }} 
+                    value={departmentFilter} 
+                    onChange={(e) => setDepartmentFilter(e.target.value)}
+                  >
+                    <option value="all">All Departments</option>
+                    {uniqueDepartments.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ flex: '0 1 180px', minWidth: '150px' }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Created From</label>
+                  <input 
+                    type="date" 
+                    className="form-input" 
+                    style={{ width: '100%', height: '38px', borderRadius: '8px', padding: '0 10px', fontSize: 13 }} 
+                    value={dateFrom} 
+                    onChange={(e) => setDateFrom(e.target.value)} 
+                  />
+                </div>
+
+                <div style={{ flex: '0 1 180px', minWidth: '150px' }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5, display: 'block' }}>Created To</label>
+                  <input 
+                    type="date" 
+                    className="form-input" 
+                    style={{ width: '100%', height: '38px', borderRadius: '8px', padding: '0 10px', fontSize: 13 }} 
+                    value={dateTo} 
+                    onChange={(e) => setDateTo(e.target.value)} 
+                  />
+                </div>
+              </div>
+
+              {/* Active Filter Chips & Reset Button */}
+              {activeFilterCount > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px dashed var(--border)' }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Filters:</span>
+                  
+                  {roleFilter !== 'all' && (
+                    <span style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      Role: {roleFilter.replace(/_/g, ' ')} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setRoleFilter('all')} />
+                    </span>
+                  )}
+
+                  {departmentFilter !== 'all' && (
+                    <span style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      Dept: {departmentFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setDepartmentFilter('all')} />
+                    </span>
+                  )}
+
+                  {statusFilter !== 'all' && (
+                    <span style={{ background: 'rgba(0,208,132,0.15)', color: '#00D084', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      Status: {statusFilter} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('all')} />
+                    </span>
+                  )}
+
+                  {dateFrom && (
+                    <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      From: {dateFrom} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setDateFrom('')} />
+                    </span>
+                  )}
+
+                  {dateTo && (
+                    <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '3px 10px', borderRadius: 14, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      To: {dateTo} <X size={13} style={{ cursor: 'pointer' }} onClick={() => setDateTo('')} />
+                    </span>
+                  )}
+
+                  <button 
+                    onClick={resetFilters} 
+                    style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}
+                  >
+                    <RotateCcw size={12} /> Clear All
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <div className="table-wrap">
             <table>
               <thead>
