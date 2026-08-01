@@ -142,9 +142,42 @@ const QUICK_ACTIONS = [
   { icon: <ShieldCheck size={16} />, label: '+ Run AI Audit', color: '#f59e0b' },
 ];
 
+const RECOVERY_DATA_THIS_YEAR = [
+  { month: 'Jan', value: 45, displayVal: '₹45.0 Lakhs', growth: '+8.2%' },
+  { month: 'Feb', value: 75, displayVal: '₹75.0 Lakhs', growth: '+12.4%' },
+  { month: 'Mar', value: 55, displayVal: '₹55.0 Lakhs', growth: '+5.1%' },
+  { month: 'Apr', value: 95, displayVal: '₹95.0 Lakhs', growth: '+18.6%' },
+  { month: 'May', value: 70, displayVal: '₹70.0 Lakhs', growth: '+11.2%' },
+  { month: 'Jun', value: 110, displayVal: '₹1.10 Cr', growth: '+22.4%' },
+  { month: 'Jul', value: 88, displayVal: '₹88.0 Lakhs', growth: '+14.8%' },
+  { month: 'Aug', value: 120, displayVal: '₹1.20 Cr', growth: '+25.1%' },
+  { month: 'Sep', value: 98, displayVal: '₹98.0 Lakhs', growth: '+16.3%' },
+  { month: 'Oct', value: 115, displayVal: '₹1.15 Cr', growth: '+21.5%' },
+  { month: 'Nov', value: 105, displayVal: '₹1.05 Cr', growth: '+19.2%' },
+  { month: 'Dec', value: 124, displayVal: '₹1.24 Cr', growth: '+28.4%' }
+];
+
+const RECOVERY_DATA_LAST_YEAR = [
+  { month: 'Jan', value: 38, displayVal: '₹38.0 Lakhs', growth: '+6.2%' },
+  { month: 'Feb', value: 60, displayVal: '₹60.0 Lakhs', growth: '+9.4%' },
+  { month: 'Mar', value: 48, displayVal: '₹48.0 Lakhs', growth: '+4.1%' },
+  { month: 'Apr', value: 80, displayVal: '₹80.0 Lakhs', growth: '+14.2%' },
+  { month: 'May', value: 62, displayVal: '₹62.0 Lakhs', growth: '+8.8%' },
+  { month: 'Jun', value: 92, displayVal: '₹92.0 Lakhs', growth: '+17.1%' },
+  { month: 'Jul', value: 76, displayVal: '₹76.0 Lakhs', growth: '+11.5%' },
+  { month: 'Aug', value: 102, displayVal: '₹1.02 Cr', growth: '+19.8%' },
+  { month: 'Sep', value: 85, displayVal: '₹85.0 Lakhs', growth: '+13.4%' },
+  { month: 'Oct', value: 98, displayVal: '₹98.0 Lakhs', growth: '+16.2%' },
+  { month: 'Nov', value: 90, displayVal: '₹90.0 Lakhs', growth: '+14.9%' },
+  { month: 'Dec', value: 108, displayVal: '₹1.08 Cr', growth: '+21.0%' }
+];
+
 const SuperAdminDashboard = ({ stats, loading }) => {
-  const chartData = [32, 55, 42, 78, 61, 90, 74, 95, 83, 110, 98, 124];
-  const chartLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const [selectedTimeframe, setSelectedTimeframe] = useState('This Year');
+  const [hoveredBarIndex, setHoveredBarIndex] = useState(11); // default active index (Dec)
+
+  const currentDataset = selectedTimeframe === 'This Year' ? RECOVERY_DATA_THIS_YEAR : RECOVERY_DATA_LAST_YEAR;
+  const activeItem = currentDataset[hoveredBarIndex !== null ? hoveredBarIndex : 11] || currentDataset[11];
 
   return (
     <>
@@ -236,40 +269,159 @@ const SuperAdminDashboard = ({ stats, loading }) => {
       {/* ── BOTTOM GRID ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
 
-        {/* Revenue chart */}
+        {/* Global Recovery Growth Interactive Chart */}
         <div className="sa-card" style={{ padding: 28 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Global Recovery Growth</div>
-                <Chip color="#17E6A1" label="🟢 Live" />
+                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Global Recovery Growth</div>
+                <Chip color="#17E6A1" label="🟢 LIVE" />
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Monthly fee collection trend</div>
             </div>
-            <select style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, color: 'var(--text)', fontSize: 12, padding: '6px 12px', outline: 'none' }}>
-              <option>This Year</option>
-              <option>Last Year</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 160 }}>
-            {[45,75,55,95,70,110,88,120,98,115,105,124].map((h, i) => (
-              <div key={i} style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'flex-end' }}>
-                <div style={{
-                  width: '100%', height: `${(h / 124) * 100}%`,
-                  background: i === 11 ? 'linear-gradient(to top,#00D084,#17E6A1)' : 'rgba(0,208,132,.18)',
-                  borderRadius: '5px 5px 3px 3px', transition: 'height .6s ease',
-                  border: i === 11 ? '1px solid #00D084' : '1px solid rgba(0,208,132,.1)'
-                }} />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {/* Dynamic Output Indicator Box */}
+              <div style={{
+                background: 'rgba(23, 230, 161, 0.08)',
+                border: '1px solid rgba(23, 230, 161, 0.25)',
+                borderRadius: 10,
+                padding: '4px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>
+                  {activeItem.month}:
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 900, color: '#17E6A1' }}>
+                  {activeItem.displayVal}
+                </span>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#00D084', background: 'rgba(0, 208, 132, 0.2)', padding: '1px 5px', borderRadius: 4 }}>
+                  {activeItem.growth}
+                </span>
               </div>
-            ))}
+
+              <select
+                value={selectedTimeframe}
+                onChange={(e) => setSelectedTimeframe(e.target.value)}
+                style={{
+                  background: 'rgba(255,255,255,.04)',
+                  border: '1px solid rgba(255,255,255,.08)',
+                  borderRadius: 10,
+                  color: 'var(--text)',
+                  fontSize: 12,
+                  padding: '6px 12px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="This Year">This Year</option>
+                <option value="Last Year">Last Year</option>
+              </select>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-            {chartLabels.map(m => <span key={m} style={{ fontSize: 9, color: 'var(--text-light)', fontWeight: 700 }}>{m}</span>)}
+
+          {/* Interactive Bar Chart Area */}
+          <div
+            style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 170, position: 'relative', paddingTop: 30 }}
+            onMouseLeave={() => setHoveredBarIndex(11)}
+          >
+            {currentDataset.map((item, i) => {
+              const isHovered = hoveredBarIndex === i;
+              const barHeightPct = (item.value / 124) * 100;
+              return (
+                <div
+                  key={i}
+                  onMouseEnter={() => setHoveredBarIndex(i)}
+                  style={{
+                    flex: 1,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                >
+                  {/* Floating tooltip above hovered bar */}
+                  {isHovered && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: `calc(${barHeightPct}% + 10px)`,
+                      background: '#070d18',
+                      border: '1px solid #17E6A1',
+                      color: '#17E6A1',
+                      padding: '4px 8px',
+                      borderRadius: 8,
+                      fontSize: 11,
+                      fontWeight: 900,
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 8px 20px rgba(0,208,132,0.4)',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                      transform: 'translateX(-50%)',
+                      left: '50%',
+                      animation: 'fadeInScale 0.15s ease-out'
+                    }}>
+                      {item.displayVal}
+                    </div>
+                  )}
+
+                  {/* Bar element */}
+                  <div style={{
+                    width: '100%',
+                    height: `${barHeightPct}%`,
+                    background: isHovered
+                      ? 'linear-gradient(to top, #00D084, #17E6A1)'
+                      : 'rgba(0, 208, 132, 0.18)',
+                    borderRadius: '6px 6px 3px 3px',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: isHovered ? '1px solid #17E6A1' : '1px solid rgba(0,208,132,.1)',
+                    boxShadow: isHovered ? '0 0 20px rgba(23, 230, 161, 0.5)' : 'none',
+                    transform: isHovered ? 'scaleY(1.05)' : 'scaleY(1)',
+                    transformOrigin: 'bottom'
+                  }} />
+                </div>
+              );
+            })}
           </div>
+
+          {/* Month Labels Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+            {currentDataset.map((item, i) => {
+              const isHovered = hoveredBarIndex === i;
+              return (
+                <span
+                  key={item.month}
+                  onMouseEnter={() => setHoveredBarIndex(i)}
+                  style={{
+                    fontSize: 10,
+                    color: isHovered ? '#17E6A1' : 'var(--text-light)',
+                    fontWeight: isHovered ? 900 : 700,
+                    cursor: 'pointer',
+                    transition: 'color 0.2s',
+                    textAlign: 'center',
+                    flex: 1
+                  }}
+                >
+                  {item.month}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Legend Strip */}
           <div style={{ display: 'flex', gap: 16, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.05)' }}>
-            {[{ label: "Today's Recovery", color: '#17E6A1' }, { label: 'Yesterday', color: 'rgba(0,208,132,.35)' }, { label: 'Forecast', color: '#3b82f6' }].map(l => (
+            {[
+              { label: "Today's Recovery", color: '#17E6A1' },
+              { label: 'Yesterday', color: 'rgba(0,208,132,.35)' },
+              { label: 'Forecast', color: '#3b82f6' }
+            ].map(l => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: l.color, display: 'inline-block' }} />{l.label}
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: l.color, display: 'inline-block' }} />
+                {l.label}
               </div>
             ))}
           </div>
