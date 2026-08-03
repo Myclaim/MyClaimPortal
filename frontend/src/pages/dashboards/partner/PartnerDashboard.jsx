@@ -1831,7 +1831,29 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
   const [step, setStep] = React.useState(1);
   const [selectedFund, setSelectedFund] = React.useState(null);
   const [selectedClient, setSelectedClient] = React.useState(null);
+  const [accountDetails, setAccountDetails] = React.useState('');
+  const [price, setPrice] = React.useState('');
   const [qty, setQty] = React.useState('');
+  const [isProposalSubmitting, setIsProposalSubmitting] = React.useState(false);
+  const [mode, setMode] = React.useState('create'); // 'create' or 'history'
+  const [proposals, setProposals] = React.useState([]);
+  const [loadingProposals, setLoadingProposals] = React.useState(false);
+
+  React.useEffect(() => {
+    if (mode === 'history') {
+      const fetchProposals = async () => {
+        setLoadingProposals(true);
+        try {
+          const res = await api.get('/proposals');
+          setProposals(res.data.filter(p => p.category === categoryName));
+        } catch (err) {
+          console.error(err);
+        }
+        setLoadingProposals(false);
+      };
+      fetchProposals();
+    }
+  }, [mode, categoryName]);
   
   const handleFundSelect = (fund) => {
     setSelectedFund(fund);
@@ -1843,17 +1865,48 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
     setStep(3);
   };
   
-  const handleQtySubmit = () => {
-    if (!qty || isNaN(qty) || Number(qty) < selectedFund.minQty) return;
+  const handleAccountSubmit = () => {
+    if (!accountDetails) return;
     setStep(4);
   };
 
-  const handleConfirm = () => {
-    alert("Order confirmed!");
-    setStep(1);
-    setSelectedFund(null);
-    setSelectedClient(null);
-    setQty('');
+  const handleQtySubmit = () => {
+    if (!qty || isNaN(qty) || Number(qty) < selectedFund.minQty || !price) return;
+    setStep(5);
+  };
+
+  const handleConfirm = async () => {
+    try {
+      setIsProposalSubmitting(true);
+      const totalInvestment = Number(qty) * Number(price);
+      const payload = {
+        clientName: selectedClient?.name || selectedClient?.username || selectedClient?.email || 'Unknown Client',
+        serviceRequest: `${categoryName} - ${selectedFund?.name}`,
+        category: categoryName,
+        priority: 'High',
+        status: 'Proposal Sent',
+        notes: `Share Price: ₹${price} | No. of Shares: ${qty} | Total Investment: ₹${totalInvestment.toLocaleString('en-IN')} | Account Details: ${accountDetails} | ISIN: ${selectedFund?.isin}`,
+        sendToUserType: 'client'
+      };
+      
+      const res = await api.post('/proposals', payload);
+      if (res.status === 201 || res.status === 200) {
+        alert("Proposal shared with client successfully!");
+        setStep(1);
+        setSelectedFund(null);
+        setSelectedClient(null);
+        setAccountDetails('');
+        setPrice('');
+        setQty('');
+      } else {
+        alert("Failed to confirm order.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error confirming order.");
+    } finally {
+      setIsProposalSubmitting(false);
+    }
   };
 
   return (
@@ -1873,29 +1926,76 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
         ))}
       </div>
 
-      {step > 1 && (
-        <button onClick={() => setStep(step - 1)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-          <ArrowLeft size={16} /> Back
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+        <button onClick={() => setMode('create')} style={{ background: 'transparent', border: 'none', color: mode === 'create' ? '#22c55e' : 'var(--text-muted)', fontSize: '15px', fontWeight: mode === 'create' ? 800 : 600, cursor: 'pointer', borderBottom: mode === 'create' ? '2px solid #22c55e' : 'none', paddingBottom: '12px', marginBottom: '-14px' }}>
+          Create New Proposal
         </button>
-      )}
+        <button onClick={() => setMode('history')} style={{ background: 'transparent', border: 'none', color: mode === 'history' ? '#22c55e' : 'var(--text-muted)', fontSize: '15px', fontWeight: mode === 'history' ? 800 : 600, cursor: 'pointer', borderBottom: mode === 'history' ? '2px solid #22c55e' : 'none', paddingBottom: '12px', marginBottom: '-14px' }}>
+          History & Status
+        </button>
+      </div>
 
-      {/* Stepper */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
+      {mode === 'history' ? (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '24px' }}>{categoryName} Proposals</h3>
+          {loadingProposals ? (
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Loading history...</div>
+          ) : proposals.length === 0 ? (
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0', background: 'rgba(255,255,255,0.01)', borderRadius: '12px' }}>No proposals found in this category.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {proposals.map((p, i) => {
+                const isAccepted = p.status?.toLowerCase().includes('accept');
+                const isDeclined = p.status?.toLowerCase().includes('declin');
+                const badgeColor = isAccepted ? '#10b981' : isDeclined ? '#ef4444' : '#f59e0b';
+                
+                return (
+                  <div key={p._id || i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '8px' }}>{p.serviceRequest}</div>
+                      <div style={{ fontSize: '14px', color: 'var(--text)', marginBottom: '8px', fontWeight: 600 }}>Client: <span style={{ color: '#fff', fontWeight: 800 }}>{p.clientName}</span></div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, maxWidth: '600px' }}>{p.notes}</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+                      <div style={{ background: `${badgeColor}20`, color: badgeColor, border: `1px solid ${badgeColor}40`, padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 800 }}>
+                        {p.status}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {step > 1 && (
+            <button onClick={() => setStep(step - 1)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+              <ArrowLeft size={16} /> Back
+            </button>
+          )}
+
+          {/* Stepper */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative', overflowX: 'auto', paddingBottom: '10px' }}>
         <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }} />
         {[
-          { num: 1, label: `Select ${categoryName === 'Insurance' ? 'Plan' : 'Product'}` },
+          { num: 1, label: 'Select Fund' },
           { num: 2, label: 'Choose Client' },
-          { num: 3, label: 'Set Qty & Type' },
-          { num: 4, label: 'Confirm' }
+          { num: 3, label: 'Account Details' },
+          { num: 4, label: 'Set Price & Quantity' },
+          { num: 5, label: 'Proposal Summary' }
         ].map(s => {
            const isActive = step === s.num;
            const isDone = step > s.num;
            return (
-             <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg)', padding: '0 16px', position: 'relative', zIndex: 1 }}>
-               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isDone || isActive ? '#22c55e' : 'rgba(255,255,255,0.1)', color: (isDone || isActive) ? '#000' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>
+             <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg)', padding: '0 12px', position: 'relative', zIndex: 1, whiteSpace: 'nowrap' }}>
+               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isDone ? '#22c55e' : isActive ? 'transparent' : 'rgba(255,255,255,0.1)', border: isActive ? '1px solid #a855f7' : 'none', color: isDone ? '#000' : isActive ? '#a855f7' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>
                  {isDone ? '✓' : s.num}
                </div>
-               <span style={{ fontSize: '14px', fontWeight: 700, color: (isActive || isDone) ? '#fff' : 'rgba(255,255,255,0.4)' }}>{s.label}</span>
+               <span style={{ fontSize: '13px', fontWeight: 700, color: isDone ? '#22c55e' : isActive ? '#a855f7' : 'rgba(255,255,255,0.4)' }}>{s.label}</span>
              </div>
            );
         })}
@@ -1952,26 +2052,19 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
 
       {step === 3 && (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
-          <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Set Quantity & Type</div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>{categoryName} • {selectedFund?.name}</div>
+          <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Account Details</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Enter client's demat or holding account details for {selectedFund?.name}</div>
 
-          <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '32px' }}>{selectedFund?.name}</div>
-
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>QUANTITY (UNITS)</label>
-              <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder={`e.g. ${selectedFund?.minQty}`} style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none', boxShadow: '0 0 0 1px #3b82f6' }} />
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>Min: {selectedFund?.minQty}, Available: {selectedFund?.available}</div>
-            </div>
-            <div style={{ width: '120px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>TYPE</label>
-              <div style={{ width: '100%', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', fontWeight: 700, textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}>BUY</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>ACCOUNT DETAILS / BOID</label>
+              <input type="text" value={accountDetails} onChange={e => setAccountDetails(e.target.value)} placeholder="Enter Demat ID or equivalent" style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '15px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
             <button onClick={() => setStep(2)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
-            <button onClick={handleQtySubmit} disabled={!qty || Number(qty) < selectedFund?.minQty} style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!qty || Number(qty) < selectedFund?.minQty) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!qty || Number(qty) < selectedFund?.minQty) ? 0.5 : 1 }}>
+            <button onClick={handleAccountSubmit} disabled={!accountDetails} style={{ background: '#a855f7', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!accountDetails) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!accountDetails) ? 0.5 : 1 }}>
               Continue <ArrowRight size={16} />
             </button>
           </div>
@@ -1980,30 +2073,92 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
 
       {step === 4 && (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Confirm Order</h3>
-          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '20px', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Product</span>
-              <span style={{ fontWeight: 800 }}>{selectedFund?.name}</span>
+          <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Set Price & Quantity</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>{categoryName} • {selectedFund?.name}</div>
+
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>SHARE PRICE (₹)</label>
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="e.g. 6" style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Client</span>
-              <span style={{ fontWeight: 800 }}>{selectedClient?.name || selectedClient?.username || selectedClient?.email}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Quantity</span>
-              <span style={{ fontWeight: 800 }}>{qty} units</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Type</span>
-              <span style={{ fontWeight: 800, color: '#22c55e' }}>BUY</span>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>NO. OF SHARES</label>
+              <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder={`Min: ${selectedFund?.minQty}`} style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Available: {selectedFund?.available}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+          
+          {(price && qty) && (
+             <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <span style={{ fontSize: '13px', color: '#d8b4fe', fontWeight: 700 }}>Total Investment</span>
+               <span style={{ fontSize: '18px', color: '#fff', fontWeight: 800 }}>₹{(Number(price) * Number(qty)).toLocaleString('en-IN')}</span>
+             </div>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
             <button onClick={() => setStep(3)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
-            <button onClick={handleConfirm} style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Confirm Order</button>
+            <button onClick={handleQtySubmit} disabled={!qty || !price || Number(qty) < selectedFund?.minQty} style={{ background: '#a855f7', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!qty || !price || Number(qty) < selectedFund?.minQty) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!qty || !price || Number(qty) < selectedFund?.minQty) ? 0.5 : 1 }}>
+              Continue <ArrowRight size={16} />
+            </button>
           </div>
         </div>
+      )}
+
+      {step === 5 && (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>Proposal Summary</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Please Check & Confirm the Proposal before sending</p>
+          
+          <div style={{ background: '#fff', color: '#000', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
+            {/* Client Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fca5a5', color: '#991b1b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 800 }}>
+                {selectedClient?.name ? selectedClient.name.charAt(0).toUpperCase() : 'C'}
+              </div>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{selectedClient?.name || selectedClient?.username || 'Unknown Client'}</div>
+                <div style={{ fontSize: '12px', color: '#6b7280' }}>{selectedClient?.phone || '(+91) 0000000000'}</div>
+                <div style={{ fontSize: '12px', color: '#9ca3af' }}>{selectedClient?.email || 'email@example.com'}</div>
+              </div>
+            </div>
+            
+            {/* Fund Info */}
+            <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '24px' }}>
+              {selectedFund?.name}
+            </div>
+            
+            {/* Price & Qty */}
+            <div style={{ display: 'flex', gap: '48px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
+              <div>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Share Price</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{price}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>No. of Shares</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{qty}</div>
+              </div>
+            </div>
+            
+            {/* Total Investment & Share button */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>Total Investment</div>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>₹{(Number(price) * Number(qty)).toLocaleString('en-IN')}</div>
+              </div>
+              <button onClick={handleConfirm} disabled={isProposalSubmitting} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 24px', fontSize: '14px', fontWeight: 700, cursor: isProposalSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: isProposalSubmitting ? 0.7 : 1, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#6d28d9'} onMouseLeave={e => e.currentTarget.style.background = '#7c3aed'}>
+                {isProposalSubmitting ? 'Sharing...' : 'Share Proposal →'}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <button onClick={() => setStep(4)} style={{ background: 'transparent', color: '#fff', border: 'none', padding: '8px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              ← Back to Set Price & Quantity
+            </button>
+          </div>
+        </div>
+      )}
+      </>
       )}
     </div>
   );
@@ -2033,7 +2188,7 @@ function StoreTab({ clients = [] }) {
         <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '150px', height: '150px', background: 'rgba(34, 197, 94, 0.05)', borderRadius: '50%' }}></div>
         <div style={{ position: 'absolute', bottom: '-20%', right: '-5%', width: '250px', height: '250px', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '50%' }}></div>
         
-        <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', marginBottom: '24px', position: 'relative', zIndex: 1 }}>Zolvit Store</h2>
+        <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', marginBottom: '24px', position: 'relative', zIndex: 1 }}>Wealtharth Store</h2>
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', maxWidth: '600px', position: 'relative', zIndex: 1 }}>
           <Search size={18} color="rgba(255,255,255,0.4)" />
           <input placeholder="Search products, mutual funds, insurance..." style={{ background: 'transparent', border: 'none', color: '#fff', width: '100%', outline: 'none', fontSize: '15px' }} />
@@ -2060,7 +2215,7 @@ function StoreTab({ clients = [] }) {
 
       {/* Portfolios Section */}
       <div style={{ marginBottom: '40px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Zolvit Portfolios</h3>
+        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Wealtharth Portfolios</h3>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Expert-curated investment portfolios</p>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
@@ -2098,7 +2253,7 @@ function StoreTab({ clients = [] }) {
       {/* Popular Products */}
       <div>
         <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Popular Products</h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Top products from Zolvit Store</p>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Top products from Wealtharth Store</p>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {PRODUCTS.map(prod => (
@@ -2472,6 +2627,59 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterHub, setFilterHub] = useState('All');
   const [showModal, setShowModal] = useState(false);
+  const [editNotes, setEditNotes] = useState('');
+  const [editStages, setEditStages] = useState([]);
+  const [isUpdatingTicket, setIsUpdatingTicket] = useState(false);
+
+  React.useEffect(() => {
+    if (selectedTicket) {
+      setEditNotes(selectedTicket.notes || '');
+      let initStages = [];
+      if (selectedTicket.rawTicket?.stages && selectedTicket.rawTicket.stages.length > 0) {
+        initStages = JSON.parse(JSON.stringify(selectedTicket.rawTicket.stages));
+      } else {
+        const p = selectedTicket.progress || 0;
+        initStages = [
+          { name: 'Docs Collection', status: p >= 33 ? 'completed' : p > 0 ? 'in-progress' : 'pending', subProgress: p <= 33 && p > 0 ? Math.round((p / 33) * 100) : 0 },
+          { name: 'Verification', status: p >= 66 ? 'completed' : p > 33 ? 'in-progress' : 'pending', subProgress: p > 33 && p <= 66 ? Math.round(((p - 33) / 33) * 100) : 0 },
+          { name: 'Authority Review', status: p >= 100 ? 'completed' : p > 66 ? 'in-progress' : 'pending', subProgress: p > 66 && p < 100 ? Math.round(((p - 66) / 34) * 100) : 0 }
+        ];
+      }
+      setEditStages(initStages);
+    }
+  }, [selectedTicket]);
+
+  const handleUpdateTicket = async () => {
+    if (!selectedTicket) return;
+    setIsUpdatingTicket(true);
+    try {
+      await api.patch(`/tickets/${selectedTicket.rawTicket._id}/status`, {
+        notes: editNotes,
+        stages: editStages
+      });
+
+      let newProgress = selectedTicket.progress || 0;
+      if (editStages.length > 0) {
+         let totalProgress = 0;
+         const stageWorth = 100 / editStages.length;
+         editStages.forEach(stage => {
+           if (stage.status === 'completed') totalProgress += stageWorth;
+           else if (stage.status === 'in-progress' || stage.status === 'in_process') {
+             totalProgress += (stageWorth * (stage.subProgress > 0 ? stage.subProgress / 100 : 0.5));
+           }
+         });
+         newProgress = Math.round(totalProgress);
+      }
+
+      setTickets(prev => prev.map(t => t.id === selectedTicket.id ? { ...t, progress: newProgress, notes: editNotes, rawTicket: { ...t.rawTicket, progress: newProgress, notes: editNotes, stages: editStages } } : t));
+      setSelectedTicket(prev => ({ ...prev, progress: newProgress, notes: editNotes, rawTicket: { ...prev.rawTicket, progress: newProgress, stages: editStages } }));
+      alert('Ticket updated successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update ticket');
+    }
+    setIsUpdatingTicket(false);
+  };
 
   const dbClients = clients;
 
@@ -2523,6 +2731,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           }
           return 0;
         })(),
+        notes: t.notes || '',
         created: new Date(t.createdAt).toLocaleDateString('en-GB'),
         lastUpdate: new Date(t.updatedAt || t.createdAt).toLocaleDateString('en-GB'),
         rawTicket: t
@@ -2882,27 +3091,12 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                   </div>
                 </div>
               </div>
-              {(() => {
-                let displayStages = [];
-                if (selectedTicket.rawTicket?.stages && selectedTicket.rawTicket.stages.length > 0) {
-                  displayStages = selectedTicket.rawTicket.stages;
-                } else {
-                  const p = selectedTicket.progress || 0;
-                  displayStages = [
-                    { name: 'Docs Collection', status: p >= 33 ? 'completed' : p > 0 ? 'in-progress' : 'pending', subProgress: p <= 33 && p > 0 ? Math.round((p / 33) * 100) : 0 },
-                    { name: 'Verification', status: p >= 66 ? 'completed' : p > 33 ? 'in-progress' : 'pending', subProgress: p > 33 && p <= 66 ? Math.round(((p - 33) / 33) * 100) : 0 },
-                    { name: 'Authority Review', status: p >= 100 ? 'completed' : p > 66 ? 'in-progress' : 'pending', subProgress: p > 66 && p < 100 ? Math.round(((p - 66) / 34) * 100) : 0 }
-                  ];
-                }
-
-                if (displayStages.length === 0) return null;
-
-                return (
+              {editStages.length > 0 && (
                   <div style={{ marginTop: 24 }}>
                     <div className="lead-view-title">Progress Timeline</div>
                     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.1)' }}>
                       <div style={{ position: 'absolute', left: '37px', top: '38px', bottom: '38px', width: '2px', background: 'rgba(255,255,255,0.05)', zIndex: 1 }} />
-                      {displayStages.map((stage, idx) => {
+                      {editStages.map((stage, idx) => {
                          const isDone = stage.status === 'completed';
                          const isProg = stage.status === 'in-progress' || stage.status === 'in_process';
                          const isPend = !isDone && !isProg;
@@ -2916,16 +3110,41 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                              <div style={{ flex: 1 }}>
                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                  <div style={{ fontSize: '14px', fontWeight: 700, color: isPend ? 'var(--text-muted)' : 'var(--text)' }}>{stage.name || `Stage ${idx + 1}`}</div>
-                                 <div style={{ fontSize: '12px', fontWeight: 600, color: isPend ? 'rgba(148,163,184,0.5)' : color, textTransform: 'capitalize' }}>
-                                   {isDone ? 'Completed' : isProg ? 'In Progress' : 'Pending'}
-                                 </div>
+                                 <select
+                                   value={stage.status}
+                                   onChange={e => {
+                                     const newStages = [...editStages];
+                                     newStages[idx].status = e.target.value;
+                                     if (e.target.value === 'in-progress' && (!newStages[idx].subProgress || newStages[idx].subProgress === 0)) {
+                                       newStages[idx].subProgress = 50;
+                                     } else if (e.target.value === 'completed') {
+                                       newStages[idx].subProgress = 100;
+                                     } else if (e.target.value === 'pending') {
+                                       newStages[idx].subProgress = 0;
+                                     }
+                                     setEditStages(newStages);
+                                   }}
+                                   style={{ background: 'rgba(255,255,255,0.05)', color: color, border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, outline: 'none', cursor: 'pointer', textAlign: 'right' }}
+                                 >
+                                   <option value="pending" style={{ color: '#000' }}>Pending</option>
+                                   <option value="in-progress" style={{ color: '#000' }}>In Progress</option>
+                                   <option value="completed" style={{ color: '#000' }}>Completed</option>
+                                 </select>
                                </div>
                                {isProg && (
                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
-                                   <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                                      <div style={{ width: `${stage.subProgress || 0}%`, height: '100%', background: color, borderRadius: '3px' }} />
-                                   </div>
-                                   <div style={{ fontSize: '12px', fontWeight: 700, color }}>{stage.subProgress || 0}%</div>
+                                   <input 
+                                     type="range" 
+                                     min="0" max="100" step="25" 
+                                     value={stage.subProgress || 50} 
+                                     onChange={e => {
+                                       const newStages = [...editStages];
+                                       newStages[idx].subProgress = parseInt(e.target.value);
+                                       setEditStages(newStages);
+                                     }}
+                                     style={{ flex: 1, accentColor: color }}
+                                   />
+                                   <div style={{ fontSize: '12px', fontWeight: 700, color }}>{stage.subProgress || 50}%</div>
                                  </div>
                                )}
                              </div>
@@ -2934,13 +3153,20 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                       })}
                     </div>
                   </div>
-                );
-              })()}
+              )}
               <div style={{ marginTop: 24 }}>
                 <div className="lead-view-title">Notes</div>
-                <div className="lead-view-note">{selectedTicket.notes || 'No notes available.'}</div>
+                <textarea 
+                  value={editNotes} 
+                  onChange={e => setEditNotes(e.target.value)}
+                  style={{ width: '100%', padding: '16px', background: 'rgba(148, 163, 184, 0.12)', border: '1px solid rgba(148, 163, 184, 0.25)', borderRadius: '12px', color: '#f8fafc', fontSize: '13px', minHeight: '100px', resize: 'vertical' }}
+                  placeholder="No notes available. Add notes here..."
+                />
               </div>
               <div className="lead-view-footer">
+                <button type="button" className="lead-view-btn" onClick={handleUpdateTicket} disabled={isUpdatingTicket} style={{ background: '#3b82f6', color: '#fff', opacity: isUpdatingTicket ? 0.7 : 1 }}>
+                  {isUpdatingTicket ? 'Saving...' : 'Save Updates'}
+                </button>
                 <button type="button" className="lead-view-btn gray" onClick={() => setSelectedTicket(null)}>Close</button>
               </div>
             </div>

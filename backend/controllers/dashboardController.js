@@ -6,6 +6,9 @@ const Activity = require('../models/Activity');
 const Ticket = require('../models/Ticket');
 const Document = require('../models/Document');
 const Employee = require('../models/employee/Employee');
+const Client = require('../models/client/Client');
+const Partner = require('../models/partner/Partner');
+const Admin = require('../models/admin/Admin');
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard
@@ -18,13 +21,18 @@ const getDashboardStats = async (req, res) => {
     let ticketQuery = {};
     
     // Scoping for non-admins
-    if (role === 'partner' || role === 'super_partner') {
+    if (role === 'partner') {
       query = { sourceUserId: _id };
-      
-      // For tickets, we need to find clients owned by this partner
-      const myClients = await User.find({ role: 'client', parent_id: _id }).select('_id');
+      const myClients = await Client.find({ parent_id: _id }).select('_id').lean();
       const myClientIds = myClients.map(c => c._id);
       ticketQuery = { client: { $in: myClientIds } };
+    } else if (role === 'super_partner') {
+      query = { sourceUserId: _id };
+      const networkPartners = await Partner.find({ parent_id: _id }, '_id').lean();
+      const networkPartnerIds = [ _id, ...networkPartners.map(p => p._id) ];
+      const networkClients = await Client.find({ parent_id: { $in: networkPartnerIds } }).select('_id').lean();
+      const networkClientIds = networkClients.map(c => c._id);
+      ticketQuery = { client: { $in: networkClientIds } };
     }
 
     // 1. User counts by role
@@ -32,10 +40,24 @@ const getDashboardStats = async (req, res) => {
     const userStats = {};
     for (const r of userRoles) {
       if (role === 'admin' || role === 'super_admin') {
-        userStats[r] = await User.countDocuments({ role: r });
-      } else if (role === 'partner' || role === 'super_partner') {
+        if (r === 'super_admin' || r === 'admin') userStats[r] = await Admin.countDocuments({ role: r });
+        else if (r === 'employee') userStats[r] = await Employee.countDocuments({ role: r });
+        else if (r === 'super_partner' || r === 'partner') userStats[r] = await Partner.countDocuments({ role: r });
+        else if (r === 'client') userStats[r] = await Client.countDocuments({ role: r });
+        else userStats[r] = await User.countDocuments({ role: r });
+      } else if (role === 'partner') {
         if (r === 'client') {
-          userStats[r] = await User.countDocuments({ role: 'client', parent_id: _id });
+          userStats[r] = await Client.countDocuments({ role: 'client', parent_id: _id });
+        } else {
+          userStats[r] = 0;
+        }
+      } else if (role === 'super_partner') {
+        if (r === 'client') {
+          const networkPartners = await Partner.find({ parent_id: _id }, '_id').lean();
+          const networkPartnerIds = [ _id, ...networkPartners.map(p => p._id) ];
+          userStats[r] = await Client.countDocuments({ role: 'client', parent_id: { $in: networkPartnerIds } });
+        } else if (r === 'partner') {
+          userStats[r] = await Partner.countDocuments({ role: 'partner', parent_id: _id });
         } else {
           userStats[r] = 0;
         }

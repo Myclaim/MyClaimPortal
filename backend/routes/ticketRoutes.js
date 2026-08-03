@@ -7,7 +7,7 @@ const { getTickets, getTicketById, createTicket, updateTicketStatus, updateEmplo
 router.route('/').get(protect, getTickets).post(protect, createTicket);
 router.route('/:id').get(protect, getTicketById);
 router.route('/bulk').patch(protect, admin, bulkUpdateTickets);
-router.route('/:id/status').patch(protect, admin, updateTicketStatus);
+router.route('/:id/status').patch(protect, updateTicketStatus);
 router.route('/:id/employee-status').patch(protect, updateEmployeeTicketStatus);
 router.route('/:id/assign').patch(protect, admin, assignTicket);
 router.route('/:id/comments').post(protect, addTicketComment);

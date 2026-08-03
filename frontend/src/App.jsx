@@ -46,7 +46,7 @@ import AdminReports from './pages/admin/AdminReports';
 function App() {
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider>
         <AuthProvider>
         <Routes>

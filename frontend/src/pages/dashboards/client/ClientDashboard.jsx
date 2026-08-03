@@ -12,6 +12,7 @@ import {
 import ClientServiceHub from './ClientServiceHub';
 import ClientMyServices from './ClientMyServices';
 import ReferFriendTab from './ReferFriendTab';
+import ClientStoreProposalsTab from './ClientStoreProposalsTab';
 import ReferCodeModal from '../../../components/modals/ReferCodeModal';
 import DocumentsView from '../../../components/documents/DocumentsView';
 import AddFamilyMemberModal from '../../../components/forms/AddFamilyMemberModal';
@@ -2045,6 +2046,7 @@ const ClientDashboard = ({ user: propUser }) => {
   const showServices = urlTab === 'services';
   const showIEPFSearch = urlTab === 'iepf-search';
   const showReferFriend = urlTab === 'refer-friend';
+  const showStoreProposals = urlTab === 'store-proposals';
 
   const [dashboard, setDashboard] = useState(null);
   const [clientProfile, setClientProfile] = useState(null);
@@ -2115,18 +2117,27 @@ const ClientDashboard = ({ user: propUser }) => {
     }
   };
 
+  const fetchDashboardData = async () => {
+    if (!user?.token) return;
+    try {
+      const { data } = await api.get('/dashboard/client');
+      setDashboard(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const initData = async () => {
       if (!user?.token) { setLoading(false); return; }
       try {
         setLoading(true);
-        const [dashRes] = await Promise.all([
-          api.get('/dashboard/client'),
+        await Promise.all([
+          fetchDashboardData(),
           fetchFamilyData(),
           fetchDocuments(),
           fetchClientNotifications()
         ]);
-        setDashboard(dashRes.data);
       } catch (err) {
         console.error(err);
       } finally { setLoading(false); }
@@ -2134,7 +2145,10 @@ const ClientDashboard = ({ user: propUser }) => {
     initData();
 
     // Listen to real-time notification events from Layout's socket listener
-    const handleNewNotif = () => fetchClientNotifications();
+    const handleNewNotif = () => {
+      fetchClientNotifications();
+      fetchDashboardData();
+    };
     window.addEventListener('newNotificationEvent', handleNewNotif);
     return () => window.removeEventListener('newNotificationEvent', handleNewNotif);
   }, [user]);
@@ -2470,6 +2484,7 @@ const ClientDashboard = ({ user: propUser }) => {
                       { label: 'Family Tree', icon: TreeDeciduous, tab: 'family-tree' },
                       { label: 'Documents Hub', icon: Folder, tab: 'documents' },
                       { label: 'Help & Support', icon: HelpCircle, tab: 'service-hub' },
+                      { label: 'Store Proposals', icon: ShoppingBag, tab: 'store-proposals' },
                       { label: 'Refer & Earn', icon: Gift, tab: 'refer-friend' },
                     ].map((opt) => (
                       <div
@@ -2549,6 +2564,8 @@ const ClientDashboard = ({ user: propUser }) => {
         <ClientMyServices user={user} />
       ) : showReferFriend ? (
         <ReferFriendTab user={user} />
+      ) : showStoreProposals ? (
+        <ClientStoreProposalsTab user={user} />
       ) : showIEPFSearch ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', animation: 'headerSlide 0.5s ease both' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', animation: 'badgeBounce 2s infinite' }}>🔍</div>

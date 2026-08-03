@@ -493,6 +493,13 @@ const ITEMS = [
     badgeSource: 'claims'
   },
   {
+    id: 'client-store-proposals',
+    section: 'client-main',
+    label: 'Store Proposals',
+    path: '/client?tab=store-proposals',
+    icon: ShoppingBag,
+  },
+  {
     id: 'client-family-tree',
     section: 'client-tools',
     label: 'Family Tree',
@@ -517,7 +524,7 @@ const ITEMS = [
 
 // Client-specific ordered menu (keeps IDs in ITEMS)
 const CLIENT_MENU_ORDER = {
-  main: ['client-dashboard', 'client-my-claims', 'client-my-services', 'client-service-hub', 'client-investment-store', 'client-documents'],
+  main: ['client-dashboard', 'client-my-claims', 'client-my-services', 'client-service-hub', 'client-store-proposals', 'client-documents'],
   tools: ['client-family-tree', 'client-iepf-search', 'client-refer-earn'],
   account: []
 };

@@ -174,12 +174,29 @@ const createTicket = async (req, res) => {
 };
 
 const updateTicketStatus = async (req, res) => {
-  const { status, progress } = req.body;
+  const { status, progress, notes, stages } = req.body;
   const ticket = await Ticket.findById(req.params.id);
   if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
   const oldStatus = ticket.status;
   ticket.status = status || ticket.status;
+  if (notes !== undefined) {
+    ticket.notes = notes;
+  }
+  if (stages !== undefined) {
+    ticket.stages = stages;
+    if (stages.length > 0) {
+      let totalProgress = 0;
+      const stageWorth = 100 / stages.length;
+      stages.forEach(stage => {
+        if (stage.status === 'completed') totalProgress += stageWorth;
+        else if (stage.status === 'in-progress' || stage.status === 'in_process') {
+          totalProgress += (stageWorth * (stage.subProgress > 0 ? stage.subProgress / 100 : 0.5));
+        }
+      });
+      ticket.progress = Math.round(totalProgress);
+    }
+  }
   if (progress !== undefined) {
     ticket.progress = progress;
   }

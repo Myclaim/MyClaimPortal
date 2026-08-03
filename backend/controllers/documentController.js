@@ -82,11 +82,17 @@ const getDocuments = async (req, res) => {
     // RBAC
     if (req.user.role === 'client') {
       query.client_id = req.user._id;
-    } else if (['partner', 'super_partner'].includes(req.user.role)) {
-      // Find all clients under this partner
-      const clients = await User.find({ parent_id: req.user._id });
+    } else if (req.user.role === 'partner') {
+      const clients = await Client.find({ parent_id: req.user._id }, '_id');
       const clientIds = clients.map(c => c._id);
       clientIds.push(req.user._id); // include own docs if any
+      query.client_id = { $in: clientIds };
+    } else if (req.user.role === 'super_partner') {
+      const networkPartners = await Partner.find({ parent_id: req.user._id }, '_id').lean();
+      const networkPartnerIds = [ req.user._id, ...networkPartners.map(p => p._id) ];
+      const clients = await Client.find({ parent_id: { $in: networkPartnerIds } }, '_id');
+      const clientIds = clients.map(c => c._id);
+      clientIds.push(req.user._id);
       query.client_id = { $in: clientIds };
     }
     // Admin/Super Admin see all (query remains as is or filtered by client_id/ticket_id if provided)
