@@ -34,7 +34,7 @@ const ClientMyServices = () => {
       // Fallback in case /users is protected for clients
       let usersRes = { data: [] };
       try {
-        usersRes = await api.get('/users');
+        usersRes = await api.get(user?.role === 'client' ? `/users?parent_id=${user._id}` : '/users');
       } catch(e) {
         console.warn('Could not fetch users', e);
       }

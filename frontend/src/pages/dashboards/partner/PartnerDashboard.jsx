@@ -571,6 +571,18 @@ function LeadsTab() {
   const [activeSubTab, setActiveSubTab] = useState('proposals');
 
   const [proposals, setProposals] = useState([]);
+  const [proposalFilterStatus, setProposalFilterStatus] = useState('All');
+
+  const filteredProposals = proposals.filter(p => {
+    if (proposalFilterStatus === 'All') return true;
+    const s = p.status?.toLowerCase() || '';
+    const isAccepted = s.includes('accepted') || s.includes('active') || s.includes('converted');
+    const isDeclined = s.includes('declined');
+    if (proposalFilterStatus === 'Accepted') return isAccepted;
+    if (proposalFilterStatus === 'Declined') return isDeclined;
+    if (proposalFilterStatus === 'In Progress') return !isAccepted && !isDeclined;
+    return true;
+  });
 
   const filtered = leads.filter(l => {
     const q = search.toLowerCase();
@@ -649,6 +661,17 @@ function LeadsTab() {
       </div>
 
       {activeSubTab === 'proposals' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['All', 'In Progress', 'Accepted', 'Declined'].map(s => (
+              <button key={s} type="button" onClick={() => setProposalFilterStatus(s)} style={{
+                padding: '8px 14px', fontSize: 12, fontWeight: 600,
+                border: '1px solid var(--border)', borderRadius: 8, fontFamily: 'inherit',
+                background: proposalFilterStatus === s ? 'linear-gradient(135deg,#0f766e,#22c55e)' : 'var(--card)',
+                color: proposalFilterStatus === s ? '#fff' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s',
+              }}>{s}</button>
+            ))}
+          </div>
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
             Proposal List
@@ -667,7 +690,7 @@ function LeadsTab() {
               </tr>
             </thead>
             <tbody>
-              {proposals.map(row => (
+              {filteredProposals.map(row => (
                 <tr key={row.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '16px 24px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
@@ -701,6 +724,7 @@ function LeadsTab() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
       )}
 
@@ -1838,6 +1862,18 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
   const [mode, setMode] = React.useState('create'); // 'create' or 'history'
   const [proposals, setProposals] = React.useState([]);
   const [loadingProposals, setLoadingProposals] = React.useState(false);
+  const [filterStatus, setFilterStatus] = React.useState('All');
+
+  const filteredProposals = proposals.filter(p => {
+    if (filterStatus === 'All') return true;
+    const s = p.status?.toLowerCase() || '';
+    const isAccepted = s.includes('accepted') || s.includes('active') || s.includes('converted');
+    const isDeclined = s.includes('declined');
+    if (filterStatus === 'Accepted') return isAccepted;
+    if (filterStatus === 'Declined') return isDeclined;
+    if (filterStatus === 'In Progress') return !isAccepted && !isDeclined;
+    return true;
+  });
 
   React.useEffect(() => {
     if (mode === 'history') {
@@ -1938,13 +1974,34 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
       {mode === 'history' ? (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '24px' }}>{categoryName} Proposals</h3>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+            {['All', 'In Progress', 'Accepted', 'Declined'].map(status => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: filterStatus === status ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  background: filterStatus === status ? '#22c55e' : 'transparent',
+                  color: filterStatus === status ? '#fff' : 'var(--text-muted)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
           {loadingProposals ? (
             <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Loading history...</div>
-          ) : proposals.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0', background: 'rgba(255,255,255,0.01)', borderRadius: '12px' }}>No proposals found in this category.</div>
+          ) : filteredProposals.length === 0 ? (
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0', background: 'rgba(255,255,255,0.01)', borderRadius: '12px' }}>No proposals match the current filter.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {proposals.map((p, i) => {
+              {filteredProposals.map((p, i) => {
                 const isAccepted = p.status?.toLowerCase().includes('accept');
                 const isDeclined = p.status?.toLowerCase().includes('declin');
                 const badgeColor = isAccepted ? '#10b981' : isDeclined ? '#ef4444' : '#f59e0b';
@@ -1961,7 +2018,7 @@ function GenericStoreFlow({ clients = [], categoryName, products = [] }) {
                         {p.status}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {new Date(p.createdAt).toLocaleDateString()}
+                        {new Date(p.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                       </div>
                     </div>
                   </div>
@@ -2284,12 +2341,7 @@ function StoreTab({ clients = [] }) {
 /* ═══════════════════════════════════════════════════════════════
    TAB: MY EMPLOYEES
 ════════════════════════════════════════════════════════════════ */
-const MOCK_EMPLOYEES = [
-  { id: 'EMP-100', name: 'Priya Mehta', email: 'priyamehta@company.com', role: 'Operations Mgr', dept: 'Support', status: 'Active', joined: '11 Feb 2026' },
-  { id: 'EMP-101', name: 'Amit Patel', email: 'amitpatel@company.com', role: 'Service Exec', dept: 'Sales', status: 'On Leave', joined: '1 Nov 2026' },
-  { id: 'EMP-102', name: 'Suresh Kumar', email: 'sureshkumar@company.com', role: 'Accounts Exec', dept: 'Operations', status: 'Active', joined: '1 Jul 2026' },
-  { id: 'EMP-103', name: 'Neha Gupta', email: 'nehagupta@company.com', role: 'Client Relations', dept: 'Support', status: 'On Leave', joined: '17 Aug 2026' },
-];
+const MOCK_EMPLOYEES = [];
 
 function AddEmployeeModal({ onClose, onAdd, clients = [] }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'Operations Mgr', department: 'Operations', aadhar: '', parent_id: '' });
@@ -2424,10 +2476,10 @@ function EmployeesTab({ clients = [] }) {
         skills: emp.skills || ''
       }));
       
-      setEmployees(formatted.length > 0 ? formatted : MOCK_EMPLOYEES);
+      setEmployees(formatted);
     } catch (err) {
       console.error(err);
-      setEmployees(MOCK_EMPLOYEES);
+      setEmployees([]);
     }
   };
 
@@ -3110,40 +3162,15 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                              <div style={{ flex: 1 }}>
                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                  <div style={{ fontSize: '14px', fontWeight: 700, color: isPend ? 'var(--text-muted)' : 'var(--text)' }}>{stage.name || `Stage ${idx + 1}`}</div>
-                                 <select
-                                   value={stage.status}
-                                   onChange={e => {
-                                     const newStages = [...editStages];
-                                     newStages[idx].status = e.target.value;
-                                     if (e.target.value === 'in-progress' && (!newStages[idx].subProgress || newStages[idx].subProgress === 0)) {
-                                       newStages[idx].subProgress = 50;
-                                     } else if (e.target.value === 'completed') {
-                                       newStages[idx].subProgress = 100;
-                                     } else if (e.target.value === 'pending') {
-                                       newStages[idx].subProgress = 0;
-                                     }
-                                     setEditStages(newStages);
-                                   }}
-                                   style={{ background: 'rgba(255,255,255,0.05)', color: color, border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, outline: 'none', cursor: 'pointer', textAlign: 'right' }}
-                                 >
-                                   <option value="pending" style={{ color: '#000' }}>Pending</option>
-                                   <option value="in-progress" style={{ color: '#000' }}>In Progress</option>
-                                   <option value="completed" style={{ color: '#000' }}>Completed</option>
-                                 </select>
+                                 <div style={{ background: 'rgba(255,255,255,0.05)', color: color, padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, textTransform: 'capitalize' }}>
+                                   {stage.status === 'in_process' ? 'in-progress' : stage.status || 'pending'}
+                                 </div>
                                </div>
                                {isProg && (
                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
-                                   <input 
-                                     type="range" 
-                                     min="0" max="100" step="25" 
-                                     value={stage.subProgress || 50} 
-                                     onChange={e => {
-                                       const newStages = [...editStages];
-                                       newStages[idx].subProgress = parseInt(e.target.value);
-                                       setEditStages(newStages);
-                                     }}
-                                     style={{ flex: 1, accentColor: color }}
-                                   />
+                                   <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                     <div style={{ width: `${stage.subProgress || 50}%`, height: '100%', background: color, borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                                   </div>
                                    <div style={{ fontSize: '12px', fontWeight: 700, color }}>{stage.subProgress || 50}%</div>
                                  </div>
                                )}
@@ -3164,9 +3191,6 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                 />
               </div>
               <div className="lead-view-footer">
-                <button type="button" className="lead-view-btn" onClick={handleUpdateTicket} disabled={isUpdatingTicket} style={{ background: '#3b82f6', color: '#fff', opacity: isUpdatingTicket ? 0.7 : 1 }}>
-                  {isUpdatingTicket ? 'Saving...' : 'Save Updates'}
-                </button>
                 <button type="button" className="lead-view-btn gray" onClick={() => setSelectedTicket(null)}>Close</button>
               </div>
             </div>
@@ -3331,7 +3355,8 @@ const getNavItems = (stats) => [
 
   { id: 'tickets',    label: 'Service Hub',  icon: Settings,      section: 'OPERATIONS', badge: 5 },
   { id: 'claim-hub',  label: 'Claim Hub',    icon: Scale,         section: 'OPERATIONS' },
-  { id: 'store',      label: 'Store',        icon: ShoppingBag,   section: 'OPERATIONS' },
+  { id: 'store',      label: 'Wealth Store', icon: ShoppingBag,   section: 'OPERATIONS' },
+  { id: 'marketplace',label: 'Marketplace',  icon: ShoppingBag,   section: 'OPERATIONS' },
 
   { id: 'task',       label: 'Task',         icon: CheckSquare,   section: 'APPS & TOOLS', badge: 8 },
   { id: 'calendar',   label: 'Calendar',     icon: Calendar,      section: 'APPS & TOOLS' },
@@ -4005,6 +4030,7 @@ export default function PartnerDashboard() {
       case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
       case 'employees': return <EmployeesTab clients={dbData.clients} />;
       case 'store':     return <WealthManagementStore />;
+      case 'marketplace': return <StoreTab clients={dbData.clients} />;
       case 'task':      return <TaskTab />;
       case 'calendar':  return <CalendarTab />;
       case 'document':  return <DocumentTab />;

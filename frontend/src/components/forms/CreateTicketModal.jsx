@@ -25,7 +25,7 @@ const CreateTicketModal = ({ onClose, onSuccess, initialClients, defaultClientId
     const fetchData = async () => {
       try {
         const [usersRes] = await Promise.all([
-          api.get('/users')
+          api.get(isClient ? `/users?parent_id=${user._id}` : '/users')
         ]);
         
         // Find clients if we need to

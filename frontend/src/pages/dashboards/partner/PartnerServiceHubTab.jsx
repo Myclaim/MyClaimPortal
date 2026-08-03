@@ -156,7 +156,7 @@ const PartnerServiceHubTab = ({ type = 'service', onTicketCreated }) => {
     setIsSubmitting(true);
     try {
       const payload = {
-        clientId: selectedClient._id || selectedClient.id,
+        clientId: selectedClient.dbId || selectedClient._id || selectedClient.id,
         hubType: isClaim ? 'Claim Hub' : 'Service Hub',
         subject: `New ${isClaim ? 'Claim' : 'Service'} Request: ${selectedService.title} for ${ticketDetails.companyName || 'N/A'}`,
         service: selectedService.title,
@@ -277,8 +277,8 @@ const PartnerServiceHubTab = ({ type = 'service', onTicketCreated }) => {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
-                {filteredServices.map(s => (
-                  <div key={s.id} className="service-card" onClick={() => handleServiceSelect(s)} style={{ display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box', background: 'var(--card)', padding: '32px 24px', borderRadius: '12px', textAlign: 'center' }}>
+                {filteredServices.map((s, i) => (
+                  <div key={s._id || s.id || i} className="service-card" onClick={() => handleServiceSelect(s)} style={{ display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box', background: 'var(--card)', padding: '32px 24px', borderRadius: '12px', textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '16px' }}>{s.icon}</div>
                     <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>{s.title}</h4>
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: '1.4', flexGrow: 1 }}>{s.desc}</p>

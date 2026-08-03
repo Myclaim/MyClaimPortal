@@ -6,6 +6,19 @@ const ClientStoreProposalsTab = ({ user }) => {
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
+
+  const filteredProposals = proposals.filter(p => {
+    if (filterStatus === 'All') return true;
+    const s = p.status?.toLowerCase() || '';
+    const isAccepted = s.includes('accepted') || s.includes('active') || s.includes('converted');
+    const isDeclined = s.includes('declined');
+    
+    if (filterStatus === 'Accepted') return isAccepted;
+    if (filterStatus === 'Declined') return isDeclined;
+    if (filterStatus === 'In Progress') return !isAccepted && !isDeclined;
+    return true;
+  });
 
   useEffect(() => {
     const fetchProposals = async () => {
@@ -69,6 +82,28 @@ const ClientStoreProposalsTab = ({ user }) => {
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        {['All', 'In Progress', 'Accepted', 'Declined'].map(status => (
+          <button
+            key={status}
+            onClick={() => setFilterStatus(status)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: filterStatus === status ? 'none' : '1px solid var(--dashboard-border)',
+              background: filterStatus === status ? 'var(--blue, #3B82F6)' : 'transparent',
+              color: filterStatus === status ? '#fff' : 'var(--dashboard-text-muted)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px', color: 'var(--dashboard-text-muted)' }}>
           <Clock size={32} style={{ animation: 'spinSlow 2s linear infinite' }} />
@@ -77,15 +112,17 @@ const ClientStoreProposalsTab = ({ user }) => {
         <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', padding: '16px', borderRadius: '12px', fontSize: '14px', fontWeight: 600 }}>
           {error}
         </div>
-      ) : proposals.length === 0 ? (
+      ) : filteredProposals.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--dashboard-card-soft)', border: '1px solid var(--dashboard-border)', borderRadius: '16px' }}>
           <ShoppingBag size={48} style={{ color: 'var(--dashboard-text-muted)', marginBottom: '16px', opacity: 0.5 }} />
           <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 800, color: 'var(--dashboard-text)' }}>No proposals found</h3>
-          <p style={{ margin: 0, color: 'var(--dashboard-text-muted)' }}>You haven't placed any store orders or received any proposals yet.</p>
+          <p style={{ margin: 0, color: 'var(--dashboard-text-muted)' }}>
+            {proposals.length > 0 ? `No proposals match the "${filterStatus}" filter.` : "You haven't placed any store orders or received any proposals yet."}
+          </p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-          {proposals.map((prop, idx) => (
+          {filteredProposals.map((prop, idx) => (
             <div key={prop._id || idx} style={{ 
               background: 'var(--dashboard-card)', 
               border: '1px solid var(--dashboard-border)', 
@@ -142,7 +179,7 @@ const ClientStoreProposalsTab = ({ user }) => {
               <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--dashboard-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--dashboard-text-muted)' }}>
                   <Clock size={14} />
-                  {new Date(prop.createdAt).toLocaleDateString()}
+                  {new Date(prop.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                 </div>
                 {prop.priority && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 800, color: '#F59E0B' }}>

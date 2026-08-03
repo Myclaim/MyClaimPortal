@@ -144,6 +144,7 @@ const getUsers = async (req, res) => {
 // @access  Private/Admin
 const createUser = async (req, res) => {
   try {
+    console.log('=== CREATE USER REQ BODY ===', req.body);
     const { name, username, email, phone, password, role, parent_id, client_id_ref } = req.body;
 
     if (!name || !email || !password) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, AlertCircle, CheckCircle, X } from 'lucide-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -12,13 +12,29 @@ const PartnerForm = ({ defaultRole }) => {
   const [formErrors, setFormErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState('https://i.pravatar.cc/200?img=12');
 
+  const [superPartnersList, setSuperPartnersList] = useState([]);
+
+  useEffect(() => {
+    const fetchSuperPartners = async () => {
+      try {
+        const res = await api.get('/users');
+        if (Array.isArray(res.data)) {
+          setSuperPartnersList(res.data.filter(u => u.role === 'super_partner' && u.is_active !== false));
+        }
+      } catch (err) {
+        console.error('Failed to fetch super partners', err);
+      }
+    };
+    fetchSuperPartners();
+  }, []);
+
   const [form, setForm] = useState({
     firstName: '', lastName: '', username: '', password: '',
     name: '', dob: '', gender: 'Male', maritalStatus: '',
     phone: '', alternatePhone: '', email: '', myClaimEmail: '',
     country: 'India', state: '', city: '', pincode: '', permanentAddress: '', temporaryAddress: '',
     aadharNo: '', panNo: '', otherDocsDesc: '',
-    referredById: '', 
+    parent_id: '', 
     
     // Partner specific fields
     role: defaultRole || 'partner',
@@ -425,10 +441,7 @@ const PartnerForm = ({ defaultRole }) => {
                 </div>
               </div>
 
-              <div className="pf-field">
-                <label>Referred By Id</label>
-                <input type="text" name="referredById" className="pf-input" placeholder="Enter Referral ID" value={form.referredById} onChange={handleChange} />
-              </div>
+
 
               {/* Address */}
               <div className="pf-section-title">Address</div>
@@ -516,6 +529,22 @@ const PartnerForm = ({ defaultRole }) => {
                   </select>
                 </div>
               </div>
+
+              {form.superPartner === 'no' && (
+                <div className="pf-field">
+                  <label>Assign to Super Partner (Optional)</label>
+                  <div className="pf-select-wrap">
+                    <select name="parent_id" className="pf-input" value={form.parent_id} onChange={handleChange}>
+                      <option value="">Select Super Partner</option>
+                      {superPartnersList.map(sp => (
+                        <option key={sp._id} value={sp._id}>
+                          {sp.name} {sp.companyName ? `(${sp.companyName})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div className="pf-field">
                 <label>Category</label>
