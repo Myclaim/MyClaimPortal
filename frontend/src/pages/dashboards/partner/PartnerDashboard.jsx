@@ -385,18 +385,21 @@ const SERVICE_LIST = [
 
 function AddLeadModal({ onClose, onAdd }) {
   const { user } = useAuth();
-  const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', altPhone: '', category: '', serviceRequest: '', notes: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', phoneCode: '+91', phone: '', altPhoneCode: '+91', altPhone: '', category: '', serviceRequest: '', address: '' });
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const COUNTRY_CODES = ['+91', '+1', '+44', '+61', '+971', '+65', '+92', '+880', '+94', '+977'];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.firstName || !form.lastName || !form.phone) return;
+    if (!form.firstName || !form.lastName || !form.phone || !form.address) return;
     try {
       const payload = {
         name: `${form.firstName} ${form.lastName}`.trim(),
-        phone: form.phone,
+        phone: `${form.phoneCode} ${form.phone}`.trim(),
         serviceInterest: form.serviceRequest || form.category || 'N/A',
-        notes: `[Alt Phone: ${form.altPhone || 'N/A'}]\n[Category: ${form.category}]\n\n${form.notes}`,
+        permanentAddress: form.address,
+        notes: `[Alt Phone: ${form.altPhone ? form.altPhoneCode + ' ' + form.altPhone : 'N/A'}]\n[Category: ${form.category}]`,
       };
       const { data } = await api.post('/leads', payload);
       
@@ -415,68 +418,78 @@ function AddLeadModal({ onClose, onAdd }) {
     }
   };
 
+  const inputStyle = { background: '#050B14', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '14px 16px', color: '#ffffff', outline: 'none', transition: 'all 0.2s' };
+  const selectStyle = { ...inputStyle, padding: '14px 10px', appearance: 'auto' };
+  const labelStyle = { fontSize: '11px', fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: '8px', display: 'block' };
+
   return (
-    <div className="modal-overlay open" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{ maxWidth: 640, background: 'var(--card)', display: 'flex', flexDirection: 'column', maxHeight: '90vh', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="modal-header" style={{ flexShrink: 0, borderBottom: 'none', padding: '24px 32px 16px' }}>
-          <div className="modal-title" style={{ fontSize: '20px', fontWeight: 800 }}>Add New Lead</div>
-          <button className="modal-close" onClick={onClose} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>✕</button>
+    <div className="modal-overlay open" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 640, width: '90%', background: '#0f172a', display: 'flex', flexDirection: 'column', maxHeight: '90vh', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+        <div className="modal-header" style={{ flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="modal-title" style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', margin: 0 }}>Add New Lead</div>
+          <button className="modal-close" onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>?</button>
         </div>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div className="modal-body" style={{ overflowY: 'auto', padding: '16px 32px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="modal-body" style={{ overflowY: 'auto', padding: '24px 32px 32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
-            <div style={{ display: 'flex', gap: '24px' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>FIRST NAME <span style={{ color: '#ef4444' }}>*</span></label>
-                <input className="form-input" style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px' }} placeholder="Enter first name" value={form.firstName} onChange={set('firstName')} required />
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={labelStyle}>FIRST NAME <span style={{ color: '#ef4444' }}>*</span></label>
+                <input className="form-input" style={{...inputStyle, width: '100%'}} placeholder="Enter first name" value={form.firstName} onChange={set('firstName')} required />
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>LAST NAME <span style={{ color: '#ef4444' }}>*</span></label>
-                <input className="form-input" style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px' }} placeholder="Enter last name" value={form.lastName} onChange={set('lastName')} required />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '24px' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>CONTACT NUMBER <span style={{ color: '#ef4444' }}>*</span></label>
-                <input className="form-input" style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px' }} placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} required />
-              </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>ALTERNATE NUMBER</label>
-                <input className="form-input" style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px' }} placeholder="+91 98765 43210" value={form.altPhone} onChange={set('altPhone')} />
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={labelStyle}>LAST NAME <span style={{ color: '#ef4444' }}>*</span></label>
+                <input className="form-input" style={{...inputStyle, width: '100%'}} placeholder="Enter last name" value={form.lastName} onChange={set('lastName')} required />
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '24px' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>SERVICE CATEGORY</label>
-                <select className="form-select" style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px', color: 'var(--text)' }} value={form.category} onChange={set('category')}>
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={labelStyle}>CONTACT NUMBER <span style={{ color: '#ef4444' }}>*</span></label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select style={{...selectStyle, width: '100px', flexShrink: 0}} value={form.phoneCode} onChange={set('phoneCode')}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                  <input className="form-input" style={{...inputStyle, flex: 1}} placeholder="98765 43210" value={form.phone} onChange={set('phone')} required />
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={labelStyle}>ALTERNATE NUMBER</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select style={{...selectStyle, width: '100px', flexShrink: 0}} value={form.altPhoneCode} onChange={set('altPhoneCode')}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                  <input className="form-input" style={{...inputStyle, flex: 1}} placeholder="98765 43210" value={form.altPhone} onChange={set('altPhone')} />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={labelStyle}>SERVICE CATEGORY</label>
+                <select className="form-select" style={{...selectStyle, width: '100%'}} value={form.category} onChange={set('category')}>
                   <option value="">Select category...</option>
                   <option value="Physical Shares">Physical Shares</option>
                   <option value="Company Compliance">Company Compliance</option>
                   <option value="Taxation">Taxation</option>
                 </select>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>SERVICE REQUEST</label>
-                <select className="form-select" style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px', color: 'var(--text)' }} value={form.serviceRequest} onChange={set('serviceRequest')}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={labelStyle}>SERVICE REQUEST</label>
+                <select className="form-select" style={{...selectStyle, width: '100%'}} value={form.serviceRequest} onChange={set('serviceRequest')}>
                   <option value="">Select service...</option>
                   {SERVICE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>NOTES (OPTIONAL)</label>
-              <textarea className="form-input" rows={4} style={{ background: '#050B14', border: 'none', borderRadius: '10px', padding: '14px 16px', resize: 'vertical' }} placeholder="Add any additional notes..." value={form.notes} onChange={set('notes')} />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={labelStyle}>ADDRESS <span style={{ color: '#ef4444' }}>*</span></label>
+              <textarea className="form-input" rows={3} style={{ ...inputStyle, width: '100%', resize: 'vertical', minHeight: '80px' }} placeholder="Enter full address..." value={form.address} onChange={set('address')} required />
             </div>
 
           </div>
           
-          <div className="modal-footer" style={{ background: 'transparent', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
-            <button type="button" onClick={onClose} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
-            <button type="submit" style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>Submit Lead</button>
+          <div className="modal-footer" style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px 32px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <button type="button" onClick={onClose} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#94a3b8', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>Cancel</button>
+            <button type="submit" style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#ffffff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.3)', transition: 'all 0.2s' }}>Submit Lead</button>
           </div>
         </form>
       </div>
@@ -4106,3 +4119,5 @@ export default function PartnerDashboard() {
     </div>
   );
 }
+
+

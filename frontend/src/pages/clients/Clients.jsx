@@ -967,7 +967,7 @@ const Clients = () => {
                     const initials = client.name?.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() || 'CL';
                     
                     return (
-                      <tr key={client._id} className="ec-row" onClick={() => navigate(`/clients/${clientId}`)}>
+                      <tr key={client._id} className="ec-row" onClick={() => navigate(`/clients/${client._id}`)}>
                         
                         {/* Avatar + Name */}
                         <td>
@@ -1028,7 +1028,7 @@ const Clients = () => {
                         {/* Actions */}
                         <td onClick={e => e.stopPropagation()}>
                           <div style={{ display: 'flex', gap: 6 }}>
-                            <button title="View Profile" onClick={() => navigate(`/clients/${clientId}`)} style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#3B82F6', cursor: 'pointer' }}>
+                            <button title="View Profile" onClick={() => navigate(`/clients/${client._id}`)} style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#3B82F6', cursor: 'pointer' }}>
                               <Eye size={14} />
                             </button>
                             <button title="Edit Client" onClick={() => openEditClient(client)} style={{ padding: '6px 10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#F59E0B', cursor: 'pointer' }}>

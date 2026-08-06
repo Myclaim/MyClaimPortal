@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   FileText, Upload, Plus, X, Eye, Edit2, Download, Ticket, 
@@ -8,8 +8,7 @@ import {
   CheckSquare, Square, AlertTriangle
 } from 'lucide-react';
 import api from '../../services/api';
-import DocumentUploadModal from '../../components/documents/DocumentUploadModal';
-import DocumentsView from '../../components/documents/DocumentsView';
+import ClientDocumentsHub from '../../components/documents/ClientDocumentsHub';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
 import AddFamilyMemberModal from '../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../hooks/useAuth';
@@ -190,7 +189,7 @@ const ClientProfile = ({ idProp, onClose }) => {
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
         {activeTab === 'profile' && <ProfileView client={client} onEdit={(section) => { setEditSection(section); setIsEditModalOpen(true); }} />}
         {activeTab === 'overview' && <OverviewView client={client} claims={claims} tickets={tickets} documents={documents} />}
-        {activeTab === 'documents' && <DocumentsView documents={documents} client={client} onRefresh={fetchData} setIsUploadModalOpen={setIsUploadModalOpen} />}
+        {activeTab === 'documents' && <ClientDocumentsHub documents={documents} clientProfile={client} user={user} onRefresh={fetchData} themeProp="light" />}
         {activeTab === 'family' && <FamilyTreeView familyMembers={familyMembers} client={client} onRefresh={fetchData} onAddFamily={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} onRefresh={fetchData} />}
