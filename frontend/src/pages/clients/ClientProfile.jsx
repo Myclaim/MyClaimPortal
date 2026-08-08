@@ -737,7 +737,7 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
       }
     ];
 
-    const claimTickets = tickets.filter(t => t.hubType === 'Claim Hub');
+    const claimTickets = tickets; // Show all tickets in Claims section
     console.log("Claim Tickets from API:", claimTickets);
 
     const displayClaims = claimTickets.length > 0 ? claimTickets.map((t, i) => {
