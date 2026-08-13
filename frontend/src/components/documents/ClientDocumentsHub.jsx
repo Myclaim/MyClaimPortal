@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, FileText, Download, Eye, X, RefreshCw, Clock, Building2, AlertCircle } from 'lucide-react';
+import { Upload, FileText, Download, Eye, X, RefreshCw, Clock, Building2, AlertCircle, Folder, FolderOpen, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
-const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh, themeProp }) => {
+const ClientDocumentsHub = ({ documents = [], clientProfile, user, onRefresh, themeProp }) => {
   const { theme: contextTheme } = useTheme();
   const theme = themeProp || contextTheme || 'light';
   const isLight = theme === 'light';
@@ -14,6 +14,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh, themePr
   const vBorder = isLight ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)';
   const BASE_URL = import.meta.env.DEV ? 'http://localhost:5005' : 'https://myclaimportal.onrender.com';
   const [activeSubTab, setActiveSubTab] = useState('Client Documents');
+  const [selectedFolder, setSelectedFolder] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [previewDoc, setPreviewDoc] = useState(null);
@@ -271,7 +272,7 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh, themePr
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div style={{ fontSize: '13px', color: vTextMuted, fontWeight: 500 }}>
-              Your identity and financial documents
+              Your identity, registration, and form documents
             </div>
             {user?.role === 'client' && (
               <button
@@ -293,30 +294,229 @@ const ClientDocumentsHub = ({ documents, clientProfile, user, onRefresh, themePr
 
           {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', marginBottom: 20, fontWeight: 600 }}>{error}</div>}
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
-            {cardItems.map(item => {
-              const details = getDocDetails(item.name);
-              const isUploaded = details.uploaded;
-              let borderStyle = !isUploaded ? '1px solid rgba(245,158,11,0.2)' : (details.status === 'verified' ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(129,140,248,0.25)');
-              let iconColor = !isUploaded ? '#F59E0B' : (details.status === 'verified' ? '#10B981' : '#818CF8');
-              return (
-                <div key={item.name} style={{ background: 'rgba(255,255,255,0.02)', border: borderStyle, borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backdropFilter: 'blur(8px)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: vCardSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', color: iconColor, border: '1px solid var(--dashboard-border)' }}><FileText size={20} /></div>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: vText, marginBottom: 4 }}>{item.name}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: iconColor }}>{isUploaded ? details.status.charAt(0).toUpperCase() + details.status.slice(1) : 'Not uploaded'}</div>
+          {/* Quick Identity Cards */}
+          {!selectedFolder && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
+              {cardItems.map(item => {
+                const details = getDocDetails(item.name);
+                const isUploaded = details.uploaded;
+                let borderStyle = !isUploaded ? '1px solid rgba(245,158,11,0.2)' : (details.status === 'verified' ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(129,140,248,0.25)');
+                let iconColor = !isUploaded ? '#F59E0B' : (details.status === 'verified' ? '#10B981' : '#818CF8');
+                return (
+                  <div key={item.name} style={{ background: 'rgba(255,255,255,0.02)', border: borderStyle, borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backdropFilter: 'blur(8px)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: vCardSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', color: iconColor, border: '1px solid var(--dashboard-border)' }}><FileText size={20} /></div>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 800, color: vText, marginBottom: 4 }}>{item.name}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: iconColor }}>{isUploaded ? details.status.charAt(0).toUpperCase() + details.status.slice(1) : 'Not uploaded'}</div>
+                      </div>
                     </div>
+                    {isUploaded ? (
+                      <button onClick={() => setPreviewDoc({ name: item.name, url: details.url, docRecord: details.docRecord })} style={{ width: 36, height: 36, borderRadius: '50%', background: vCard, border: '1px solid var(--dashboard-border)', color: vText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={16} /></button>
+                    ) : user?.role === 'client' ? (
+                      <button onClick={() => triggerDirectUpload(item.name)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Upload size={16} /></button>
+                    ) : null}
                   </div>
-                  {isUploaded ? (
-                    <button onClick={() => setPreviewDoc({ name: item.name, url: details.url, docRecord: details.docRecord })} style={{ width: 36, height: 36, borderRadius: '50%', background: vCard, border: '1px solid var(--dashboard-border)', color: vText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={16} /></button>
-                  ) : user?.role === 'client' ? (
-                    <button onClick={() => triggerDirectUpload(item.name)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Upload size={16} /></button>
-                  ) : null}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          )}
+
+          {/* Form Folders Section Header */}
+          <div style={{ marginTop: 24, marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {selectedFolder && (
+                <button
+                  onClick={() => setSelectedFolder(null)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '6px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700,
+                    background: 'rgba(255,255,255,0.06)', border: `1px solid ${vBorder}`, color: vText,
+                    cursor: 'pointer', marginRight: 8
+                  }}
+                >
+                  <ArrowLeft size={14} /> Back to Folders
+                </button>
+              )}
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: vText, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Folder style={{ color: '#10B981' }} size={20} />
+                {selectedFolder ? selectedFolder : 'Form Folders & Document Collections'}
+              </h3>
+            </div>
+            {selectedFolder && user?.role === 'client' && (
+              <button
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.pdf,.jpg,.jpeg,.png';
+                  input.onchange = async (e) => {
+                    const f = e.target.files[0];
+                    if (f) {
+                      const docName = prompt("Enter file label:", f.name);
+                      if (docName) {
+                        setUploading(true);
+                        const formData = new FormData();
+                        formData.append('file', f);
+                        formData.append('name', docName);
+                        formData.append('linked_to', 'client');
+                        formData.append('doc_category', 'primary');
+                        formData.append('folder', selectedFolder);
+                        formData.append('client_id', clientProfile?._id || clientProfile?.id || user?._id || user?.id);
+                        try {
+                          await axios.post(`${BASE_URL}/api/documents/upload`, formData, {
+                            headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' }
+                          });
+                          if (onRefresh) onRefresh();
+                        } catch (err) {
+                          alert(err.response?.data?.message || 'Failed to upload');
+                        } finally {
+                          setUploading(false);
+                        }
+                      }
+                    }
+                  };
+                  input.click();
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 700,
+                  background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)',
+                  color: '#10B981', cursor: 'pointer'
+                }}
+              >
+                <Upload size={14} /> Add to {selectedFolder}
+              </button>
+            )}
           </div>
+
+          {/* If no folder selected: Grid of Form Folders */}
+          {!selectedFolder ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20, marginBottom: 32 }}>
+              {(() => {
+                const customFolders = clientProfile?.customFolders || [];
+                const docFolders = (documents || []).map(d => d.folder).filter(f => f && f !== 'General');
+                let allFormFolders = Array.from(new Set([...customFolders, ...docFolders]));
+                if (allFormFolders.length === 0) {
+                  allFormFolders.push('Client Registration Form');
+                }
+                return allFormFolders.map(folderName => {
+                  const folderDocs = (documents || []).filter(d => (d.folder || 'General') === folderName);
+                  const docCount = folderDocs.length;
+                  return (
+                    <div
+                      key={folderName}
+                      onClick={() => setSelectedFolder(folderName)}
+                      style={{
+                        background: vCard,
+                        border: `1px solid ${vBorder}`,
+                        borderRadius: '16px',
+                        padding: '20px',
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justify: 'space-between',
+                        gap: 12
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-3px)';
+                        e.currentTarget.style.borderColor = '#10B981';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.borderColor = vBorder;
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: '14px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981' }}>
+                          <FolderOpen size={24} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '15px', fontWeight: 800, color: vText, marginBottom: 3, wordBreak: 'break-word' }}>
+                            {folderName}
+                          </div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: vTextMuted }}>
+                            {docCount} {docCount === 1 ? 'document' : 'documents'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1px solid ${vBorder}` }}>
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#10B981' }}>Open Form Folder</span>
+                        <span style={{ fontSize: '14px', color: '#10B981', fontWeight: 800 }}>→</span>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          ) : (
+            /* Folder Contents View */
+            <div style={{ marginBottom: 32 }}>
+              {(() => {
+                const folderDocs = (documents || []).filter(d => (d.folder || 'General') === selectedFolder);
+                if (folderDocs.length === 0) {
+                  return (
+                    <div style={{ background: vCard, border: `1px dashed ${vBorder}`, borderRadius: '16px', padding: '40px 20px', textAlign: 'center', color: vTextMuted }}>
+                      <FolderOpen size={40} style={{ marginBottom: 12, opacity: 0.5 }} />
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: vText, marginBottom: 6 }}>
+                        No files in {selectedFolder} yet
+                      </div>
+                      <div style={{ fontSize: '13px', marginBottom: 16 }}>
+                        Documents uploaded via this form will automatically appear here.
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+                    {folderDocs.map(doc => {
+                      const isVerified = doc.verification_status === 'verified';
+                      const statusColor = isVerified ? '#10B981' : '#F59E0B';
+                      return (
+                        <div key={doc._id} style={{ background: vCard, border: `1px solid ${vBorder}`, borderRadius: '16px', padding: '18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ width: 42, height: 42, borderRadius: '12px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981' }}>
+                              <FileText size={20} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '14px', fontWeight: 800, color: vText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={doc.name}>
+                                {doc.name}
+                              </div>
+                              <div style={{ fontSize: '11px', color: statusColor, fontWeight: 700, marginTop: 2 }}>
+                                {isVerified ? 'Verified' : 'Pending Verification'}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${vBorder}` }}>
+                            <button
+                              onClick={() => setPreviewDoc({ name: doc.name, url: doc.file_url, docRecord: doc })}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, background: vCardSoft, border: `1px solid ${vBorder}`, color: vText, cursor: 'pointer' }}
+                            >
+                              <Eye size={14} /> Preview
+                            </button>
+                            {doc.file_url && (
+                              <a
+                                href={`${BASE_URL}${doc.file_url}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                download
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#10B981', textDecoration: 'none' }}
+                              >
+                                <Download size={14} /> Download
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
       )}
 

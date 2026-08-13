@@ -44,19 +44,59 @@ const SuperPartnerForm = () => {
   });
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData(p => ({ ...p, [name]: files ? files[0] : value }));
+    let { name, value, files } = e.target;
+    if (files) {
+      setFormData(p => ({ ...p, [name]: files[0] }));
+      return;
+    }
+    if (name === 'aadharNumber') {
+      const digits = value.replace(/\D/g, '').slice(0, 12);
+      value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    }
+    if (name === 'pan') {
+      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+    }
+    setFormData(p => ({ ...p, [name]: value }));
   };
 
-  const handleNext = () => setStep(s => Math.min(s + 1, 3));
-  const handlePrev = () => setStep(s => Math.max(s - 1, 1));
+  const handleNext = () => {
+    setError('');
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    if (step === 2 && formData.pan) {
+      if (!panRegex.test(formData.pan.toUpperCase())) {
+        setError('PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).');
+        return;
+      }
+    }
+    if (step === 3 && formData.aadharNumber) {
+      const rawAadhar = formData.aadharNumber.replace(/\D/g, '');
+      if (rawAadhar.length !== 12) {
+        setError('Aadhaar number must be 12 digits (e.g., 1234 5678 9012).');
+        return;
+      }
+    }
+    setStep(s => Math.min(s + 1, 3));
+  };
+  
+  const handlePrev = () => {
+    setError('');
+    setStep(s => Math.max(s - 1, 1));
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     try {
       if (!formData.username || !formData.password || !formData.companyName) {
         throw new Error('Company Name, Username and Password are required.');
+      }
+      if (formData.pan && !panRegex.test(formData.pan.toUpperCase())) {
+        throw new Error('PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).');
+      }
+      const rawAadhar = (formData.aadharNumber || '').replace(/\D/g, '');
+      if (formData.aadharNumber && rawAadhar.length !== 12) {
+        throw new Error('Aadhaar number must be 12 digits (e.g., 1234 5678 9012).');
       }
       const payload = {
         role: 'super_partner',
@@ -98,7 +138,7 @@ const SuperPartnerForm = () => {
       };
       await api.post('/users', payload);
       setSuccess('Super Partner registered successfully!');
-      setTimeout(() => navigate(-1), 2000);
+      setTimeout(() => navigate(-1), 400);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -434,7 +474,7 @@ const SuperPartnerForm = () => {
                 </div>
                 <div className="spf-field">
                   <label>Aadhaar No.</label>
-                  <input name="aadharNumber" className="spf-input" placeholder="XXXX XXXX XXXX" value={formData.aadharNumber} onChange={handleChange} />
+                  <input name="aadharNumber" className="spf-input" placeholder="1234 5678 9012" value={formData.aadharNumber} onChange={handleChange} maxLength={14} />
                 </div>
                 <div className="spf-field">
                   <label>Company ID Card</label>

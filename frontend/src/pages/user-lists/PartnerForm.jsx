@@ -72,12 +72,13 @@ const PartnerForm = ({ defaultRole }) => {
         else delete newErrors.alternatePhone;
       }
       if (name === 'aadharNo') {
-        if (value && value.length !== 12) newErrors.aadharNo = 'Aadhar number must be exactly 12 digits.';
+        const rawDigits = value.replace(/\D/g, '');
+        if (value && rawDigits.length !== 12) newErrors.aadharNo = 'Aadhaar number must be 12 digits (e.g., 1234 5678 9012).';
         else delete newErrors.aadharNo;
       }
       if (name === 'panNo') {
         const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-        if (value && !panRegex.test(value.toUpperCase())) newErrors.panNo = 'PAN number is invalid (e.g., ABCDE1234F).';
+        if (value && !panRegex.test(value.toUpperCase())) newErrors.panNo = 'PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).';
         else delete newErrors.panNo;
       }
       
@@ -88,8 +89,15 @@ const PartnerForm = ({ defaultRole }) => {
   const handleChange = (e) => {
     let { name, value, type, checked } = e.target;
     
-    if (name === 'aadharNo' || name === 'phone' || name === 'alternatePhone') {
-      value = value.replace(/\D/g, ''); 
+    if (name === 'aadharNo') {
+      const digits = value.replace(/\D/g, '').slice(0, 12);
+      value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    } else if (name === 'phone' || name === 'alternatePhone') {
+      value = value.replace(/\D/g, '').slice(0, 10); 
+    }
+
+    if (name === 'panNo') {
+      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
     }
     
     if (name === 'superPartner') {
@@ -158,6 +166,7 @@ const PartnerForm = ({ defaultRole }) => {
       if (uploadNeeded && newUser._id) {
         const formData = new FormData();
         formData.append('userId', newUser._id);
+        formData.append('formName', 'Partner Registration Form');
         
         if (files.aadhar) { formData.append('files', files.aadhar); formData.append('docType', 'aadharCard'); }
         if (files.pan) { formData.append('files', files.pan); formData.append('docType', 'panCard'); }
@@ -167,13 +176,14 @@ const PartnerForm = ({ defaultRole }) => {
         if (files.rent) { formData.append('files', files.rent); formData.append('docType', 'rentAgreementVeraBill'); }
         if (files.partnerAgreement) { formData.append('files', files.partnerAgreement); formData.append('docType', 'partnerAgreement'); }
 
-        await api.post('/users/kyc-upload', formData, {
+        api.post('/users/kyc-upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        }).catch(e => console.error('Partner KYC upload error:', e));
       }
 
       setSuccess('Partner profile saved successfully!');
-      setTimeout(() => navigate(-1), 2000);
+      setLoading(false);
+      setTimeout(() => navigate(-1), 300);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
       setLoading(false);
@@ -369,7 +379,7 @@ const PartnerForm = ({ defaultRole }) => {
 
               <div className="pf-field">
                 <label>Aadhar Card No</label>
-                <input type="text" name="aadharNo" className={`pf-input ${formErrors.aadharNo ? 'pf-error-input' : ''}`} placeholder="Enter Aadhar No" value={form.aadharNo} onChange={handleChange} maxLength={12} />
+                <input type="text" name="aadharNo" className={`pf-input ${formErrors.aadharNo ? 'pf-error-input' : ''}`} placeholder="1234 5678 9012" value={form.aadharNo} onChange={handleChange} maxLength={14} />
                 {formErrors.aadharNo && <div className="pf-error-msg">{formErrors.aadharNo}</div>}
               </div>
 

@@ -71,13 +71,15 @@ const Clients = () => {
     if (entries.length === 0) return;
     setUploadingFiles(true);
     try {
-      for (const [docType, file] of entries) {
+      const uploadPromises = entries.map(([docType, file]) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('userId', userId);
         formData.append('docType', docType);
-        await api.post('/users/kyc-upload', formData);
-      }
+        formData.append('formName', 'Client Registration Form');
+        return api.post('/users/kyc-upload', formData);
+      });
+      await Promise.all(uploadPromises);
       setPendingFiles({});
     } catch (err) {
       console.error('File upload error:', err);

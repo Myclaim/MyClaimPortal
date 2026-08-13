@@ -4,6 +4,8 @@ const Partner = require('../../models/partner/Partner');
 const Client = require('../../models/client/Client');
 const Employee = require('../../models/employee/Employee');
 const Activity = require('../../models/Activity');
+const Document = require('../../models/Document');
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const { sendWelcomeEmail } = require('../../utils/emailService');
 const { createActivityAndNotify } = require('../../utils/activityHelper');
@@ -158,6 +160,38 @@ const createUser = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to create admin-level users.' });
     }
 
+    // Single SuperAdmin validation check
+    if (role === 'super_admin' || role === 'superadmin') {
+      const superAdminChecks = await Promise.all([
+        Admin.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+        User.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+        Partner.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+        Client.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+        Employee.findOne({ role: { $in: ['super_admin', 'superadmin'] } })
+      ]);
+      if (superAdminChecks.some(u => u !== null)) {
+        return res.status(400).json({ message: 'Only one SuperAdmin is permitted in the system. A SuperAdmin already exists.' });
+      }
+    }
+
+    // Validate Aadhaar number format if provided
+    const aadharVal = req.body.aadharNo || req.body.aadharNumber || (req.body.kyc_data && req.body.kyc_data.aadhaar);
+    if (aadharVal) {
+      const rawAadhar = String(aadharVal).replace(/\s/g, '');
+      if (rawAadhar.length !== 12 || !/^\d{12}$/.test(rawAadhar)) {
+        return res.status(400).json({ message: 'Aadhaar number must be exactly 12 numeric digits.' });
+      }
+    }
+
+    // Validate PAN number format if provided
+    const panVal = req.body.panNo || req.body.pan || (req.body.kyc_data && req.body.kyc_data.pan);
+    if (panVal) {
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+      if (!panRegex.test(String(panVal).trim().toUpperCase())) {
+        return res.status(400).json({ message: 'PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).' });
+      }
+    }
+
     // Check email or username uniqueness across all collections
     const orConditions = [{ email: normalizedEmail }];
     if (username) orConditions.push({ username });
@@ -181,8 +215,8 @@ const createUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Normalize parent_id: replace empty string or null/undefined with undefined
-    let parsedParentId = (parent_id === '' || parent_id == null) ? undefined : parent_id;
-    if (!parsedParentId && (req.user.role === 'partner' || req.user.role === 'super_partner')) {
+    let parsedParentId = (parent_id === '' || parent_id == null || !mongoose.Types.ObjectId.isValid(parent_id)) ? undefined : parent_id;
+    if (!parsedParentId && req.user && (req.user.role === 'partner' || req.user.role === 'super_partner')) {
       parsedParentId = req.user._id;
     }
 
@@ -256,6 +290,10 @@ const createUser = async (req, res) => {
       status: req.body.status,
     };
 
+    if (!payload.parent_id || payload.parent_id === '' || !mongoose.Types.ObjectId.isValid(payload.parent_id)) {
+      delete payload.parent_id;
+    }
+
     // Save to "different folder" (model) based on role
     if (role === 'admin' || role === 'super_admin') {
       newUser = await Admin.create(payload);
@@ -276,9 +314,10 @@ const createUser = async (req, res) => {
         user: req.user._id,
       });
       
-      // Send welcome email with temporary password
-      // Use the generated username or email from payload, and original plain-text password
-      await sendWelcomeEmail(payload.email, payload.username, password);
+      // Send welcome email asynchronously in background so client enrollment responds instantly
+      sendWelcomeEmail(payload.email, payload.username, password).catch((err) =>
+        console.error('Background welcome email error:', err)
+      );
 
       res.status(201).json({
         _id: newUser._id,
@@ -311,61 +350,76 @@ const createUser = async (req, res) => {
 };
 
 const enrolClient = async (req, res) => {
-  const { name, email, password, kyc_data, lead_id, parent_id, username, client_id_ref } = req.body;
-  const normalizedEmail = email.toLowerCase();
-  const generatedUsername = username || normalizedEmail.split('@')[0];
+  try {
+    const { name, email, password, lead_id, parent_id, username, client_id_ref } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and Password are required' });
+    }
+    const normalizedEmail = email.toLowerCase();
+    const generatedUsername = username || normalizedEmail.split('@')[0];
 
-  // Check email, username, or client_id_ref uniqueness across all collections
-  const orConditions = [{ email: normalizedEmail }];
-  if (username) orConditions.push({ username: generatedUsername });
-  if (client_id_ref) orConditions.push({ client_id_ref });
+    // Check email, username, or client_id_ref uniqueness across all collections
+    const orConditions = [{ email: normalizedEmail }];
+    if (username) orConditions.push({ username: generatedUsername });
+    if (client_id_ref) orConditions.push({ client_id_ref });
 
-  const checks = await Promise.all([
-    Admin.findOne({ $or: orConditions }),
-    Partner.findOne({ $or: orConditions }),
-    Client.findOne({ $or: orConditions }),
-    Employee.findOne({ $or: orConditions }),
-    User.findOne({ $or: orConditions })
-  ]);
-  
-  const identifierExists = checks.find(u => u !== null);
-
-  if (identifierExists) {
-    return res.status(400).json({ message: 'A user with this email, username, or ID already exists' });
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  const client = await Client.create({
-    name,
-    email: normalizedEmail,
-    username: generatedUsername,
-    password: hashedPassword,
-    role: 'client',
-    parent_id,
-    // Add all other fields that might be passed during enrollment
-    ...req.body,
-    email: normalizedEmail, // Ensure normalized
-    password: hashedPassword, // Ensure hashed
-    role: 'client' // Ensure role is client
-  });
-
-  if (client) {
-    if (lead_id) {
-      const Lead = require('../../models/Lead');
-      await Lead.findByIdAndUpdate(lead_id, { status: 'converted', convertedClientId: client._id });
+    const checks = await Promise.all([
+      Admin.findOne({ $or: orConditions }).select('_id').lean(),
+      Partner.findOne({ $or: orConditions }).select('_id').lean(),
+      Client.findOne({ $or: orConditions }).select('_id').lean(),
+      Employee.findOne({ $or: orConditions }).select('_id').lean(),
+      User.findOne({ $or: orConditions }).select('_id').lean()
+    ]);
+    
+    const identifierExists = checks.find(u => u !== null);
+    if (identifierExists) {
+      return res.status(400).json({ message: 'A user with this email, username, or ID already exists' });
     }
 
-    await Activity.create({
-      action: `Client enrolled in Client collection: ${name}`,
-      user: req.user._id,
-    });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    bustCache();
-    res.status(201).json(userToPublicJSON(client));
-  } else {
-    res.status(400).json({ message: 'Invalid client data' });
+    let parsedParentId = (parent_id === '' || parent_id == null || !mongoose.Types.ObjectId.isValid(parent_id)) ? undefined : parent_id;
+
+    const clientPayload = {
+      ...req.body,
+      name,
+      email: normalizedEmail,
+      username: generatedUsername,
+      password: hashedPassword,
+      role: 'client',
+      parent_id: parsedParentId
+    };
+
+    if (!clientPayload.parent_id || clientPayload.parent_id === '' || !mongoose.Types.ObjectId.isValid(clientPayload.parent_id)) {
+      delete clientPayload.parent_id;
+    }
+
+    const client = await Client.create(clientPayload);
+
+    if (client) {
+      if (lead_id) {
+        try {
+          const Lead = require('../../models/Lead');
+          Lead.findByIdAndUpdate(lead_id, { status: 'converted', convertedClientId: client._id }).catch(e => console.error(e));
+        } catch (lErr) {
+          console.error('Lead conversion error:', lErr);
+        }
+      }
+
+      Activity.create({
+        action: `Client enrolled in Client collection: ${name}`,
+        user: req.user ? req.user._id : client._id,
+      }).catch(aErr => console.error('Activity create error:', aErr.message));
+
+      bustCache();
+      return res.status(201).json(userToPublicJSON(client));
+    } else {
+      return res.status(400).json({ message: 'Invalid client data' });
+    }
+  } catch (error) {
+    console.error('Error in enrolClient:', error);
+    return res.status(500).json({ message: error.message || 'Internal server error during client enrolment' });
   }
 };
 
@@ -378,6 +432,21 @@ const updateUser = async (req, res) => {
   if (!user) user = await User.findById(req.params.id);
 
   if (!user) return res.status(404).json({ message: 'User not found' });
+
+  // Single SuperAdmin validation check when updating role
+  if (req.body.role === 'super_admin' || req.body.role === 'superadmin') {
+    const superAdminChecks = await Promise.all([
+      Admin.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+      User.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+      Partner.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+      Client.findOne({ role: { $in: ['super_admin', 'superadmin'] } }),
+      Employee.findOne({ role: { $in: ['super_admin', 'superadmin'] } })
+    ]);
+    const existingSuperAdmin = superAdminChecks.find(u => u !== null && u._id.toString() !== req.params.id.toString());
+    if (existingSuperAdmin) {
+      return res.status(400).json({ message: 'Only one SuperAdmin is permitted in the system. A SuperAdmin already exists.' });
+    }
+  }
 
   if (req.body.currentProfession !== undefined && req.body.profession === undefined) {
     req.body.profession = req.body.currentProfession;
@@ -447,7 +516,7 @@ const getUserById = async (req, res) => {
 
 const uploadKycDocs = async (req, res) => {
   try {
-    const { userId, docType } = req.body; // docType: 'panCard', 'aadharCard', 'passport', etc.
+    const { userId, docType, formName, folderName } = req.body; // docType: 'panCard', 'aadharCard', 'passport', etc.
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });
     }
@@ -459,6 +528,13 @@ const uploadKycDocs = async (req, res) => {
     if (!user) user = await Employee.findById(userId);
     if (!user) user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Determine target form folder name
+    const targetFolder = folderName || formName || 'Registration Documents';
+    if (!user.customFolders) user.customFolders = [];
+    if (!user.customFolders.includes(targetFolder)) {
+      user.customFolders.push(targetFolder);
+    }
 
     // Build file paths map
     const fileMap = {};
@@ -475,25 +551,63 @@ const uploadKycDocs = async (req, res) => {
       nomineeOtherDocs: 'nomineeOtherDocsPath',
     };
 
-    req.files.forEach((file, index) => {
+    const docLabels = {
+      panCard: 'PAN Card',
+      aadharCard: 'Aadhaar Card',
+      passport: 'Passport',
+      drivingLicence: 'Driving Licence',
+      nriDocs: 'NRI Document',
+      otherDocs: 'Other Document',
+      rentAgreementVeraBill: 'Rent Agreement / Vera Bill',
+      partnerAgreement: 'Partner Agreement',
+      employeeAgreement: 'Employee Agreement',
+      nomineeAadhar: 'Nominee Aadhaar',
+      nomineePan: 'Nominee PAN',
+      nomineeNoc: 'Nominee NOC',
+      nomineeOtherDocs: 'Nominee Other Document',
+    };
+
+    const docPromises = [];
+    for (let index = 0; index < req.files.length; index++) {
+      const file = req.files[index];
       const type = Array.isArray(docType) ? docType[index] : docType;
       const schemaField = docTypeMap[type] || 'otherDocsFile';
-      fileMap[schemaField] = `/uploads/documents/clients/${userId}/${file.filename}`;
-    });
+      const fileUrl = `/uploads/documents/clients/${userId}/${file.filename}`;
+      fileMap[schemaField] = fileUrl;
+
+      // Automatically register a Document entry linked to this client under the form folder
+      const docName = docLabels[type] || file.originalname || 'Document';
+      const fileExt = path.extname(file.originalname).substring(1) || 'pdf';
+      docPromises.push(
+        Document.create({
+          name: docName,
+          file_url: fileUrl,
+          file_type: fileExt,
+          file_size: file.size || 0,
+          linked_to: 'client',
+          client_id: userId,
+          doc_category: 'primary',
+          folder: targetFolder,
+          uploaded_by: req.user ? req.user._id : userId,
+          verification_status: 'verified',
+        }).catch((docErr) => console.error('Error creating Document model record:', docErr.message))
+      );
+    }
+    await Promise.all(docPromises);
 
     // Update kyc_data or direct fields
     if (!user.kyc_data) user.kyc_data = {};
-    for (const [field, path] of Object.entries(fileMap)) {
+    for (const [field, pathStr] of Object.entries(fileMap)) {
       if (['nomineeAadharPath', 'nomineePanPath', 'nomineeNocPath', 'nomineeOtherDocsPath'].includes(field)) {
-        user[field] = path;
+        user[field] = pathStr;
       } else {
-        user.kyc_data[field] = path;
+        user.kyc_data[field] = pathStr;
       }
     }
 
     await user.save();
     bustCache();
-    res.json({ message: 'Files uploaded successfully', files: fileMap });
+    res.json({ message: 'Files uploaded successfully', files: fileMap, folder: targetFolder });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
