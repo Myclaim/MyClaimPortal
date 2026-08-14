@@ -11,16 +11,20 @@ import {
   Search,
   ArrowRight,
   Filter,
-  Upload
+  Upload,
+  Scale,
+  Wrench,
+  ShoppingBag
 } from 'lucide-react';
 import api from '../../services/api';
 import DocumentList from '../../components/documents/DocumentList';
 import DocumentUploadModal from '../../components/documents/DocumentUploadModal';
+import HubPage from '../hubs/HubPage';
 
 const OperationsHub = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(tab || 'email-log');
+  const [activeTab, setActiveTab] = useState(tab || 'claim-hub');
 
   useEffect(() => {
     if (tab && tab !== activeTab) {
@@ -34,6 +38,9 @@ const OperationsHub = () => {
   };
 
   const tabs = [
+    { id: 'claim-hub', label: 'Claim Hub', icon: Scale, color: '#f59e0b' },
+    { id: 'service-hub', label: 'Service Hub', icon: Wrench, color: '#3b82f6' },
+    { id: 'store', label: 'Store Hub', icon: ShoppingBag, color: '#8b5cf6' },
     { id: 'email-log', label: 'Email Log', icon: Mail, color: '#15803d' },
     { id: 'call-log', label: 'Call Log', icon: Phone, color: '#3b82f6' },
     { id: 'letter-log', label: 'Letter Log', icon: FileText, color: '#8b5cf6' },
@@ -73,8 +80,24 @@ const OperationsHub = () => {
   );
 
   const renderContent = () => {
-    const activeTabData = tabs.find(t => t.id === activeTab);
-    const Icon = activeTabData.icon;
+    const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
+    const Icon = activeTabData ? activeTabData.icon : Mail;
+
+    if (activeTab === 'claim-hub') {
+      return <HubPage vertical="claim" title="Claim Hub" subtitle="All IEPF and claim tickets" />;
+    }
+
+    if (activeTab === 'service-hub') {
+      return <HubPage vertical="service" title="Service Hub" subtitle="All service tickets and controls" />;
+    }
+
+    if (activeTab === 'store') {
+      return <HubPage vertical="store" title="Store Hub" subtitle="Box & pricing controls" />;
+    }
+
+    if (activeTab === 'support') {
+      return <HubPage vertical="support" title="Support Hub" subtitle="Support tickets from all users" />;
+    }
 
     if (activeTab === 'documents') {
       return (

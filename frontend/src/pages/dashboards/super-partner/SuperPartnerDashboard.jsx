@@ -39,6 +39,15 @@ const VERTICAL_STYLES = {
   store:   { label: 'Store',       color: '#b45309', bg: 'rgba(180,83,9,0.1)'    },
 };
 
+const getFullDocUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://myclaimportal.onrender.com/api');
+  const origin = apiBase.replace(/\/api\/?$/, '');
+  const cleanPath = path.replace(/\\/g, '/');
+  return `${origin}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+};
+
 const StatusBadge = ({ status }) => {
   const s = BADGE_STYLES[status] || { bg: '#f1f5f9', color: '#475569', dot: '#94a3b8' };
   return (
@@ -404,7 +413,7 @@ function AddLeadModal({ onClose, onAdd }) {
       const { data } = await api.post('/leads', payload);
       
       onAdd({
-        id: String(data._id).substring(0, 6).toUpperCase(),
+        id: data.client_id_ref || String(data._id).slice(-6).toUpperCase(),
         name: data.name,
         phone: data.phone,
         service: data.serviceInterest || 'N/A',
@@ -517,7 +526,7 @@ function LeadsTab() {
         myLeads = data.filter(l => l.sourceUserId?._id === user?._id);
         
         const formatted = myLeads.map(l => ({
-          id: String(l._id).substring(0, 6).toUpperCase(),
+          id: l.client_id_ref || String(l._id).slice(-6).toUpperCase(),
           name: l.name,
           phone: l.phone,
           email: l.email || '—',
@@ -553,7 +562,7 @@ function LeadsTab() {
         });
         
         const formattedProps = myProposals.map(p => ({
-          id: String(p._id).substring(String(p._id).length - 6).toUpperCase(),
+          id: String(p._id).slice(-6).toUpperCase(),
           client: p.clientName || 'Unknown',
           initials: (p.clientName || 'U').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase(),
           color: ['#f97316', '#06b6d4', '#22c55e', '#8b5cf6'][Math.floor(Math.random() * 4)],
@@ -564,7 +573,17 @@ function LeadsTab() {
           statusBg: p.status === 'Accepted' ? 'rgba(16,185,129,0.1)' : (p.status === 'Sent' || p.status === 'Active') ? 'rgba(6,182,212,0.1)' : 'rgba(245,158,11,0.1)',
           statusCol: p.status === 'Accepted' ? '#10b981' : (p.status === 'Sent' || p.status === 'Active') ? '#06b6d4' : '#f59e0b',
           attachment: p.attachmentPath ? p.attachmentPath.split('/').pop() : '+ Attach',
-          isAttach: !p.attachmentPath
+          attachmentPath: p.attachmentPath,
+          isAttach: !p.attachmentPath,
+          category: p.category,
+          priority: p.priority,
+          notes: p.notes,
+          sendToUserType: p.sendToUserType,
+          assignUserName: p.assignUserName,
+          partner: p.partner,
+          superPartner: p.superPartner,
+          admin: p.admin,
+          rawId: p._id
         }));
         
         const myTickets = ticketData.filter(t => {
@@ -573,7 +592,7 @@ function LeadsTab() {
         });
 
         const formattedTickets = myTickets.map(t => ({
-          id: String(t._id).substring(String(t._id).length - 6).toUpperCase(),
+          id: String(t._id).slice(-6).toUpperCase(),
           client: t.companyName || t.clientId?.name || t.clientName || 'Unknown',
           initials: (t.companyName || t.clientId?.name || t.clientName || 'U').substring(0,2).toUpperCase(),
           color: ['#f97316', '#06b6d4', '#22c55e', '#8b5cf6'][Math.floor(Math.random() * 4)],
@@ -583,8 +602,9 @@ function LeadsTab() {
           status: t.status === 'active' || t.status === 'in_process' ? 'In Progress' : (t.status === 'completed' || t.status === 'resolved' ? 'Accepted' : 'Sent'),
           statusBg: t.status === 'completed' || t.status === 'resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(6,182,212,0.1)',
           statusCol: t.status === 'completed' || t.status === 'resolved' ? '#10b981' : '#06b6d4',
-          attachment: 'Ticket',
-          isAttach: true
+          attachment: t.attachmentPath ? t.attachmentPath.split('/').pop() : 'Ticket',
+          attachmentPath: t.attachmentPath,
+          isAttach: !t.attachmentPath
         }));
 
         const combined = [...formattedProps, ...formattedTickets];
@@ -607,6 +627,8 @@ function LeadsTab() {
 
   const [proposals, setProposals] = useState([]);
   const [proposalFilterStatus, setProposalFilterStatus] = useState('All');
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [selectedProposal, setSelectedProposal] = useState(null);
 
   const filteredProposals = proposals.filter(p => {
     if (proposalFilterStatus === 'All') return true;
@@ -726,7 +748,13 @@ function LeadsTab() {
             </thead>
             <tbody>
               {filteredProposals.map(row => (
-                <tr key={row.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr 
+                  key={row.id} 
+                  style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.2s' }}
+                  onClick={() => setSelectedProposal(row)}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                >
                   <td style={{ padding: '16px 24px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
                   </td>
@@ -745,14 +773,38 @@ function LeadsTab() {
                     <span style={{ background: row.statusBg, color: row.statusCol, padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>{row.status}</span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
-                    <button style={{ 
-                      background: row.isAttach ? 'transparent' : 'rgba(255,255,255,0.03)', 
-                      border: row.isAttach ? '1px dashed var(--border)' : '1px solid var(--border)', 
-                      color: 'var(--text-muted)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
-                      display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' 
-                    }}>
-                      {row.isAttach ? null : <span style={{ fontSize: '14px' }}>📎</span>} {row.attachment}
-                    </button>
+                    {row.attachmentPath ? (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setPreviewDoc({ name: `${row.client} - Proposal`, url: row.attachmentPath }); }}
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            border: '1px solid rgba(59, 130, 246, 0.2)',
+                            color: '#60a5fa', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                          }}
+                        >
+                          <Eye size={12} /> Preview
+                        </button>
+                        <a 
+                          href={getFullDocUrl(row.attachmentPath)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--text-muted)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', textDecoration: 'none'
+                          }}
+                        >
+                          <Download size={12} /> DL
+                        </a>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{row.attachment}</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -918,6 +970,164 @@ function LeadsTab() {
               <div className="lead-view-footer">
                 <button type="button" className="lead-view-btn gray" onClick={() => setSelectedLead(null)}>Close</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedProposal && (
+        <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setSelectedProposal(null); }}>
+          <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '980px', width: '95%', background: 'transparent', padding: 0, boxShadow: 'none' }} onClick={e => e.stopPropagation()}>
+            <style>{`
+              .prop-view-wrap { padding: 34px 38px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.96)); border-radius: 28px; display: flex; flex-direction: column; box-shadow: 0 28px 70px rgba(15, 23, 42, 0.35); border: 1px solid rgba(148, 163, 184, 0.15); }
+              .prop-view-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+              .prop-view-section { margin-bottom: 28px; }
+              .prop-view-title { font-size: 11px; font-weight: 800; color: rgba(226, 232, 240, 0.75); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; border-bottom: 1px solid rgba(148, 163, 184, 0.16); padding-bottom: 10px; }
+              .prop-view-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(148, 163, 184, 0.12); }
+              .prop-view-row:last-child { border-bottom: none; }
+              .prop-view-label { color: #94a3b8; font-size: 13px; font-weight: 700; }
+              .prop-view-value { color: #f8fafc; font-weight: 800; font-size: 13px; text-align: right; }
+              .prop-view-pill { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+              .prop-view-btn { padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; border: none; font-family: inherit; }
+              .prop-view-btn.gray { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(148, 163, 184, 0.25); color: #f8fafc; }
+              .prop-view-btn.gray:hover { background: rgba(255, 255, 255, 0.12); }
+            `}</style>
+            <div className="prop-view-wrap" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 26, gap: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <div className="modal-title" style={{ fontSize: 22, marginBottom: 8 }}>Proposal Details — {selectedProposal.id}</div>
+                  <div style={{ fontSize: 13, color: '#475569' }}>{selectedProposal.client}</div>
+                </div>
+                <button type="button" className="modal-close" onClick={() => setSelectedProposal(null)} style={{ marginTop: 2 }}>✕</button>
+              </div>
+              <div className="prop-view-grid">
+                <div>
+                  <div className="prop-view-section">
+                    <div className="prop-view-title">Service Details</div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Service</span>
+                      <span className="prop-view-value">{selectedProposal.service || 'N/A'}</span>
+                    </div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Category</span>
+                      <span className="prop-view-value">{selectedProposal.category || 'N/A'}</span>
+                    </div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Priority</span>
+                      <span className="prop-view-value">{selectedProposal.priority || 'N/A'}</span>
+                    </div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Date Submitted</span>
+                      <span className="prop-view-value">{selectedProposal.date}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div className="prop-view-section">
+                    <div className="prop-view-title">Assignment & Status</div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Status</span>
+                      <span className="prop-view-pill" style={{ background: selectedProposal.statusBg, color: selectedProposal.statusCol }}>{selectedProposal.status}</span>
+                    </div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Assigned To</span>
+                      <span className="prop-view-value">{selectedProposal.assignUserName || 'Unassigned'}</span>
+                    </div>
+                    <div className="prop-view-row">
+                      <span className="prop-view-label">Partner</span>
+                      <span className="prop-view-value">{selectedProposal.partner || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {selectedProposal.notes && (
+                <div className="prop-view-section" style={{ marginTop: 12 }}>
+                  <div className="prop-view-title">Additional Notes</div>
+                  <div style={{ padding: '18px 20px', background: 'rgba(148, 163, 184, 0.12)', borderRadius: '18px', fontSize: 13, color: '#cbd5e1', lineHeight: 1.7 }}>
+                    {selectedProposal.notes}
+                  </div>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 26, gap: 12 }}>
+                <button type="button" className="prop-view-btn gray" onClick={() => setSelectedProposal(null)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewDoc && (
+        <div 
+          className="modal-overlay open" 
+          style={{ zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+          onClick={() => setPreviewDoc(null)}
+        >
+          <div 
+            className="modal" 
+            style={{ 
+              maxWidth: '900px', 
+              width: '90%', 
+              height: '85vh', 
+              background: '#0f172a', 
+              border: '1px solid #334155', 
+              borderRadius: '16px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              padding: 0, 
+              overflow: 'hidden' 
+            }} 
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '16px 24px', background: '#1e293b', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#f8fafc' }}>{previewDoc.name}</h3>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Document Preview</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <a 
+                  href={getFullDocUrl(previewDoc.url)} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: '#3b82f6', color: '#fff', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700 }}
+                >
+                  <Download size={14} /> Open Original
+                </a>
+                <button 
+                  onClick={() => setPreviewDoc(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '20px', cursor: 'pointer', padding: '4px' }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div style={{ flex: 1, padding: '16px', background: '#090d16', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              {(() => {
+                const url = getFullDocUrl(previewDoc.url);
+                const ext = (url.split('.').pop() || '').toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'].includes(ext);
+                const isPdf = ext === 'pdf';
+
+                if (isImage) {
+                  return <img src={url} alt={previewDoc.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} />;
+                }
+                if (isPdf) {
+                  return <iframe src={url} title={previewDoc.name} style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px' }} />;
+                }
+                return (
+                  <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
+                    <p style={{ fontSize: '14px', marginBottom: '20px' }}>Preview is not directly embedded for <strong>.{ext}</strong> files.</p>
+                    <a 
+                      href={url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      style={{ background: '#3b82f6', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <Download size={16} /> Download File
+                    </a>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -3035,7 +3245,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
       const clientName = nameFromClient || clients.find(c => String(c._id) === clientId)?.name;
 
       return {
-        id: String(t._id).substring(18, 24).toUpperCase(),
+        id: String(t._id).slice(-6).toUpperCase(),
         clientId,
         client: clientName || 'Unknown',
         service: t.service,
@@ -3113,7 +3323,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
       const clientName = nameFromClient || clients.find(c => String(c._id) === clientId)?.name || 'Client';
 
       const newTk = {
-        id: String(data._id || Date.now()).substring(18, 24).toUpperCase(),
+        id: String(data._id || Date.now()).slice(-6).toUpperCase(),
         clientId,
         client: clientName,
         service: data.service,
@@ -3335,7 +3545,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
         <CreateTicketModal
           onClose={() => setShowModal(false)}
           onSuccess={data => setTickets(prev => [{
-             id: String(data._id).substring(0, 6).toUpperCase(),
+             id: data.client_id_ref || String(data._id).slice(-6).toUpperCase(),
              clientId: data.client?._id || data.clientId,
              client: data.client?.name || dbClients.find(c => String(c._id) === String(data.clientId))?.name || 'Client',
              service: data.service,
