@@ -554,8 +554,8 @@ const Tickets = () => {
 
         {/* Main Content Area */}
         {viewMode === 'table' ? (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 10px 30px -12px rgba(0,0,0,0.1)' }}>
-          <table className="ticket-table">
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '18px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 10px 30px -12px rgba(0,0,0,0.1)' }}>
+          <table className="ticket-table" style={{ minWidth: '1100px', width: '100%' }}>
             <thead>
               <tr>
                 <th style={{ width: '40px' }}>

@@ -166,7 +166,7 @@ const PartnerList = () => {
       </td>
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div className="avatar">
+          <div className="avatar" onClick={() => navigate('/partners/' + user._id)} style={{ cursor: 'pointer' }} title="View Full Profile">
             {user.name?.substring(0, 2).toUpperCase()}
           </div>
           <div>
@@ -412,12 +412,12 @@ const PartnerList = () => {
                   <div className="va-section-title">GENERAL INFORMATION</div>
                   <div style={{ marginBottom: 32 }}>
                     <div className="va-row">
-                      <span className="va-label">Partner ID</span>
+                      <span className="va-label">User ID</span>
                       <span className="va-value">{activePartner.client_id_ref || String(activePartner._id).slice(-6).toUpperCase()}</span>
                     </div>
                     <div className="va-row">
-                      <span className="va-label">Partner Name</span>
-                      <span className="va-value">{activePartner.name}</span>
+                      <span className="va-label">User Name</span>
+                      <span className="va-value">{activePartner.username || activePartner.name.split(' ')[0]}</span>
                     </div>
                     <div className="va-row">
                       <span className="va-label">Email</span>
@@ -434,6 +434,10 @@ const PartnerList = () => {
                       </span>
                     </div>
                     <div className="va-row">
+                      <span className="va-label">Department</span>
+                      <span className="va-value">{activePartner.department || '—'}</span>
+                    </div>
+                    <div className="va-row">
                       <span className="va-label">Created Date</span>
                       <span className="va-value">{activePartner.createdAt ? new Date(activePartner.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</span>
                     </div>
@@ -443,7 +447,7 @@ const PartnerList = () => {
                   <div style={{ marginBottom: 32 }}>
                     <div className="va-row">
                       <span className="va-label">Account<br/>Status</span>
-                      <select className="va-select" defaultValue={activePartner.is_active !== false ? 'Active' : 'Inactive'} disabled>
+                      <select className="va-select" defaultValue={activePartner.is_active !== false ? 'Active' : 'Inactive'}>
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                       </select>
@@ -460,6 +464,14 @@ const PartnerList = () => {
                       <span className="va-label">2FA Status</span>
                       <span className="va-pill green-light">Enabled</span>
                     </div>
+                    <div className="va-row" style={{ alignItems: 'flex-start', paddingTop: 16 }}>
+                      <span className="va-label" style={{ marginTop: 4 }}>First Password<br/>Change</span>
+                      <span className="va-value">Dec 01,<br/>2023</span>
+                    </div>
+                    <div className="va-row" style={{ alignItems: 'flex-start' }}>
+                      <span className="va-label" style={{ marginTop: 4 }}>Last Password<br/>Change</span>
+                      <span className="va-value">Mar 10,<br/>2026</span>
+                    </div>
                   </div>
                 </div>
 
@@ -473,19 +485,19 @@ const PartnerList = () => {
                   <div className="va-perm-grid">
                     {[
                       { label: 'Create Leads', on: true },
-                      { label: 'Assign Tasks', on: false },
+                      { label: 'Assign Tasks', on: true },
                       { label: 'View Reports', on: true },
-                      { label: 'Approve Agreements', on: false },
+                      { label: 'Approve Agreements', on: true },
                       { label: 'Upload Documents', on: true },
                       { label: 'Manage Commission', on: true },
-                      { label: 'Delete Users', on: false },
-                      { label: 'System Settings', on: false },
+                      { label: 'Delete Users', on: true },
+                      { label: 'System Settings', on: true },
                       { label: 'Access Billing', on: false },
-                      { label: 'View All Clients', on: false },
+                      { label: 'View All Clients', on: true },
                     ].map((p, i) => (
                       <div className="va-toggle-wrap" key={i}>
-                        <span className="va-toggle-label">{p.label.split(' ').map((w, j) => <span key={j}>{w}<br/></span>)}</span>
-                        <input type="checkbox" className="va-toggle" defaultChecked={p.on} disabled />
+                        <span className="va-toggle-label">{p.label.split(' ').map((w, j) => <React.Fragment key={j}>{w}<br/></React.Fragment>)}</span>
+                        <input type="checkbox" className="va-toggle" defaultChecked={p.on} />
                       </div>
                     ))}
                   </div>
@@ -496,13 +508,13 @@ const PartnerList = () => {
                       { label: 'Dashboard', on: true },
                       { label: 'Lead Centre', on: true },
                       { label: 'Activity Log', on: true },
-                      { label: 'Client List', on: false },
+                      { label: 'Client List', on: true },
                       { label: 'Task Board', on: true },
                       { label: 'Store Hub', on: false },
                     ].map((p, i) => (
                       <div className="va-toggle-wrap" key={i}>
                         <span className="va-toggle-label">{p.label}</span>
-                        <input type="checkbox" className="va-toggle" defaultChecked={p.on} disabled />
+                        <input type="checkbox" className="va-toggle" defaultChecked={p.on} />
                       </div>
                     ))}
                   </div>
@@ -530,8 +542,8 @@ const PartnerList = () => {
                   <div className="va-activity-item">
                     <div className="va-activity-dot green"></div>
                     <div>
-                      <div className="va-activity-text">System login from new IP (Mumbai)</div>
-                      <div className="va-activity-time">Oct 24, 2023 at 09:15 AM</div>
+                      <div className="va-activity-text">Completed RTA follow-up for <a href="#">Global Tech Solutions</a></div>
+                      <div className="va-activity-time">Mar 08, 2:15 PM</div>
                     </div>
                   </div>
                 </div>

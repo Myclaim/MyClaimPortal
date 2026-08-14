@@ -16,20 +16,27 @@ const ACTIVITY_CACHE_TTL = 2 * 1000; // 2 seconds (for near real-time sync)
 
 router.get('/', protect, async (req, res) => {
   try {
+    const { user_id } = req.query;
     const now = Date.now();
-    if (_activityCache && (now - _activityCacheTime) < ACTIVITY_CACHE_TTL) {
+    
+    // Only use cache for the global feed
+    if (!user_id && _activityCache && (now - _activityCacheTime) < ACTIVITY_CACHE_TTL) {
       return res.json(_activityCache);
     }
 
+    const query = user_id ? { user: user_id } : {};
+
     // OPTIMIZED: Fetch only last 100 activities with lean()
-    const activities = await Activity.find({}, 'action user createdAt')
+    const activities = await Activity.find(query, 'action user createdAt')
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
 
     if (!activities.length) {
-      _activityCache = [];
-      _activityCacheTime = now;
+      if (!user_id) {
+        _activityCache = [];
+        _activityCacheTime = now;
+      }
       return res.json([]);
     }
 
@@ -52,8 +59,10 @@ router.get('/', protect, async (req, res) => {
       user: (act.user && userMap[String(act.user)]) || act.user,
     }));
 
-    _activityCache = populated;
-    _activityCacheTime = now;
+    if (!user_id) {
+      _activityCache = populated;
+      _activityCacheTime = now;
+    }
     res.json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });

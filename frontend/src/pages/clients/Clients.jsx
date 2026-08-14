@@ -6,6 +6,7 @@ import api from '../../services/api';
 const Clients = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'direct' | 'partner' | 'super_partner' | 'inactive'
   const [query, setQuery] = useState('');
@@ -93,6 +94,7 @@ const Clients = () => {
       try {
         const { data } = await api.get('/users');
         setClients(data.filter((u) => u.role === 'client'));
+        setAllUsers(data);
       } catch (e) {
         console.error('Failed to load clients', e);
       } finally {
@@ -992,7 +994,20 @@ const Clients = () => {
 
                         {/* Advisor & Dept */}
                         <td>
-                          <div style={{ fontWeight: 700, fontSize: 13, color: '#E2E8F0' }}>{client.assignedTo || client.assigned_to || 'Amit Kumar'}</div>
+                          
+                          <div style={{ fontWeight: 700, fontSize: 13, color: '#E2E8F0' }}>
+                            {(() => {
+                              if (client.parent_id) {
+                                const parent = allUsers.find(u => u._id === client.parent_id);
+                                if (parent) return parent.name;
+                              }
+                              if (client.referredById) {
+                                const ref = allUsers.find(u => u._id === client.referredById);
+                                if (ref) return ref.name;
+                              }
+                              return client.assignedTo || client.assigned_to || 'System/Direct';
+                            })()}
+                          </div>
                           <div style={{ fontSize: 11.5, color: '#F59E0B' }}>✦ {client.department || 'Claim Dept'}</div>
                         </td>
 

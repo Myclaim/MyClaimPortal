@@ -655,7 +655,7 @@ const SuperAdminDashboard = ({ stats, loading }) => {
             </div>
 
             {/* Activity List */}
-            <div style={{ padding: '20px 28px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+            <div style={{ padding: '20px 28px', overflowY: 'auto', overflowX: 'auto', WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
               {filteredActivities.length > 0 ? filteredActivities.map((act) => (
                 <div key={act.id} style={{
                   display: 'flex', gap: '16px', alignItems: 'flex-start',

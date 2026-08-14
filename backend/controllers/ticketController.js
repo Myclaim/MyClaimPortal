@@ -21,7 +21,7 @@ const getTickets = async (req, res) => {
           return res.status(403).json({ message: 'Unauthorized access to this client' });
         }
       } else {
-        query.client = { $in: myClientIds };
+        query.$or = [{ client: { $in: myClientIds } }, { createdBy: _id }];
       }
     } else if (role === 'client') {
       query.client = _id;
@@ -40,7 +40,7 @@ const getTickets = async (req, res) => {
           return res.status(403).json({ message: 'Unauthorized access to this client' });
         }
       } else {
-        query.client = { $in: networkClientIds };
+        query.$or = [{ client: { $in: networkClientIds } }, { createdBy: _id }];
       }
     }
 
@@ -84,7 +84,7 @@ const getTicketById = async (req, res) => {
 };
 
 const createTicket = async (req, res) => {
-  const { clientId, hubType, subject, companyName, service, priority, assignedTo, notes, mappedStore, shares, folio, isin, estValue } = req.body;
+  const { clientId, hubType, subject, companyName, service, priority, assignedTo, notes, mappedStore, shares, folio, isin, estValue, ticketNo: customTicketNo } = req.body;
   if (!clientId || !service) {
     return res.status(400).json({ message: 'clientId and service are required' });
   }
@@ -121,17 +121,8 @@ const createTicket = async (req, res) => {
     }
   }
 
-    // Generate unique ticketNo: MCT-YYYYMMDD-NNNNN
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const dateStr = `${year}${month}${day}`; // "20260729" (local time)
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay   = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    const countToday = await Ticket.countDocuments({ createdAt: { $gte: startOfDay, $lt: endOfDay } });
-    const seq = String(countToday + 1).padStart(5, '0');        // "00042"
-    const ticketNo = `MCT-${dateStr}-${seq}`;                   // "MCT-20260729-00042"
+  // Generate unique ticketNo using Epoch timestamp
+  const ticketNo = customTicketNo || String(Date.now());
 
   const ticket = await Ticket.create({
     ticketNo,

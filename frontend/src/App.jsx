@@ -24,7 +24,9 @@ import Tickets from './pages/super-admin/Tickets';
 import MyClaimAI from './pages/super-admin/MyClaimAI';
 import AdminList from './pages/user-lists/AdminList';
 import PartnerList from './pages/user-lists/PartnerList';
+import PartnerProfile from './pages/user-lists/PartnerProfile';
 import SuperPartnerList from './pages/user-lists/SuperPartnerList';
+import SuperPartnerProfile from './pages/user-lists/SuperPartnerProfile';
 import TaskBoard from './pages/tasks/TaskBoard';
 import HubPage from './pages/hubs/HubPage';
 import StoreMarketplace from './pages/store/StoreMarketplace';
@@ -72,7 +74,9 @@ function App() {
             <Route path="admin-list" element={<ProtectedRoute superAdminOnly={true}><AdminList /></ProtectedRoute>} />
             <Route path="client-list" element={<ProtectedRoute superAdminOnly={true}><Clients /></ProtectedRoute>} />
             <Route path="super-partner-list" element={<ProtectedRoute superAdminOnly={true}><SuperPartnerList /></ProtectedRoute>} />
+            <Route path="super-partners/:id" element={<ProtectedRoute superAdminOnly={true} partnerAllowed={true}><SuperPartnerProfile /></ProtectedRoute>} />
             <Route path="partner-list" element={<ProtectedRoute superAdminOnly={true}><PartnerList /></ProtectedRoute>} />
+            <Route path="partners/:id" element={<ProtectedRoute superAdminOnly={true} partnerAllowed={true}><PartnerProfile /></ProtectedRoute>} />
             <Route path="super-admin" element={<ProtectedRoute superAdminOnly={true}><SuperAdmin /></ProtectedRoute>} />
             <Route path="super-admin/users" element={<ProtectedRoute superAdminOnly={true}><Users /></ProtectedRoute>} />
             <Route path="super-admin/leads" element={<ProtectedRoute superAdminOnly={true}><Leads /></ProtectedRoute>} />

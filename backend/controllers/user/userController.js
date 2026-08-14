@@ -9,6 +9,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { sendWelcomeEmail } = require('../../utils/emailService');
 const { createActivityAndNotify } = require('../../utils/activityHelper');
+const mongoose = require('mongoose');
 
 /** Omit password hash from Mongoose documents returned to the client */
 function userToPublicJSON(doc) {
@@ -311,7 +312,7 @@ const createUser = async (req, res) => {
       bustCache(); // Bust server cache so next read reflects new user
       await Activity.create({
         action: `User ${name} (${role || 'team'}) created in ${role} collection`,
-        user: req.user._id,
+        user: req.user ? req.user._id : null,
       });
       
       // Send welcome email asynchronously in background so client enrollment responds instantly

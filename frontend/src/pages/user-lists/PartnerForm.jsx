@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, AlertCircle, CheckCircle, X } from 'lucide-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { extractAadharDetails, extractPanDetails } from '../../utils/ocrUtils';
 
 const PartnerForm = ({ defaultRole }) => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const PartnerForm = ({ defaultRole }) => {
   const [success, setSuccess] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState('https://i.pravatar.cc/200?img=12');
+  const [isScanning, setIsScanning] = useState({ aadhar: false, pan: false });
 
   const [superPartnersList, setSuperPartnersList] = useState([]);
 
@@ -111,8 +113,26 @@ const PartnerForm = ({ defaultRole }) => {
     validateField(name, value);
   };
 
-  const handleFileChange = (e, fieldName) => {
-    setFiles(prev => ({ ...prev, [fieldName]: e.target.files[0] }));
+  const handleFileChange = async (e, fieldName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFiles(prev => ({ ...prev, [fieldName]: file }));
+
+    if (fieldName === 'aadhar') {
+      setIsScanning(p => ({ ...p, aadhar: true }));
+      const result = await extractAadharDetails(file);
+      if (result && result.aadharNo) {
+        setForm(prev => ({ ...prev, aadharNo: result.aadharNo }));
+      }
+      setIsScanning(p => ({ ...p, aadhar: false }));
+    } else if (fieldName === 'pan') {
+      setIsScanning(p => ({ ...p, pan: true }));
+      const result = await extractPanDetails(file);
+      if (result && result.panNo) {
+        setForm(prev => ({ ...prev, panNo: result.panNo }));
+      }
+      setIsScanning(p => ({ ...p, pan: false }));
+    }
   };
 
   const previewPhoto = (e) => {
@@ -381,19 +401,27 @@ const PartnerForm = ({ defaultRole }) => {
                 <label>Aadhar Card No</label>
                 <input type="text" name="aadharNo" className={`pf-input ${formErrors.aadharNo ? 'pf-error-input' : ''}`} placeholder="1234 5678 9012" value={form.aadharNo} onChange={handleChange} maxLength={14} />
                 {formErrors.aadharNo && <div className="pf-error-msg">{formErrors.aadharNo}</div>}
+                {!formErrors.aadharNo && form.aadharNo && form.aadharNo.replace(/\D/g, '').length < 12 && (
+                  <span style={{ fontSize: 11, color: '#f43f5e', marginTop: 4, display: 'block' }}>Aadhaar number must be 12 digits.</span>
+                )}
               </div>
 
               <div className="pf-field">
                 <label>Pan Card No</label>
                 <input type="text" name="panNo" className={`pf-input ${formErrors.panNo ? 'pf-error-input' : ''}`} placeholder="Enter Pan No" value={form.panNo} onChange={handleChange} maxLength={10} style={{ textTransform: 'uppercase' }} />
                 {formErrors.panNo && <div className="pf-error-msg">{formErrors.panNo}</div>}
+                {!formErrors.panNo && form.panNo && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.panNo.toUpperCase()) && (
+                  <span style={{ fontSize: 11, color: '#f43f5e', marginTop: 4, display: 'block' }}>Invalid PAN format (e.g., ABCDE1234F).</span>
+                )}
               </div>
 
               <div className="pf-field">
                 <label>Aadhar Card</label>
                 <div className="pf-file-field">
                   <button type="button" className="pf-file-btn" onClick={() => document.getElementById('aadharFile').click()}>Choose File</button>
-                  <span className={`pf-file-name ${files.aadhar ? 'picked' : ''}`}>{files.aadhar ? files.aadhar.name : 'No file chosen'}</span>
+                  <span className={`pf-file-name ${files.aadhar ? 'picked' : ''}`}>
+                    {isScanning.aadhar ? <span style={{ color: '#10b981', fontWeight: 'bold' }}>Scanning...</span> : (files.aadhar ? files.aadhar.name : 'No file chosen')}
+                  </span>
                   <input type="file" id="aadharFile" accept=".pdf,image/*" onChange={(e) => handleFileChange(e, 'aadhar')} />
                 </div>
               </div>
@@ -402,7 +430,9 @@ const PartnerForm = ({ defaultRole }) => {
                 <label>Pan Card</label>
                 <div className="pf-file-field">
                   <button type="button" className="pf-file-btn" onClick={() => document.getElementById('panFile').click()}>Choose File</button>
-                  <span className={`pf-file-name ${files.pan ? 'picked' : ''}`}>{files.pan ? files.pan.name : 'No file chosen'}</span>
+                  <span className={`pf-file-name ${files.pan ? 'picked' : ''}`}>
+                    {isScanning.pan ? <span style={{ color: '#10b981', fontWeight: 'bold' }}>Scanning...</span> : (files.pan ? files.pan.name : 'No file chosen')}
+                  </span>
                   <input type="file" id="panFile" accept=".pdf,image/*" onChange={(e) => handleFileChange(e, 'pan')} />
                 </div>
               </div>

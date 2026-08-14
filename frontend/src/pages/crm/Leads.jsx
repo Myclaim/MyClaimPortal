@@ -266,6 +266,20 @@ const Leads = () => {
     const shortId = idStr.slice(-6).toUpperCase();
     const catLabel = categoryBadgeLabel(p.category);
     const srcLabel = sourceTypeLabel(p.source);
+
+    let roleLabel = 'Super Admin';
+    const creatorRole = lead.sourceUserId?.role;
+    if (creatorRole) {
+      if (creatorRole === 'super_partner') roleLabel = 'Super Partner';
+      else if (creatorRole === 'partner') roleLabel = 'Partner';
+      else if (creatorRole === 'client') roleLabel = 'Client';
+      else if (creatorRole === 'super_admin' || creatorRole === 'admin') roleLabel = 'Super Admin';
+    } else if (p.superPartner && p.superPartner !== 'N/A') {
+      roleLabel = 'Super Partner';
+    } else if (p.partner && p.partner !== 'N/A') {
+      roleLabel = 'Partner';
+    }
+
     return {
       mongoId: idStr,
       id: shortId,
@@ -278,7 +292,7 @@ const Leads = () => {
       category: catLabel,
       serviceRequest: lead.serviceInterest || '—',
       sourceType: srcLabel,
-      userRole: lead.sourceUserId?.name || 'Admin',
+      userRole: roleLabel,
       createdBy: lead.sourceUserId?.name || 'Unknown',
       superPartner: p.superPartner && p.superPartner !== 'N/A' ? p.superPartner : '—',
       partner: p.partner && p.partner !== 'N/A' ? p.partner : '—',
@@ -330,7 +344,6 @@ const Leads = () => {
   const tabs = [
     { name: 'All Leads', count: leadsData.length },
     { name: 'Super Admin', count: leadsData.filter(l => l.userRole === 'Super Admin').length },
-    { name: 'Admin', count: leadsData.filter(l => l.userRole === 'Admin').length },
     { name: 'Super Partner', count: leadsData.filter(l => l.userRole === 'Super Partner').length },
     { name: 'Partner', count: leadsData.filter(l => l.userRole === 'Partner').length },
     { name: 'Client Ref.', count: leadsData.filter(l => l.userRole === 'Client').length }

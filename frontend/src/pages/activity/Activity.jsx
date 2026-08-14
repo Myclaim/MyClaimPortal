@@ -62,10 +62,34 @@ const Activity = () => {
   }, []);
 
   const filteredLogs = logs.filter(log => {
-    const matchesSearch = log.action.toLowerCase().includes(search.toLowerCase()) || 
-                         log.user?.name?.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase().trim();
+    const matchesSearch = !q || 
+      (log.action && log.action.toLowerCase().includes(q)) || 
+      (log.user?.name && log.user.name.toLowerCase().includes(q)) ||
+      (log.user?.role && log.user.role.toLowerCase().includes(q));
+
     if (filter === 'all') return matchesSearch;
-    return matchesSearch && log.user?.role === filter;
+
+    const userRole = (log.user?.role || 'system').toLowerCase();
+    const f = filter.toLowerCase();
+
+    if (f === 'admin') {
+      return matchesSearch && (userRole === 'admin' || userRole === 'super_admin');
+    }
+    if (f === 'super_admin') {
+      return matchesSearch && (userRole === 'super_admin' || userRole === 'admin');
+    }
+    if (f === 'partner') {
+      return matchesSearch && (userRole === 'partner' || userRole === 'super_partner');
+    }
+    if (f === 'super_partner') {
+      return matchesSearch && userRole === 'super_partner';
+    }
+    if (f === 'client') {
+      return matchesSearch && userRole === 'client';
+    }
+
+    return matchesSearch && userRole === f;
   });
   const handleDownloadAudit = () => {
     if (filteredLogs.length === 0) {
@@ -146,9 +170,9 @@ const Activity = () => {
           </div>
         </div>
 
-        <div className="card activity-card stagger-3" style={{ padding: '32px' }}>
+        <div className="card activity-card stagger-3" style={{ padding: '32px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '20px' }}>
-            <div className="search-bar" style={{ margin: 0, flex: 1 }}>
+            <div className="search-bar" style={{ margin: 0, flex: 1, minWidth: '240px' }}>
               <div className="search-input" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                 <Search size={18} />
                 <input 
@@ -160,9 +184,9 @@ const Activity = () => {
               </div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Quick Filter:</div>
-              {['all', 'admin', 'partner', 'client'].map(r => (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflowX: 'auto', flexWrap: 'nowrap', maxWidth: '100%', paddingBottom: '4px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}>Quick Filter:</div>
+              {['all', 'super_admin', 'admin', 'super_partner', 'partner', 'client'].map(r => (
                 <button 
                   key={r}
                   onClick={() => setFilter(r)}
@@ -173,19 +197,20 @@ const Activity = () => {
                     fontWeight: 700, 
                     cursor: 'pointer',
                     transition: 'all 0.2s',
+                    flexShrink: 0,
                     background: filter === r ? 'var(--blue)' : 'var(--card)',
                     color: filter === r ? '#fff' : 'var(--text)',
                     border: '1px solid',
                     borderColor: filter === r ? 'var(--blue)' : 'var(--border)',
                   }}
                 >
-                  {r.toUpperCase()}
+                  {r.replace('_', ' ').toUpperCase()}
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <div className="timeline-line"></div>
             
             {loading ? (
@@ -231,8 +256,8 @@ const Activity = () => {
                         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{log.user?.name || 'System Auto-Trigger'}</span>
                       </div>
                       <div style={{ width: '1px', height: '12px', background: 'var(--border)' }}></div>
-                      <div className={`custom-badge ${log.user?.role === 'admin' ? 'badge-blue' : 'badge-teal'}`} style={{ fontSize: '9px', padding: '2px 8px' }}>
-                        {log.user?.role || 'system'}
+                      <div className={`custom-badge ${(log.user?.role || '').includes('admin') ? 'badge-blue' : (log.user?.role || '').includes('partner') ? 'badge-teal' : 'badge-amber'}`} style={{ fontSize: '9px', padding: '2px 8px', textTransform: 'uppercase' }}>
+                        {(log.user?.role || 'system').replace('_', ' ')}
                       </div>
                       <div style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--text-muted)' }}>
                         {new Date(log.createdAt).toLocaleDateString()}

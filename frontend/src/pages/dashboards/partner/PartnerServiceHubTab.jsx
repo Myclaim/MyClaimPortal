@@ -156,6 +156,7 @@ const PartnerServiceHubTab = ({ type = 'service', onTicketCreated }) => {
     setIsSubmitting(true);
     try {
       const payload = {
+        ticketNo: String(Date.now()),
         clientId: selectedClient.dbId || selectedClient._id || selectedClient.id,
         hubType: isClaim ? 'Claim Hub' : 'Service Hub',
         subject: `New ${isClaim ? 'Claim' : 'Service'} Request: ${selectedService.title} for ${ticketDetails.companyName || 'N/A'}`,

@@ -142,10 +142,16 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess }) => {
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>Aadhaar Number</label>
                 <input name="aadharNo" value={form.aadharNo} onChange={handleChange} placeholder="1234 5678 9012" maxLength={14} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }} />
+                {form.aadharNo && form.aadharNo.replace(/\D/g, '').length < 12 && (
+                  <span style={{ fontSize: 11, color: '#f43f5e', marginTop: 4, display: 'block' }}>Aadhaar number must be 12 digits.</span>
+                )}
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>PAN Number</label>
                 <input name="panNo" value={form.panNo} onChange={handleChange} placeholder="ABCDE1234F" style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }} />
+                {form.panNo && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.panNo.toUpperCase()) && (
+                  <span style={{ fontSize: 11, color: '#f43f5e', marginTop: 4, display: 'block' }}>Invalid PAN format (e.g., ABCDE1234F).</span>
+                )}
               </div>
             </div>
           </div>

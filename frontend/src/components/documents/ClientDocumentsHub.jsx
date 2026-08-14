@@ -22,6 +22,7 @@ const ClientDocumentsHub = ({ documents = [], clientProfile, user, onRefresh, th
   const [legalDocs, setLegalDocs] = useState([]);
   const [loadingCompany, setLoadingCompany] = useState(false);
   const [loadingLegal, setLoadingLegal] = useState(false);
+  const [selectedClientFilter, setSelectedClientFilter] = useState('All Clients');
 
   const [verifyNotes, setVerifyNotes] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
@@ -456,22 +457,50 @@ const ClientDocumentsHub = ({ documents = [], clientProfile, user, onRefresh, th
             <div style={{ marginBottom: 32 }}>
               {(() => {
                 const folderDocs = (documents || []).filter(d => (d.folder || 'General') === selectedFolder);
-                if (folderDocs.length === 0) {
-                  return (
-                    <div style={{ background: vCard, border: `1px dashed ${vBorder}`, borderRadius: '16px', padding: '40px 20px', textAlign: 'center', color: vTextMuted }}>
-                      <FolderOpen size={40} style={{ marginBottom: 12, opacity: 0.5 }} />
-                      <div style={{ fontSize: '15px', fontWeight: 700, color: vText, marginBottom: 6 }}>
-                        No files in {selectedFolder} yet
-                      </div>
-                      <div style={{ fontSize: '13px', marginBottom: 16 }}>
-                        Documents uploaded via this form will automatically appear here.
-                      </div>
-                    </div>
-                  );
-                }
+                const uniqueClients = [...new Set(folderDocs.filter(d => d.clientName).map(d => d.clientName))];
+                
+                const filteredDocs = selectedClientFilter === 'All Clients' 
+                  ? folderDocs 
+                  : folderDocs.filter(d => d.clientName === selectedClientFilter);
+
                 return (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-                    {folderDocs.map(doc => {
+                  <>
+                    {uniqueClients.length > 0 && (
+                      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: vTextMuted }}>Filter by Client:</span>
+                        <select 
+                          value={selectedClientFilter}
+                          onChange={(e) => setSelectedClientFilter(e.target.value)}
+                          style={{
+                            padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+                            background: vCard, border: `1px solid ${vBorder}`, color: vText, outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="All Clients">All Clients</option>
+                          {uniqueClients.map(client => (
+                            <option key={client} value={client}>{client}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {folderDocs.length === 0 ? (
+                      <div style={{ background: vCard, border: `1px dashed ${vBorder}`, borderRadius: '16px', padding: '40px 20px', textAlign: 'center', color: vTextMuted }}>
+                        <FolderOpen size={40} style={{ marginBottom: 12, opacity: 0.5 }} />
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: vText, marginBottom: 6 }}>
+                          No files in {selectedFolder} yet
+                        </div>
+                        <div style={{ fontSize: '13px', marginBottom: 16 }}>
+                          Documents uploaded via this form will automatically appear here.
+                        </div>
+                      </div>
+                    ) : filteredDocs.length === 0 ? (
+                       <div style={{ padding: '40px 20px', textAlign: 'center', color: vTextMuted }}>
+                         No documents found for this client.
+                       </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+                        {filteredDocs.map(doc => {
                       const isVerified = doc.verification_status === 'verified';
                       const statusColor = isVerified ? '#10B981' : '#F59E0B';
                       return (
@@ -513,6 +542,8 @@ const ClientDocumentsHub = ({ documents = [], clientProfile, user, onRefresh, th
                       );
                     })}
                   </div>
+                )}
+                </>
                 );
               })()}
             </div>

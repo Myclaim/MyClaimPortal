@@ -2013,6 +2013,36 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
   const [loadingProposals, setLoadingProposals] = React.useState(false);
   const [filterStatus, setFilterStatus] = React.useState('All');
   const [filterPartner, setFilterPartner] = React.useState('');
+  const [liveProducts, setLiveProducts] = React.useState(null);
+
+  // Fetch live Pre-IPO data from backend
+  React.useEffect(() => {
+    if (categoryName === 'Pre IPOs') {
+      const fetchLivePreIpos = async () => {
+        try {
+          const { data } = await api.get('/pre-ipo');
+          if (data && data.length > 0) {
+            setLiveProducts(data.map(ipo => ({
+              id: ipo._id,
+              _id: ipo._id,
+              name: ipo.name,
+              sector: ipo.subCategory || 'Pre-IPO',
+              isin: `INE-${ipo.code}`,
+              minQty: 10,
+              available: ipo.availableEquity,
+              price: ipo.price
+            })));
+          }
+        } catch (err) {
+          console.error('Failed to fetch live Pre-IPOs for super partner', err);
+        }
+      };
+      fetchLivePreIpos();
+    }
+  }, [categoryName]);
+
+  // Use live data if available for Pre IPOs, otherwise fallback to mock
+  const displayProducts = (categoryName === 'Pre IPOs' && liveProducts) ? liveProducts : products;
 
   const filteredProposals = proposals.filter(p => {
     const s = p.status?.toLowerCase() || '';
@@ -2091,6 +2121,54 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
       
       const res = await api.post('/proposals', payload);
       if (res.status === 201 || res.status === 200) {
+        // Also create a ticket for this proposal
+        if (selectedClient) {
+          try {
+            await api.post('/tickets', {
+              ticketNo: String(Date.now()),
+              clientId: selectedClient._id || selectedClient.id,
+              hubType: 'Store Hub',
+              subject: `${categoryName} Proposal: ${selectedFund?.name || 'Shares'}`,
+              service: `${categoryName} - ${selectedFund?.name || 'Order'}`,
+              companyName: selectedFund?.name || '',
+              priority: 'high',
+              notes: `Proposal Sent | Price: ₹${price} | Qty: ${qty} | Total: ₹${totalInvestment.toLocaleString('en-IN')} | ISIN: ${selectedFund?.isin || 'N/A'}`,
+              isin: selectedFund?.isin || 'N/A',
+              shares: Number(qty) || 0,
+              estValue: `₹${totalInvestment.toLocaleString('en-IN')}`
+            });
+          } catch (tErr) {
+            console.error('Failed to create ticket for proposal:', tErr);
+          }
+        }
+
+        // Allocate shares in real-time if this is a Pre-IPO with a DB record
+        if (categoryName === 'Pre IPOs' && selectedFund?._id) {
+          try {
+            await api.post(`/pre-ipo/${selectedFund._id}/allocate`, {
+              clientId: selectedClient?._id || selectedClient?.id,
+              clientName: selectedClient?.name || 'Unknown',
+              quantity: Number(qty)
+            });
+            // Refresh live products to show updated equity
+            const { data } = await api.get('/pre-ipo');
+            if (data && data.length > 0) {
+              setLiveProducts(data.map(ipo => ({
+                id: ipo._id,
+                _id: ipo._id,
+                name: ipo.name,
+                sector: ipo.subCategory || 'Pre-IPO',
+                isin: `INE-${ipo.code}`,
+                minQty: 10,
+                available: ipo.availableEquity,
+                price: ipo.price
+              })));
+            }
+          } catch (allocErr) {
+            console.error('Allocation error:', allocErr);
+            alert('Proposal created but allocation failed: ' + (allocErr.response?.data?.message || allocErr.message));
+          }
+        }
         alert("Proposal shared with client successfully!");
         setStep(1);
         setSelectedFund(null);
@@ -2248,7 +2326,7 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
       {/* Content based on Step */}
       {step === 1 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-          {products.map(fund => (
+          {displayProducts.map(fund => (
             <div key={fund.id} onClick={() => handleFundSelect(fund)} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '16px', padding: '24px', cursor: 'pointer', transition: 'all 0.2s' }} className="pre-ipo-card">
               <style>{`
                 .pre-ipo-card:hover { border-color: #22c55e !important; }

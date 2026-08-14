@@ -12,6 +12,7 @@ connectDB();
 const app = express();
 
 // Middleware
+// Trigger nodemon restart 1
 app.use(express.json());
 app.use(cors());
 app.use('/uploads', require('express').static(require('path').join(__dirname, 'uploads')));
@@ -39,6 +40,7 @@ app.use('/api/department-services', require('./routes/departmentServiceRoutes'))
 app.use('/api/referral', require('./routes/referralRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
 app.use('/api/wealth', require('./routes/wealthRoutes'));
+app.use('/api/pre-ipo', require('./routes/preIpoRoutes'));
 
 // Basic route
 app.get('/', (req, res) => {

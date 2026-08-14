@@ -7,6 +7,7 @@ import {
   Search, ChevronDown
 } from 'lucide-react';
 import api from '../../services/api';
+import { extractAadharDetails, extractPanDetails } from '../../utils/ocrUtils';
 
 const ClientForm = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const ClientForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
+  const [isScanning, setIsScanning] = useState({ aadhar: false, pan: false });
 
   // ── Live user list for Reference & Relationship dropdowns ──
   const [allUsers, setAllUsers] = useState([]);
@@ -123,10 +125,26 @@ const ClientForm = () => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e, fieldName) => {
+  const handleFileChange = async (e, fieldName) => {
     const file = e.target.files[0];
     if (!file) return;
     setFiles(prev => ({ ...prev, [fieldName]: file }));
+
+    if (fieldName === 'aadhar') {
+      setIsScanning(p => ({ ...p, aadhar: true }));
+      const result = await extractAadharDetails(file);
+      if (result && result.aadharNo) {
+        setForm(prev => ({ ...prev, aadharNo: result.aadharNo }));
+      }
+      setIsScanning(p => ({ ...p, aadhar: false }));
+    } else if (fieldName === 'pan') {
+      setIsScanning(p => ({ ...p, pan: true }));
+      const result = await extractPanDetails(file);
+      if (result && result.panNo) {
+        setForm(prev => ({ ...prev, panNo: result.panNo }));
+      }
+      setIsScanning(p => ({ ...p, pan: false }));
+    }
   };
 
   const uploadKycFiles = async (userId) => {
@@ -377,8 +395,20 @@ const ClientForm = () => {
                 <>
                   <div className="cf-section">STEP 4: IDENTIFICATION DOCUMENTS</div>
                   <div className="cf-grid">
-                    <div className="cf-group"><label className="cf-label">Aadhar Number</label><input name="aadharNo" className="cf-input" placeholder="1234 5678 9012" value={form.aadharNo} onChange={handleChange} maxLength={14} /></div>
-                    <div className="cf-group"><label className="cf-label">PAN Number</label><input name="panNo" className="cf-input" placeholder="ABCD1234E" style={{ textTransform: 'uppercase' }} value={form.panNo} onChange={handleChange} /></div>
+                    <div className="cf-group">
+                      <label className="cf-label">Aadhar Number</label>
+                      <input name="aadharNo" className="cf-input" placeholder="1234 5678 9012" value={form.aadharNo} onChange={handleChange} maxLength={14} />
+                      {form.aadharNo && form.aadharNo.replace(/\D/g, '').length < 12 && (
+                        <span style={{ fontSize: 11, color: '#f43f5e', marginTop: -4 }}>Aadhaar number must be 12 digits.</span>
+                      )}
+                    </div>
+                    <div className="cf-group">
+                      <label className="cf-label">PAN Number</label>
+                      <input name="panNo" className="cf-input" placeholder="ABCDE1234F" style={{ textTransform: 'uppercase' }} value={form.panNo} onChange={handleChange} maxLength={10} />
+                      {form.panNo && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.panNo.toUpperCase()) && (
+                        <span style={{ fontSize: 11, color: '#f43f5e', marginTop: -4 }}>Invalid PAN format (e.g., ABCDE1234F).</span>
+                      )}
+                    </div>
                     {[
                       { label: 'Aadhar Card', field: 'aadhar', docType: 'aadharCard' },
                       { label: 'PAN Card', field: 'pan', docType: 'panCard' },
@@ -390,7 +420,11 @@ const ClientForm = () => {
                           <Upload size={16} color="var(--text-muted)" />
                           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Upload {doc.label}</div>
                           <input id={`cf-${doc.field}`} type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, doc.field)} />
-                          {files[doc.field] && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text)' }}>{files[doc.field].name}</div>}
+                          {isScanning[doc.field] ? (
+                            <div style={{ marginTop: 8, fontSize: 12, color: '#10b981', fontWeight: 700 }}>Scanning for details...</div>
+                          ) : (
+                            files[doc.field] && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text)' }}>{files[doc.field].name}</div>
+                          )}
                         </div>
                       </div>
                     ))}
