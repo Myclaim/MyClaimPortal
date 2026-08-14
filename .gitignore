@@ -4,7 +4,6 @@ backend/node_modules/
 backend/.DS_Store
 backend/test_*.js
 backend/debug_*.js
-.env
 .env.example
 
 # Python / CrewAI
