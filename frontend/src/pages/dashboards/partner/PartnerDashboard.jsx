@@ -508,12 +508,13 @@ function LeadsTab() {
   const [loadingLeads, setLoadingLeads] = useState(true);
 
   React.useEffect(() => {
-    const fetchLeads = async () => {
+    const fetchLeadsAndProposals = async () => {
+      let myLeads = [];
       try {
         const { data } = await api.get('/leads');
         
         // Filter to only this partner's leads:
-        const myLeads = data.filter(l => l.sourceUserId?._id === user?._id);
+        myLeads = data.filter(l => l.sourceUserId?._id === user?._id);
         
         const formatted = myLeads.map(l => ({
           id: String(l._id).substring(0, 6).toUpperCase(),
@@ -536,11 +537,12 @@ function LeadsTab() {
       } finally {
         setLoadingLeads(false);
       }
-    };
-    const fetchProposals = async () => {
+
       try {
-        const { data: propData } = await api.get('/proposals');
-        console.log('Fetched Proposals:', propData, 'Current User:', user);
+        const [ { data: propData }, { data: ticketData } ] = await Promise.all([
+           api.get('/proposals').catch(() => ({ data: [] })),
+           api.get('/tickets').catch(() => ({ data: [] }))
+        ]);
         
         const userName = user?.name ? user.name.toLowerCase().trim() : '';
         const myProposals = propData.filter(p => {
@@ -565,15 +567,35 @@ function LeadsTab() {
           isAttach: !p.attachmentPath
         }));
         
-        setProposals(formattedProps);
+        const myTickets = ticketData.filter(t => {
+          const isMyLead = myLeads.some(l => String(l._id) === String(t.clientId?._id || t.clientId) || l.name === t.companyName || l.name === t.clientName);
+          return isMyLead;
+        });
+
+        const formattedTickets = myTickets.map(t => ({
+          id: String(t._id).substring(String(t._id).length - 6).toUpperCase(),
+          client: t.companyName || t.clientId?.name || t.clientName || 'Unknown',
+          initials: (t.companyName || t.clientId?.name || t.clientName || 'U').substring(0,2).toUpperCase(),
+          color: ['#f97316', '#06b6d4', '#22c55e', '#8b5cf6'][Math.floor(Math.random() * 4)],
+          service: t.service || t.topicName || t.hubType || 'N/A',
+          amount: '—',
+          date: new Date(t.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          status: t.status === 'active' || t.status === 'in_process' ? 'In Progress' : (t.status === 'completed' || t.status === 'resolved' ? 'Accepted' : 'Sent'),
+          statusBg: t.status === 'completed' || t.status === 'resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(6,182,212,0.1)',
+          statusCol: t.status === 'completed' || t.status === 'resolved' ? '#10b981' : '#06b6d4',
+          attachment: 'Ticket',
+          isAttach: true
+        }));
+
+        const combined = [...formattedProps, ...formattedTickets];
+        setProposals(combined);
       } catch (err) {
         console.error('Error fetching proposals:', err);
       }
     };
 
     if (user?.token) {
-      fetchLeads();
-      fetchProposals();
+      fetchLeadsAndProposals();
     }
   }, [user]);
 

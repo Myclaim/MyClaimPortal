@@ -38,12 +38,15 @@ const ClientProfile = ({ idProp, onClose }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [userRes, docsRes, claimsRes, ticketsRes, familyRes] = await Promise.all([
-        api.get(`/users/${id}`),
-        api.get(`/documents?client_id=${id}`),
-        api.get(`/claims?client_id=${id}`).catch(() => ({ data: [] })),
-        api.get(`/tickets?client_id=${id}`).catch(() => ({ data: [] })),
-        api.get(`/users?parent_id=${id}`).catch(() => ({ data: [] }))
+      // First, fetch the user to ensure we have the real ObjectId
+      const userRes = await api.get(`/users/${id}`);
+      const realId = userRes.data._id;
+      
+      const [docsRes, claimsRes, ticketsRes, familyRes] = await Promise.all([
+        api.get(`/documents?client_id=${realId}`),
+        api.get(`/claims?client_id=${realId}`).catch(() => ({ data: [] })),
+        api.get(`/tickets?client_id=${realId}`).catch(() => ({ data: [] })),
+        api.get(`/users?parent_id=${realId}`).catch(() => ({ data: [] }))
       ]);
       
       setClient(userRes.data);
@@ -53,7 +56,7 @@ const ClientProfile = ({ idProp, onClose }) => {
       
       // Combine embedded family members with standalone ones (for backward compatibility)
       const embedded = userRes.data.familyMembers || [];
-      const standalone = familyRes.data.filter(u => u.parent_id === id);
+      const standalone = familyRes.data.filter(u => u.parent_id === realId);
       setFamilyMembers([...embedded, ...standalone]);
     } catch (err) {
       console.error('Error fetching client dashboard data', err);

@@ -429,11 +429,40 @@ const updateUser = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    let user = await Admin.findById(req.params.id);
-    if (!user) user = await Partner.findById(req.params.id);
-    if (!user) user = await Client.findById(req.params.id);
-    if (!user) user = await Employee.findById(req.params.id);
-    if (!user) user = await User.findById(req.params.id);
+    const id = req.params.id;
+    const mongoose = require('mongoose');
+    let user = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      user = await Admin.findById(id);
+      if (!user) user = await Partner.findById(id);
+      if (!user) user = await Client.findById(id);
+      if (!user) user = await Employee.findById(id);
+      if (!user) user = await User.findById(id);
+    }
+
+    if (!user) {
+      // Try by client_id_ref first
+      user = await Client.findOne({ client_id_ref: id });
+      if (!user) user = await User.findOne({ client_id_ref: id });
+      if (!user) user = await Admin.findOne({ client_id_ref: id });
+      if (!user) user = await Partner.findOne({ client_id_ref: id });
+      if (!user) user = await Employee.findOne({ client_id_ref: id });
+    }
+
+    if (!user && id.length >= 4) {
+      // Try by matching the end of the ObjectId (expensive, but necessary as fallback for short IDs)
+      const regex = new RegExp(`${id.toLowerCase()}$`, 'i');
+      const allClients = await Client.find({}, '_id');
+      const matchedClient = allClients.find(c => String(c._id).toUpperCase().endsWith(id.toUpperCase()));
+      if (matchedClient) user = await Client.findById(matchedClient._id);
+      
+      if (!user) {
+        const allUsers = await User.find({}, '_id');
+        const matchedUser = allUsers.find(c => String(c._id).toUpperCase().endsWith(id.toUpperCase()));
+        if (matchedUser) user = await User.findById(matchedUser._id);
+      }
+    }
 
     if (user) {
       res.json(userToPublicJSON(user));

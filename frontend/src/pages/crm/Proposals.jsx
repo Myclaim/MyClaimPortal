@@ -3,7 +3,7 @@ import { Download, Plus, CheckCircle2, FileVideo, Eye, Edit2, Search, X, Loader,
 import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 
-const API = import.meta.env.VITE_API_URL || 'https://myclaimportal.onrender.com/api';
+const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://myclaimportal.onrender.com/api');
 
 // Module-level SWR cache — persists across navigations
 let _proposalsCache = null;
@@ -777,6 +777,19 @@ const Proposals = () => {
                       <div style={{fontSize:10, color:'#64748b'}}>ASSIGNED TO</div>
                       <div>{selectedProposalRaw.assignedTo?.name || '—'}</div>
                    </div>
+                </div>
+                <div style={{marginTop:20}}>
+                   <div style={{fontSize:10, color:'#64748b', marginBottom: 4}}>ATTACHMENT</div>
+                   {selectedProposalRaw.attachmentPath ? (
+                     <div 
+                        style={{display:'inline-flex', alignItems:'center', gap:6, color:'#3b82f6', cursor:'pointer', padding: '8px 12px', background: '#eff6ff', borderRadius: 8, fontSize: 13, fontWeight: 700}}
+                        onClick={() => handleOpenAttachment(selectedProposalRaw.attachmentPath)}
+                     >
+                        <Paperclip size={16} /> View Attached Proposal
+                     </div>
+                   ) : (
+                     <div style={{fontSize:13, color:'#94a3b8', background: '#f8fafc', padding: '8px 12px', borderRadius: 8}}>No attachment provided.</div>
+                   )}
                 </div>
                 <div style={{marginTop:20}}>
                    <div style={{fontSize:10, color:'#64748b'}}>NOTES</div>
