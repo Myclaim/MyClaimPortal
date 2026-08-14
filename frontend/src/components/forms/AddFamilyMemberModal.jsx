@@ -21,26 +21,13 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess }) => {
     
     // Auto-format Aadhar
     if (name === 'aadharNo') {
-      let val = value.replace(/\D/g, '');
-      if (val.length > 12) val = val.slice(0, 12);
-      val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
-      value = val;
+      const digits = value.replace(/\D/g, '').slice(0, 12);
+      value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
     }
 
     // Auto-format PAN
     if (name === 'panNo') {
-      let val = value.toUpperCase();
-      let formatted = '';
-      for (let i = 0; i < val.length; i++) {
-        if (i < 4) {
-          if (/[A-Z]/.test(val[i])) formatted += val[i];
-        } else if (i < 8) {
-          if (/[0-9]/.test(val[i])) formatted += val[i];
-        } else if (i < 9) {
-          if (/[A-Z]/.test(val[i])) formatted += val[i];
-        }
-      }
-      value = formatted;
+      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
     }
 
     setForm(prev => ({ ...prev, [name]: value }));
@@ -54,6 +41,16 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess }) => {
     try {
       if (!form.name || !form.phone || !form.relationWithHolder) {
         throw new Error('Name, Phone, and Relation are required.');
+      }
+
+      const rawAadhar = (form.aadharNo || '').replace(/\D/g, '');
+      if (form.aadharNo && rawAadhar.length !== 12) {
+        throw new Error('Aadhaar number must be 12 digits (e.g., 1234 5678 9012).');
+      }
+
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+      if (form.panNo && !panRegex.test(form.panNo)) {
+        throw new Error('PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).');
       }
 
       const payload = {
@@ -144,7 +141,7 @@ const AddFamilyMemberModal = ({ isOpen, onClose, clientId, onSuccess }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>Aadhaar Number</label>
-                <input name="aadharNo" value={form.aadharNo} onChange={handleChange} placeholder="0000 0000 0000" style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }} />
+                <input name="aadharNo" value={form.aadharNo} onChange={handleChange} placeholder="1234 5678 9012" maxLength={14} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>PAN Number</label>

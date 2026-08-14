@@ -36,6 +36,24 @@ const uploadDocument = async (req, res) => {
 
     const isAdmin = ['admin', 'super_admin'].includes(req.user.role);
 
+    const targetFolder = folder || 'General';
+
+    if (targetClientId && targetFolder && targetFolder !== 'General') {
+      try {
+        let clientUser = await Client.findById(targetClientId);
+        if (!clientUser) clientUser = await User.findById(targetClientId);
+        if (clientUser) {
+          if (!clientUser.customFolders) clientUser.customFolders = [];
+          if (!clientUser.customFolders.includes(targetFolder)) {
+            clientUser.customFolders.push(targetFolder);
+            await clientUser.save();
+          }
+        }
+      } catch (fErr) {
+        console.error('Error updating client customFolders:', fErr.message);
+      }
+    }
+
     const document = await Document.create({
       name: name || req.file.originalname,
       file_url: fileUrl,
@@ -43,7 +61,7 @@ const uploadDocument = async (req, res) => {
       file_size: req.file.size,
       linked_to,
       doc_category: doc_category || 'secondary',
-      folder: folder || 'General',
+      folder: targetFolder,
       folder_id: folder_id || null,
       ticket_id: linked_to === 'ticket' ? ticket_id : undefined,
       client_id: linked_to === 'client' ? targetClientId : undefined,

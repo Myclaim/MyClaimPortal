@@ -112,25 +112,12 @@ const ClientForm = () => {
     let { name, value } = e.target;
 
     if (name === 'aadharNo') {
-      let val = value.replace(/\D/g, '');
-      if (val.length > 12) val = val.slice(0, 12);
-      val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
-      value = val;
+      const digits = value.replace(/\D/g, '').slice(0, 12);
+      value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
     }
 
     if (name === 'panNo') {
-      let val = value.toUpperCase();
-      let formatted = '';
-      for (let i = 0; i < val.length; i++) {
-        if (i < 4) {
-          if (/[A-Z]/.test(val[i])) formatted += val[i];
-        } else if (i < 8) {
-          if (/[0-9]/.test(val[i])) formatted += val[i];
-        } else if (i < 9) {
-          if (/[A-Z]/.test(val[i])) formatted += val[i];
-        }
-      }
-      value = formatted;
+      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
     }
 
     setForm(prev => ({ ...prev, [name]: value }));
@@ -145,6 +132,7 @@ const ClientForm = () => {
   const uploadKycFiles = async (userId) => {
     const formData = new FormData();
     formData.append('userId', userId);
+    formData.append('formName', 'Client Registration Form');
 
     if (files.aadhar) { formData.append('files', files.aadhar); formData.append('docType', 'aadharCard'); }
     if (files.pan) { formData.append('files', files.pan); formData.append('docType', 'panCard'); }
@@ -158,15 +146,42 @@ const ClientForm = () => {
     }
   };
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+  const nextStep = () => {
+    setError('');
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    if (currentStep === 4) {
+      const rawAadhar = (form.aadharNo || '').replace(/\D/g, '');
+      if (form.aadharNo && rawAadhar.length !== 12) {
+        setError('Aadhaar number must be 12 digits (e.g., 1234 5678 9012).');
+        return;
+      }
+      if (form.panNo && !panRegex.test(form.panNo.toUpperCase())) {
+        setError('PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).');
+        return;
+      }
+    }
+    setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  };
+  
+  const prevStep = () => {
+    setError('');
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     try {
       if (!form.username || !form.password || !form.email || !form.phone) {
         throw new Error('Username, Password, Email and Phone are required.');
+      }
+      const rawAadhar = (form.aadharNo || '').replace(/\D/g, '');
+      if (form.aadharNo && rawAadhar.length !== 12) {
+        throw new Error('Aadhaar number must be 12 digits (e.g., 1234 5678 9012).');
+      }
+      if (form.panNo && !panRegex.test(form.panNo.toUpperCase())) {
+        throw new Error('PAN number is invalid. Format must be 5 letters, 4 numbers, 1 letter (e.g., ABCDE1234F).');
       }
 
       const payload = {
@@ -189,11 +204,18 @@ const ClientForm = () => {
         },
       };
 
+      if (!payload.parent_id || payload.parent_id === '') {
+        delete payload.parent_id;
+      }
+
       const { data } = await api.post('/users/enrol', payload);
-      await uploadKycFiles(data._id);
+      
+      // Kick off KYC upload asynchronously in background to ensure lightning-fast form submission
+      uploadKycFiles(data._id).catch(uploadErr => console.error('Background KYC upload error:', uploadErr));
 
       setSuccess('Client enrolled successfully!');
-      setTimeout(() => navigate(-1), 2000);
+      setLoading(false);
+      setTimeout(() => navigate(-1), 300);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
       setLoading(false);
@@ -355,7 +377,7 @@ const ClientForm = () => {
                 <>
                   <div className="cf-section">STEP 4: IDENTIFICATION DOCUMENTS</div>
                   <div className="cf-grid">
-                    <div className="cf-group"><label className="cf-label">Aadhar Number</label><input name="aadharNo" className="cf-input" placeholder="1234 5678 9012" value={form.aadharNo} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Aadhar Number</label><input name="aadharNo" className="cf-input" placeholder="1234 5678 9012" value={form.aadharNo} onChange={handleChange} maxLength={14} /></div>
                     <div className="cf-group"><label className="cf-label">PAN Number</label><input name="panNo" className="cf-input" placeholder="ABCD1234E" style={{ textTransform: 'uppercase' }} value={form.panNo} onChange={handleChange} /></div>
                     {[
                       { label: 'Aadhar Card', field: 'aadhar', docType: 'aadharCard' },
