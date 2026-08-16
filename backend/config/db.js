@@ -55,23 +55,44 @@ const migrateTickets = async () => {
 };
 
 const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myclaim', {
-      maxPoolSize: 20,          // More connections = parallel queries don't wait
-      minPoolSize: 5,           // Keep 5 connections warm at startup
-      serverSelectionTimeoutMS: 5000,  // Fail fast if Atlas unreachable
-      socketTimeoutMS: 45000,   // Drop slow queries after 45s
-      connectTimeoutMS: 10000,  // Connection timeout
-    });
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-    }
-    // Run tickets migration automatically
-    await migrateTickets();
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+  const atlasUri = process.env.MONGO_URI;
+  const localUri = 'mongodb://127.0.0.1:27017/myclaim';
+  const connectionOptions = {
+    maxPoolSize: 20,
+    minPoolSize: 5,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 10000,
+  };
+
+  const candidates = [];
+
+  if (atlasUri) {
+    candidates.push({ name: 'Atlas', uri: atlasUri });
   }
+
+  candidates.push({ name: 'Local', uri: localUri });
+
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      const conn = await mongoose.connect(candidate.uri, connectionOptions);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`MongoDB Connected: ${conn.connection.host} (${candidate.name})`);
+      }
+
+      await migrateTickets();
+      return;
+    } catch (error) {
+      lastError = error;
+      console.warn(`[DB] ${candidate.name} connection failed: ${error.message}`);
+    }
+  }
+
+  console.error('[DB] MongoDB connection failed for both Atlas and local fallback.');
+  console.error('[DB] If Atlas is required, add your current IP to the MongoDB Atlas whitelist or update MONGO_URI.');
+  throw lastError || new Error('MongoDB connection failed');
 };
 
 module.exports = connectDB;
