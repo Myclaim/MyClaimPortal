@@ -102,7 +102,7 @@ const SuperPartnerList = () => {
     if (filtered.length === 0) return alert('No super partners to export');
     const headers = ['Ref ID', 'Master Partner', 'Organization', 'Email', 'Phone', 'Status', 'Clients', 'Joined'];
     const rows = filtered.map(u => [
-      u.client_id_ref || String(u._id).slice(-6).toUpperCase(),
+      u.client_id_ref || `SPR-${parseInt(String(u._id).substring(0,8), 16)}`,
       u.name,
       u.companyName || u.entity || '—',
       u.email,
@@ -123,7 +123,7 @@ const SuperPartnerList = () => {
   const PartnerRow = ({ user }) => (
     <tr className="animate-slide-up">
       <td>
-        <b style={{ color: 'var(--blue)', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px' }}>{user.client_id_ref || String(user._id).slice(-6).toUpperCase()}</b>
+        <b style={{ color: 'var(--blue)', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px' }}>{user.client_id_ref || `SPR-${parseInt(String(user._id).substring(0,8), 16)}`}</b>
       </td>
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -313,7 +313,7 @@ const SuperPartnerList = () => {
                   <div style={{ marginBottom: 32 }}>
                     <div className="va-row">
                       <span className="va-label">User ID</span>
-                      <span className="va-value">{activePartner.client_id_ref || String(activePartner._id).slice(-6).toUpperCase()}</span>
+                      <span className="va-value">{activePartner.client_id_ref || `SPR-${parseInt(String(activePartner._id).substring(0,8), 16)}`}</span>
                     </div>
                     <div className="va-row">
                       <span className="va-label">User Name</span>
@@ -469,7 +469,7 @@ const SuperPartnerList = () => {
           <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '760px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title" style={{ fontSize: '20px' }}>
-                Edit Super Partner — {(editForm.client_id_ref || String(editForm._id).slice(-6).toUpperCase())}
+                Edit Super Partner — {(editForm.client_id_ref || `SPR-${parseInt(String(editForm._id).substring(0,8), 16)}`)}
               </div>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />

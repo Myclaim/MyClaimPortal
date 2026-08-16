@@ -1200,7 +1200,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'System User', 'Username', 'Email', 'Status', 'Actions']} 
                   rows={filteredSuperAdmins.map((u, i) => (
                     <tr key={u._id} style={{ '--i': i }}>
-                      <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#00D084' }}>{u.client_id_ref || String(u._id).slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#00D084' }}>{u.client_id_ref || `SAD-${parseInt(String(u._id).substring(0,8), 16)}`}</td>
                       <td><div className="user-info"><UserAvatar user={u} /><div><b style={{ fontSize: 14 }}>{u.name}</b></div></div></td>
                       <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{u.username || '—'}</td>
                       <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{u.email}</td>
@@ -1217,7 +1217,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'Administrator', 'Email', 'User Role', 'Status', 'Actions']} 
                   rows={filteredAdmins.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || String(u._id).slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || `ADM-${parseInt(String(u._id).substring(0,8), 16)}`}</td>
                       <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
                       <td>{u.email}</td>
                       <td><span className="fintech-gradient-text" style={{ fontWeight: 700 }}>{ROLE_MAP[u.role] || 'Admin'}</span></td>
@@ -1234,7 +1234,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'Staff Member', 'Department', 'Expertise', 'Status', 'Actions']} 
                   rows={filteredEmployees.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || String(u._id).slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || `EMP-${parseInt(String(u._id).substring(0,8), 16)}`}</td>
                       <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
                       <td>{u.department || 'General'}</td>
                       <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{u.skills || '—'}</td>
@@ -1251,7 +1251,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'Entity Name', 'Representative', 'Contact', 'Status', 'Actions']} 
                   rows={filteredSuperPartners.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || String(u._id).slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || `SPR-${parseInt(String(u._id).substring(0,8), 16)}`}</td>
                       <td><div className="user-info"><div className="user-avatar" style={{ background: 'rgba(34, 197, 94, 0.15)' }}>{u.companyName?.charAt(0) || u.name?.charAt(0)}</div><b>{u.companyName || u.name}</b></div></td>
                       <td>{u.name}</td>
                       <td>{u.email}</td>
@@ -1268,7 +1268,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'Partner Firm', 'Parent Node', 'Contact', 'Status', 'Actions']} 
                   rows={filteredPartners.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || String(u._id).slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace' }}>{u.client_id_ref || `PRT-${parseInt(String(u._id).substring(0,8), 16)}`}</td>
                       <td><b>{u.companyName || u.name}</b></td>
                       <td style={{ color: 'var(--green)', fontWeight: 600 }}>{allUsers.find(p => p._id === u.parent_id)?.name || 'Direct'}</td>
                       <td>{u.email}</td>
@@ -1285,7 +1285,7 @@ const Users = () => {
                 <TableComponent headers={['ID', 'Client Name', 'Portfolio Manager', 'Relation', 'Status', 'Actions']} 
                   rows={filteredClients.map((u, i) => (
                     <tr key={u._id}>
-                      <td style={{ fontFamily: 'monospace', color: 'var(--green)' }}>{u.client_id_ref || String(u._id).slice(-6).toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace', color: 'var(--green)' }}>{u.client_id_ref || `CLT-${parseInt(String(u._id).substring(0,8), 16)}`}</td>
                       <td><div className="user-info"><div className="user-avatar">{u.name?.charAt(0)}</div><b>{u.name}</b></div></td>
                       <td>{allUsers.find(p => p._id === u.parent_id)?.name || '—'}</td>
                       <td><span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>{u.relation?.toUpperCase() || 'DIRECT'}</span></td>
@@ -1450,7 +1450,7 @@ const Users = () => {
           <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '760px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title" style={{ fontSize: '20px', textTransform: 'capitalize' }}>
-                Edit {editForm.role?.replace('_', ' ')} — {(editForm.client_id_ref || String(editForm._id).slice(-6).toUpperCase())}
+                Edit {editForm.role?.replace('_', ' ')} — {(editForm.client_id_ref || `${editForm.role === 'partner' ? 'PRT' : editForm.role === 'super_partner' ? 'SPR' : editForm.role === 'admin' ? 'ADM' : editForm.role === 'employee' ? 'EMP' : editForm.role === 'super_admin' ? 'SAD' : 'CLT'}-${parseInt(String(editForm._id).substring(0,8), 16)}`)}
               </div>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />
@@ -1601,7 +1601,7 @@ const Users = () => {
                     <div>
                       <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#f8fafc', marginBottom: '6px' }}>{selectedUser.name}</h2>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span className="va-pill blue-light">ID: {selectedUser.client_id_ref || String(selectedUser._id).slice(-6).toUpperCase()}</span>
+                        <span className="va-pill blue-light">ID: {selectedUser.client_id_ref || `${selectedUser.role === 'partner' ? 'PRT' : selectedUser.role === 'super_partner' ? 'SPR' : selectedUser.role === 'admin' ? 'ADM' : selectedUser.role === 'employee' ? 'EMP' : selectedUser.role === 'super_admin' ? 'SAD' : 'CLT'}-${parseInt(String(selectedUser._id).substring(0,8), 16)}`}</span>
                         <span className={`va-pill ${selectedUser.is_active !== false ? 'green-light' : 'gray-light'}`}>{selectedUser.is_active !== false ? 'Active' : 'Inactive'}</span>
                       </div>
                     </div>

@@ -46,11 +46,11 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchAllServices = async () => {
+    setLoading(true);
+    
+    // Fetch Department Services (Claim & Service Tabs)
     try {
-      const [res, preIpoRes] = await Promise.all([
-        api.get('/department-services'),
-        api.get('/pre-ipo')
-      ]);
+      let res = await api.get('/department-services');
       let data = res.data;
       if (data.length === 0) {
         // Seed default data
@@ -58,13 +58,23 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
           ...DEFAULT_CLAIM_SERVICES.map(s => ({ ...s, type: 'claim' })),
           ...DEFAULT_SERVICE_SERVICES.map(s => ({ ...s, type: 'service' }))
         ];
-        await api.post('/department-services/seed', { services: seedData });
-        const res2 = await api.get('/department-services');
-        data = res2.data;
+        try {
+          await api.post('/department-services/seed', { services: seedData });
+          const res2 = await api.get('/department-services');
+          data = res2.data;
+        } catch (seedErr) {
+          console.error('Failed to seed department services', seedErr);
+        }
       }
       setClaimServices(data.filter(d => d.type === 'claim'));
       setServiceServices(data.filter(d => d.type === 'service'));
-      
+    } catch (err) {
+      console.error('Failed to fetch department services', err);
+    }
+
+    // Fetch Pre-IPOs (Store Tab) independently
+    try {
+      const preIpoRes = await api.get('/pre-ipo');
       const preIposFormatted = preIpoRes.data.map(ipo => ({
         ...ipo,
         id: ipo._id,
@@ -74,10 +84,10 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
       }));
       setStoreServices(preIposFormatted);
     } catch (err) {
-      console.error('Failed to fetch services', err);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch pre-IPOs', err);
     }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -149,7 +159,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
 
   const openAdd = () => {
     if (activeTab === 'store') {
-      setEditForm({ name: '', code: '', subCategory: 'Fintech', description: '', price: 0, totalEquity: 10000, status: true });
+      setEditForm({ name: '', code: '', subCategory: 'Fintech', description: '', price: '', totalEquity: 10000, status: true });
     } else {
       setEditForm({ name: '', code: '', category: '', subCategory: '', description: '', price: 0, stages: 3, tracking: ['Stage 1', 'Stage 2', 'Stage 3'], status: true, mappedStore: 'All Stores' });
     }
@@ -287,7 +297,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                   <th>{activeTab === 'store' ? 'IPO Name' : 'Service Name'}</th>
                   <th>{activeTab === 'store' ? 'Sector' : 'Category'}</th>
                   <th>{activeTab === 'store' ? 'Total Equity' : 'Sub Category'}</th>
-                  <th>Price</th>
+                  <th>{activeTab === 'store' ? 'Price Range' : 'Price'}</th>
                   <th>{activeTab === 'store' ? 'Available' : 'Stages'}</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -302,7 +312,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                     </td>
                     <td><span className="db-pill blue">{activeTab === 'store' ? service.subCategory : service.category}</span></td>
                     <td style={{ color: 'var(--text-muted)' }}>{activeTab === 'store' ? service.totalEquity : service.subCategory}</td>
-                    <td style={{ fontWeight: 800 }}>₹{service.price.toLocaleString('en-IN')}</td>
+                    <td style={{ fontWeight: 800 }}>{activeTab === 'store' ? `₹${service.price}` : `₹${Number(service.price).toLocaleString('en-IN')}`}</td>
                     <td><span className="db-pill purple">{activeTab === 'store' ? service.availableEquity : `${service.stages} stages`}</span></td>
                     <td>
                       <div className={`db-toggle ${service.status ? 'active' : ''}`} onClick={() => handleToggle(service.id)}></div>
@@ -369,9 +379,11 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                  <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 6, height: 6, background: 'var(--text-muted)', borderRadius: '50%' }}></span> Inactive</span>
               )}
               <button className="db-btn-primary" onClick={() => openEdit(activeService)}><Edit2 size={14} /> Edit</button>
-              <button className="db-btn-primary" style={{ background: '#3b82f6', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }} onClick={() => {
-                alert(`Redirecting to Create Ticket flow for: ${activeService.name}`);
-              }}><Plus size={14} /> Create Ticket</button>
+              {activeTab !== 'store' && (
+                <button className="db-btn-primary" style={{ background: '#3b82f6', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }} onClick={() => {
+                  alert(`Redirecting to Create Ticket flow for: ${activeService.name}`);
+                }}><Plus size={14} /> Create Ticket</button>
+              )}
             </div>
           </div>
 
@@ -405,7 +417,7 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                 <div className="db-card-title">Pricing</div>
                 <div className="db-row" style={{ border: 'none', padding: 0 }}>
                   <span className="db-label">Base Price</span>
-                  <span className="db-value" style={{ color: 'var(--green)', fontSize: 18 }}>₹{activeService.price.toLocaleString('en-IN')}</span>
+                  <span className="db-value" style={{ color: 'var(--green)', fontSize: 18 }}>{activeTab === 'store' ? `₹${activeService.price}` : `₹${Number(activeService.price).toLocaleString('en-IN')}`}</span>
                 </div>
               </div>
 
@@ -489,8 +501,12 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                   </div>
                 )}
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Price per Share / Base Price (₹)</div>
-                  <input type="number" className="db-input" placeholder="e.g. 2499" value={editForm.price || ''} onChange={e => setEditForm({...editForm, price: Number(e.target.value)})} />
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{activeTab === 'store' ? 'Price Range (₹)' : 'Price per Share / Base Price (₹)'}</div>
+                  {activeTab === 'store' ? (
+                    <input type="text" className="db-input" placeholder="e.g. 250 - 280" value={editForm.price || ''} onChange={e => setEditForm({...editForm, price: e.target.value})} />
+                  ) : (
+                    <input type="number" className="db-input" placeholder="e.g. 2499" value={editForm.price || ''} onChange={e => setEditForm({...editForm, price: Number(e.target.value)})} />
+                  )}
                 </div>
               </div>
             </div>

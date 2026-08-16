@@ -555,7 +555,7 @@ const ClientForm = () => {
                                 <div style={{ padding: '18px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No partners found</div>
                               ) : filteredRelPartners.map(u => {
                                 const badge = getRoleBadge(u.role);
-                                const uid = u.client_id_ref || String(u._id).slice(-6).toUpperCase();
+                                const uid = u.client_id_ref || `CLT-${parseInt(String(u._id).substring(0,8), 16)}`;
                                 return (
                                   <div
                                     key={u._id}
@@ -702,7 +702,7 @@ const ClientForm = () => {
                                 <div style={{ padding: '20px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No users found</div>
                               ) : filteredRefUsers.map(u => {
                                 const badge = getRoleBadge(u.role);
-                                const uid = u.client_id_ref || String(u._id).slice(-6).toUpperCase();
+                                const uid = u.client_id_ref || `CLT-${parseInt(String(u._id).substring(0,8), 16)}`;
                                 const isSelected = form.referenceName === u.name && form.referenceMobileNo === (u.phone || '');
                                 return (
                                   <div

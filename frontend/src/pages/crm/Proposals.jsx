@@ -244,7 +244,7 @@ const Proposals = () => {
 
   const proposalsData = realProposals.map((p, index) => ({
     mongoId: p._id,
-    id: `PR-${String(p._id).slice(-4).toUpperCase()}`,
+    id: `PR-${parseInt(String(u._id).substring(0,8), 16)}`,
     clientName: p.clientName,
     initials: p.clientName.substring(0, 2).toUpperCase(),
     avatarBg: p.status === 'Converted' ? '#10b981' : (p.status === 'Active' ? '#166534' : '#8b5cf6'),

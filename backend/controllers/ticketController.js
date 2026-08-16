@@ -535,6 +535,27 @@ const updateTicketStages = async (req, res) => {
   res.json(updated);
 };
 
+const updateTicketDetails = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+    
+    const { shares, folio, isin, estValue, companyName, service } = req.body;
+    
+    if (shares !== undefined) ticket.shares = shares;
+    if (folio !== undefined) ticket.folio = folio;
+    if (isin !== undefined) ticket.isin = isin;
+    if (estValue !== undefined) ticket.estValue = estValue;
+    if (companyName !== undefined) ticket.companyName = companyName;
+    if (service !== undefined) ticket.service = service;
+    
+    const updated = await ticket.save();
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 module.exports = {
   getTickets,
@@ -548,4 +569,5 @@ module.exports = {
   escalateTicket,
   addTicketAttachment,
   updateTicketStages,
+  updateTicketDetails
 };

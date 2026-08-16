@@ -134,7 +134,7 @@ const PartnerProfile = ({ idProp, onClose }) => {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>{partner?.name}</h1>
-            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{partner?.client_id_ref || 'CLT-001'}</span>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{partner?.client_id_ref || `CLT-${parseInt(String(partner?._id).substring(0,8), 16)} || '0000'}`}</span>
             <span style={{ padding: '2px 8px', background: documents.length > 0 ? '#f0fdf4' : '#fff7ed', color: documents.length > 0 ? '#15803d' : '#c2410c', border: `1px solid ${documents.length > 0 ? '#dcfce7' : '#ffedd5'}`, borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>
               {documents.length > 0 ? 'KYC VERIFIED' : 'DOCS PENDING'}
             </span>
@@ -1377,7 +1377,7 @@ const ActivityView = ({ tickets, client }) => {
   const generateTicketId = (t) => {
     const prefix = t.hubType === 'Claim Hub' ? 'CLM' : 'SRV';
     const year = new Date(t.createdAt).getFullYear() || new Date().getFullYear();
-    const shortId = t._id ? t._id.toString().slice(-4).toUpperCase() : '0000';
+    const shortId = t._id ? parseInt(String(t._id).substring(0,8), 16) : '0000';
     return `#${prefix}-${year}-${shortId}`;
   };
 
@@ -1396,7 +1396,7 @@ const ActivityView = ({ tickets, client }) => {
       <div style={{ marginBottom: '32px' }}>
         <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>Activity Log</h3>
         <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#64748b' }}>
-          All tickets and actions for {partner?.name || 'Client'} (CLT-{partner?._id ? partner._id.toString().slice(-4).toUpperCase() : '0000'})
+          All tickets and actions for {partner?.name || 'Client'} ({partner?.client_id_ref || `CLT-${partner?._id ? parseInt(String(partner?._id).substring(0,8), 16) : '0000'}`})
         </p>
       </div>
 
@@ -1511,6 +1511,7 @@ const ClientsView = ({ clients }) => (
           <thead>
             <tr style={{ background: '#f8fafc', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, borderBottom: '1px solid #e2e8f0' }}>Client</th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, borderBottom: '1px solid #e2e8f0' }}>Client ID</th>
               <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, borderBottom: '1px solid #e2e8f0' }}>Email</th>
               <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, borderBottom: '1px solid #e2e8f0' }}>Status</th>
             </tr>
@@ -1519,6 +1520,7 @@ const ClientsView = ({ clients }) => (
             {clients.map(c => (
               <tr key={c._id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                 <td style={{ padding: '16px', color: '#0f172a', fontWeight: 500 }}>{c.name}</td>
+                <td style={{ padding: '16px', color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: '12px', fontWeight: 600 }}>{c.client_id_ref || `CLT-${parseInt(String(c._id).substring(0,8), 16)}`}</td>
                 <td style={{ padding: '16px', color: '#64748b' }}>{c.email}</td>
                 <td style={{ padding: '16px' }}>
                   <span style={{ 

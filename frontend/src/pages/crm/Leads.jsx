@@ -263,7 +263,7 @@ const Leads = () => {
   const leadsData = realLeads.map((lead) => {
     const p = parseLeadNotes(lead.notes);
     const idStr = String(lead._id);
-    const shortId = idStr.slice(-6).toUpperCase();
+    const shortId = `LD-${parseInt(idStr.substring(0, 8), 16)}`;
     const catLabel = categoryBadgeLabel(p.category);
     const srcLabel = sourceTypeLabel(p.source);
 
@@ -705,7 +705,7 @@ const Leads = () => {
                     </div>
                     <div>
                       <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text)' }}>{selectedLeadRaw.name || '—'}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: 4 }}>Lead ID LD-{String(selectedLeadRaw._id).slice(-6).toUpperCase()}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: 4 }}>Lead ID LD-{parseInt(String(selectedLeadRaw._id).substring(0,8), 16)}</div>
                     </div>
                   </div>
 
@@ -790,7 +790,7 @@ const Leads = () => {
         {activeModal === 'edit_lead' && editForm && (
           <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '760px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">Edit Lead — LD-{String(editForm.mongoId).slice(-6).toUpperCase()}</div>
+              <div className="modal-title">Edit Lead — LD-{parseInt(String(editForm.mongoId).substring(0,8), 16)}</div>
               <button type="button" className="modal-close" onClick={closeModal} aria-label="Close">
                 <X size={20} />
               </button>

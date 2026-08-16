@@ -11,10 +11,6 @@ const Clients = () => {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'direct' | 'partner' | 'super_partner' | 'inactive'
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all | active | inactive | pending
-  const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
-  const [advisorFilter, setAdvisorFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [dateRangeFilter, setDateRangeFilter] = useState('all');
   
   // Dynamic Interactive Charts State
@@ -119,18 +115,6 @@ const Clients = () => {
 
     if (statusFilter === 'active') list = list.filter((c) => c.is_active !== false);
     if (statusFilter === 'inactive') list = list.filter((c) => c.is_active === false);
-    if (serviceTypeFilter !== 'all') {
-      list = list.filter((c) => (c.serviceType || c.service_type) === serviceTypeFilter);
-    }
-    if (departmentFilter !== 'all') {
-      list = list.filter((c) => c.department === departmentFilter);
-    }
-    if (categoryFilter !== 'all') {
-      list = list.filter((c) => c.category === categoryFilter);
-    }
-    if (advisorFilter !== 'all') {
-      list = list.filter((c) => (c.assignedTo || c.assigned_to) === advisorFilter);
-    }
 
     const q = query.trim().toLowerCase();
     if (!q) return list;
@@ -141,7 +125,7 @@ const Clients = () => {
       const id = (c.client_id_ref || c._id || '').toString().toLowerCase();
       return name.includes(q) || email.includes(q) || phone.includes(q) || id.includes(q);
     });
-  }, [clients, activeTab, statusFilter, serviceTypeFilter, departmentFilter, categoryFilter, advisorFilter, query]);
+  }, [clients, activeTab, statusFilter, query]);
 
   const openAddClient = () => navigate('/clients/add');
 
@@ -266,14 +250,10 @@ const Clients = () => {
   const resetAllFilters = () => {
     setQuery('');
     setStatusFilter('all');
-    setServiceTypeFilter('all');
-    setDepartmentFilter('all');
-    setCategoryFilter('all');
-    setAdvisorFilter('all');
     setDateRangeFilter('all');
   };
 
-  const hasActiveFilters = query || statusFilter !== 'all' || serviceTypeFilter !== 'all' || departmentFilter !== 'all' || categoryFilter !== 'all' || advisorFilter !== 'all' || dateRangeFilter !== 'all';
+  const hasActiveFilters = query || statusFilter !== 'all' || dateRangeFilter !== 'all';
 
   return (
     <div className="page active enterprise-client-portal" style={{ display: 'block', background: '#0F172A', minHeight: '100vh', color: '#F8FAFC', paddingBottom: 60 }}>
@@ -894,26 +874,6 @@ const Clients = () => {
               <option value="inactive">Inactive</option>
             </select>
 
-            <select className="ec-input" value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} style={{ width: 150 }}>
-              <option value="all">Department: All</option>
-              <option value="Claim">Claim</option>
-              <option value="Service">Service</option>
-            </select>
-
-            <select className="ec-input" value={serviceTypeFilter} onChange={e => setServiceTypeFilter(e.target.value)} style={{ width: 160 }}>
-              <option value="all">Service: All</option>
-              <option value="IEPF Claim">IEPF Claim</option>
-              <option value="Demat">Demat</option>
-              <option value="Transmission">Transmission</option>
-              <option value="GST Reg.">GST Reg.</option>
-            </select>
-
-            <select className="ec-input" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} style={{ width: 170 }}>
-              <option value="all">Category: All</option>
-              <option value="Physical Shares">Physical Shares</option>
-              <option value="New Business">New Business</option>
-            </select>
-
             {hasActiveFilters && (
               <button onClick={resetAllFilters} style={{ height: 44, padding: '0 16px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#EF4444', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                 Reset Filters
@@ -967,7 +927,7 @@ const Clients = () => {
                 {filteredClients.length > 0 ? (
                   filteredClients.map((client) => {
                     const isActive = client.is_active !== false;
-                    const clientId = client.client_id_ref || String(client._id).slice(-6).toUpperCase();
+                    const clientId = client.client_id_ref || `CLT-${parseInt(String(client._id).substring(0,8), 16)}`;
                     const initials = client.name?.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() || 'CL';
                     
                     return (

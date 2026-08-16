@@ -115,7 +115,7 @@ const ClientProfile = ({ idProp, onClose }) => {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>{client?.name}</h1>
-            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{client?.client_id_ref || 'CLT-001'}</span>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{client?.client_id_ref || `CLT-${parseInt(String(client?._id).substring(0,8), 16)} || '0000'}`}</span>
             <span style={{ padding: '2px 8px', background: documents.length > 0 ? '#f0fdf4' : '#fff7ed', color: documents.length > 0 ? '#15803d' : '#c2410c', border: `1px solid ${documents.length > 0 ? '#dcfce7' : '#ffedd5'}`, borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>
               {documents.length > 0 ? 'KYC VERIFIED' : 'DOCS PENDING'}
             </span>
@@ -796,15 +796,15 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
         _id: t._id,
         companyName: compName,
         serviceName: t.service,
-        isin: mockRef.isin,
-        folio: mockRef.folio,
-        shares: mockRef.shares,
-        claimValue: mockRef.claimValue,
+        isin: t.isin || 'N/A',
+        folio: t.folio || 'N/A',
+        shares: t.shares || 0,
+        claimValue: t.estValue || 'N/A',
         progress: progress,
-        color: mockRef.color,
+        color: mockRef.color, // Keep the generated color for UI aesthetics
         status: status,
         ticketId: `TKT-${t.ticketNo || new Date(t.createdAt).getTime()}`,
-        holders: mockRef.holders,
+        holders: t.holders || 'Primary',
         clientName: mockRef.clientName,
         contact: mockRef.contact,
         updates: [{ date: new Date(t.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), msg: `Claim Ticket "${t.subject || t.service}" created.` }],
@@ -823,6 +823,31 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
   }, [localClaims, selectedClaimId]);
 
   const selectedClaim = localClaims.find(c => c._id === selectedClaimId);
+  const [editingClaimDetails, setEditingClaimDetails] = useState(false);
+  const [claimForm, setClaimForm] = useState({});
+
+  const handleEditClaimClick = (claim) => {
+    setEditingClaimDetails(true);
+    setClaimForm({ ...claim });
+  };
+
+  const handleSaveClaimDetails = async () => {
+    try {
+      await api.patch(`/tickets/${claimForm._id}`, {
+        companyName: claimForm.companyName,
+        service: claimForm.serviceName,
+        isin: claimForm.isin,
+        folio: claimForm.folio,
+        shares: claimForm.shares,
+        estValue: claimForm.claimValue,
+        holders: claimForm.holders
+      });
+      setEditingClaimDetails(false);
+      if (fetchData) fetchData(); // Refresh data
+    } catch (err) {
+      alert('Failed to update ticket: ' + (err.response?.data?.message || err.message));
+    }
+  };
 
   const handleStageChange = (idx, field, value) => {
     setLocalClaims(prev => prev.map(c => {
@@ -966,7 +991,9 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
                 }}>
                   {c.status}
                 </span>
-                <button style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600 }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleEditClaimClick(c); }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600 }}>
                   <Edit2 size={12} /> Edit
                 </button>
               </div>
@@ -1183,6 +1210,53 @@ const ClaimsView = ({ claims, tickets = [], onRefresh }) => {
               </div>
             </div>
           </div>
+          </div>
+        </div>
+      )}
+
+      {editingClaimDetails && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '500px', maxWidth: '90%', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>Edit Claim Details</h3>
+              <button onClick={() => setEditingClaimDetails(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Company Name</label>
+                <input value={claimForm.companyName || ''} onChange={e => setClaimForm({...claimForm, companyName: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Service Name</label>
+                <input value={claimForm.serviceName || ''} onChange={e => setClaimForm({...claimForm, serviceName: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Shares</label>
+                <input type="number" value={claimForm.shares || ''} onChange={e => setClaimForm({...claimForm, shares: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Claim Value</label>
+                <input value={claimForm.claimValue || ''} onChange={e => setClaimForm({...claimForm, claimValue: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>ISIN</label>
+                <input value={claimForm.isin || ''} onChange={e => setClaimForm({...claimForm, isin: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Folio</label>
+                <input value={claimForm.folio || ''} onChange={e => setClaimForm({...claimForm, folio: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Holders</label>
+                <input value={claimForm.holders || ''} onChange={e => setClaimForm({...claimForm, holders: e.target.value})} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none' }} />
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={() => setEditingClaimDetails(false)} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSaveClaimDetails} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>Save Changes</button>
+            </div>
           </div>
         </div>
       )}
@@ -1434,7 +1508,7 @@ const ActivityView = ({ tickets, client }) => {
   const generateTicketId = (t) => {
     const prefix = t.hubType === 'Claim Hub' ? 'CLM' : 'SRV';
     const year = new Date(t.createdAt).getFullYear() || new Date().getFullYear();
-    const shortId = t._id ? t._id.toString().slice(-4).toUpperCase() : '0000';
+    const shortId = t._id ? parseInt(String(t._id).substring(0,8), 16) : '0000';
     return `#${prefix}-${year}-${shortId}`;
   };
 
@@ -1453,7 +1527,7 @@ const ActivityView = ({ tickets, client }) => {
       <div style={{ marginBottom: '32px' }}>
         <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>Activity Log</h3>
         <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#64748b' }}>
-          All tickets and actions for {client?.name || 'Client'} (CLT-{client?._id ? client._id.toString().slice(-4).toUpperCase() : '0000'})
+          All tickets and actions for {client?.name || 'Client'} ({client?.client_id_ref || `CLT-${client?._id ? parseInt(String(client?._id).substring(0,8), 16) : '0000'}`})
         </p>
       </div>
 

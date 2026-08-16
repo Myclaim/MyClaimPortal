@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronLeft, Briefcase, Download, Edit, Check, Clock,
   UserPlus, Send, Star, MoreVertical, Shield, ShieldCheck,
   LogOut, LayoutDashboard, Network, Bell, Ticket, Settings,
-  Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar, 
+  Home, Layout, Activity, ShoppingBag, CheckSquare, Calendar,
   FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, ArrowLeft, Scale, Upload,
   Phone, Mail, Layers, TreeDeciduous, HelpCircle, Gift, Sun, Moon
 } from 'lucide-react';
@@ -25,18 +25,18 @@ import WealthManagementStore from '../../store/WealthManagementStore';
 
 /* ─── Inline badge styles (avoids missing CSS-var errors) ────── */
 const BADGE_STYLES = {
-  'New':           { bg: 'rgba(34, 197, 94,0.12)',  color: '#15803d', dot: '#22c55e'  },
-  'In Discussion': { bg: 'rgba(245,158,11,0.12)',  color: '#b45309', dot: '#f59e0b'  },
-  'Not Interested':{ bg: 'rgba(239,68,68,0.12)',   color: '#b91c1c', dot: '#ef4444'  },
-  'Converted':     { bg: 'rgba(34,197,94,0.12)',   color: '#15803d', dot: '#22c55e'  },
-  'Active':        { bg: 'rgba(34,197,94,0.12)',   color: '#15803d', dot: '#22c55e'  },
-  'In Process':    { bg: 'rgba(245,158,11,0.12)',  color: '#b45309', dot: '#f59e0b'  },
-  'Completed':     { bg: 'rgba(100,116,139,0.12)', color: '#475569', dot: '#94a3b8'  },
+  'New': { bg: 'rgba(34, 197, 94,0.12)', color: '#15803d', dot: '#22c55e' },
+  'In Discussion': { bg: 'rgba(245,158,11,0.12)', color: '#b45309', dot: '#f59e0b' },
+  'Not Interested': { bg: 'rgba(239,68,68,0.12)', color: '#b91c1c', dot: '#ef4444' },
+  'Converted': { bg: 'rgba(34,197,94,0.12)', color: '#15803d', dot: '#22c55e' },
+  'Active': { bg: 'rgba(34,197,94,0.12)', color: '#15803d', dot: '#22c55e' },
+  'In Process': { bg: 'rgba(245,158,11,0.12)', color: '#b45309', dot: '#f59e0b' },
+  'Completed': { bg: 'rgba(100,116,139,0.12)', color: '#475569', dot: '#94a3b8' },
 };
 const VERTICAL_STYLES = {
-  claim:   { label: 'Claim Hub',   color: '#6d28d9', bg: 'rgba(109,40,217,0.1)'  },
-  service: { label: 'Service Hub', color: '#0369a1', bg: 'rgba(3,105,161,0.1)'   },
-  store:   { label: 'Store',       color: '#b45309', bg: 'rgba(180,83,9,0.1)'    },
+  claim: { label: 'Claim Hub', color: '#6d28d9', bg: 'rgba(109,40,217,0.1)' },
+  service: { label: 'Service Hub', color: '#0369a1', bg: 'rgba(3,105,161,0.1)' },
+  store: { label: 'Store', color: '#b45309', bg: 'rgba(180,83,9,0.1)' },
 };
 
 const getFullDocUrl = (path) => {
@@ -77,36 +77,36 @@ const ServiceBadge = ({ vertical }) => {
 
 /* ─── Mock data (scoped to this Partner only) ──────────────── */
 const MOCK_LEADS = [
-  { id: 'LD-001', name: 'Ramesh Agarwal', phone: '+91 98765 00001', service: 'IEPF Claim',    status: 'Converted',      date: '12 Apr 2026' },
-  { id: 'LD-002', name: 'Sunita Mehta',   phone: '+91 98765 00002', service: 'GST Filing',    status: 'In Discussion',  date: '13 Apr 2026' },
-  { id: 'LD-003', name: 'Vikram Singh',   phone: '+91 98765 00003', service: 'Pre-IPO',       status: 'New',            date: '14 Apr 2026' },
-  { id: 'LD-004', name: 'Pooja Desai',    phone: '+91 98765 00004', service: 'Share Recovery', status: 'Not Interested', date: '10 Apr 2026' },
-  { id: 'LD-005', name: 'Aniket Joshi',   phone: '+91 98765 00005', service: 'Company Reg.',  status: 'Converted',      date: '09 Apr 2026' },
-  { id: 'LD-006', name: 'Kavita Nair',    phone: '+91 98765 00006', service: 'IEPF Claim',    status: 'In Discussion',  date: '08 Apr 2026' },
+  { id: 'LD-001', name: 'Ramesh Agarwal', phone: '+91 98765 00001', service: 'IEPF Claim', status: 'Converted', date: '12 Apr 2026' },
+  { id: 'LD-002', name: 'Sunita Mehta', phone: '+91 98765 00002', service: 'GST Filing', status: 'In Discussion', date: '13 Apr 2026' },
+  { id: 'LD-003', name: 'Vikram Singh', phone: '+91 98765 00003', service: 'Pre-IPO', status: 'New', date: '14 Apr 2026' },
+  { id: 'LD-004', name: 'Pooja Desai', phone: '+91 98765 00004', service: 'Share Recovery', status: 'Not Interested', date: '10 Apr 2026' },
+  { id: 'LD-005', name: 'Aniket Joshi', phone: '+91 98765 00005', service: 'Company Reg.', status: 'Converted', date: '09 Apr 2026' },
+  { id: 'LD-006', name: 'Kavita Nair', phone: '+91 98765 00006', service: 'IEPF Claim', status: 'In Discussion', date: '08 Apr 2026' },
 ];
 
 const MOCK_CLIENTS = [
   { id: 'CL-101', name: 'Ramesh Agarwal', company: 'Agarwal Traders', services: 2, tickets: 3, status: 'Active', since: 'Apr 2026' },
-  { id: 'CL-102', name: 'Aniket Joshi',   company: 'Joshi & Co.',     services: 1, tickets: 1, status: 'Active', since: 'Apr 2026' },
-  { id: 'CL-103', name: 'Meera Gupta',    company: 'Self',            services: 1, tickets: 2, status: 'Active', since: 'Mar 2026' },
-  { id: 'CL-104', name: 'Suresh Patil',   company: 'Patil Exports',   services: 3, tickets: 4, status: 'Active', since: 'Feb 2026' },
+  { id: 'CL-102', name: 'Aniket Joshi', company: 'Joshi & Co.', services: 1, tickets: 1, status: 'Active', since: 'Apr 2026' },
+  { id: 'CL-103', name: 'Meera Gupta', company: 'Self', services: 1, tickets: 2, status: 'Active', since: 'Mar 2026' },
+  { id: 'CL-104', name: 'Suresh Patil', company: 'Patil Exports', services: 3, tickets: 4, status: 'Active', since: 'Feb 2026' },
 ];
 
 const MOCK_TICKETS = [
-  { id: 'TK-501', client: 'Ramesh Agarwal', service: 'IEPF Claim',    vertical: 'claim',   status: 'In Process', created: '12 Apr 2026', lastUpdate: '2 hours ago'  },
-  { id: 'TK-502', client: 'Aniket Joshi',   service: 'Company Reg.',  vertical: 'service', status: 'Active',     created: '09 Apr 2026', lastUpdate: '1 day ago'    },
-  { id: 'TK-503', client: 'Meera Gupta',    service: 'GST Filing',    vertical: 'service', status: 'Completed',  created: '01 Apr 2026', lastUpdate: '5 days ago'   },
-  { id: 'TK-504', client: 'Suresh Patil',   service: 'Pre-IPO Buy',   vertical: 'store',   status: 'In Process', created: '05 Apr 2026', lastUpdate: '3 hours ago'  },
-  { id: 'TK-505', client: 'Ramesh Agarwal', service: 'Dup. Share',    vertical: 'claim',   status: 'Active',     created: '15 Apr 2026', lastUpdate: 'Just now'     },
-  { id: 'TK-506', client: 'Suresh Patil',   service: 'GST Filing',    vertical: 'service', status: 'Completed',  created: '20 Mar 2026', lastUpdate: '2 weeks ago'  },
+  { id: 'TK-501', client: 'Ramesh Agarwal', service: 'IEPF Claim', vertical: 'claim', status: 'In Process', created: '12 Apr 2026', lastUpdate: '2 hours ago' },
+  { id: 'TK-502', client: 'Aniket Joshi', service: 'Company Reg.', vertical: 'service', status: 'Active', created: '09 Apr 2026', lastUpdate: '1 day ago' },
+  { id: 'TK-503', client: 'Meera Gupta', service: 'GST Filing', vertical: 'service', status: 'Completed', created: '01 Apr 2026', lastUpdate: '5 days ago' },
+  { id: 'TK-504', client: 'Suresh Patil', service: 'Pre-IPO Buy', vertical: 'store', status: 'In Process', created: '05 Apr 2026', lastUpdate: '3 hours ago' },
+  { id: 'TK-505', client: 'Ramesh Agarwal', service: 'Dup. Share', vertical: 'claim', status: 'Active', created: '15 Apr 2026', lastUpdate: 'Just now' },
+  { id: 'TK-506', client: 'Suresh Patil', service: 'GST Filing', vertical: 'service', status: 'Completed', created: '20 Mar 2026', lastUpdate: '2 weeks ago' },
 ];
 
 const ACTIVITY_FEED = [
   { Icon: CheckCircle2, color: '#22c55e', text: 'Lead "Vikram Singh" marked as New by Super Admin', time: '30 MIN AGO' },
-  { Icon: RefreshCw,    color: '#22c55e', text: 'Ticket TK-501 moved to "In Process"',              time: '2 HRS AGO'  },
-  { Icon: UserPlus,     color: '#7c3aed', text: 'Lead "Ramesh Agarwal" converted to client',        time: '1 DAY AGO'  },
-  { Icon: AlertCircle,  color: '#f59e0b', text: 'Lead "Pooja Desai" marked Not Interested',         time: '2 DAYS AGO' },
-  { Icon: CheckCircle2, color: '#22c55e', text: 'Ticket TK-503 completed by admin team',            time: '5 DAYS AGO' },
+  { Icon: RefreshCw, color: '#22c55e', text: 'Ticket TK-501 moved to "In Process"', time: '2 HRS AGO' },
+  { Icon: UserPlus, color: '#7c3aed', text: 'Lead "Ramesh Agarwal" converted to client', time: '1 DAY AGO' },
+  { Icon: AlertCircle, color: '#f59e0b', text: 'Lead "Pooja Desai" marked Not Interested', time: '2 DAYS AGO' },
+  { Icon: CheckCircle2, color: '#22c55e', text: 'Ticket TK-503 completed by admin team', time: '5 DAYS AGO' },
 ];
 
 /* ─── Inline SVG for Home icon ─────────────────────────────── */
@@ -137,7 +137,7 @@ function Avatar({ name, size = 36, gradient = ['#15803d', '#22c55e'], fontSize =
 /* ═══════════════════════════════════════════════════════════════
    TAB: OVERVIEW
 ════════════════════════════════════════════════════════════════ */
-function OverviewTab({ onNavigate, stats, recentLeads }) {
+function OverviewTab({ onNavigate, stats, recentLeads, clients = [] }) {
   const KpiCard = ({ title, value, icon: Icon, trend, iconBg, trendBg, trendColor }) => (
     <div style={{
       background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px',
@@ -162,8 +162,8 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
       padding: '20px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s'
     }}
-    onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}
     >
       <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${color}15`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
         <Icon size={18} />
@@ -194,19 +194,19 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '32px' }}>
               MyClaim India - Partner Dashboard
             </div>
-            
+
             <div style={{ fontSize: '36px', fontWeight: 800, color: '#22c55e', lineHeight: 1, marginBottom: '8px' }}>
               ₹1,24,500
             </div>
             <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '24px' }}>
               Total Commission Earned
             </div>
-            
+
             <button style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
               View Commission
             </button>
           </div>
-          
+
           {/* Circular Chart Overlay */}
           <div style={{ position: 'absolute', right: '40px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}>
             <div style={{ width: '110px', height: '110px', borderRadius: '50%', border: '10px solid #22c55e', borderLeftColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: '0 0 20px rgba(34,197,94,0.2)' }}>
@@ -218,10 +218,10 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
 
         {/* 4 KPI Cards */}
         <div style={{ flex: '2', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', alignSelf: 'center' }}>
-           <KpiCard title="Active Clients" value={stats.clients || '248'} icon={Users} trend="↑ 12%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
-           <KpiCard title="Active Services" value="47" icon={Zap} trend="↑ 8%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
-           <KpiCard title="New Leads" value={stats.leads || '47'} icon={UserPlus} trend="↑ 24.5%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
-           <KpiCard title="Leads Enrolled" value={stats.converted || '45'} icon={CheckSquare} trend="↑ 24.5%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
+          <KpiCard title="Active Clients" value={stats.clients || '248'} icon={Users} trend="↑ 12%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
+          <KpiCard title="Active Services" value="47" icon={Zap} trend="↑ 8%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
+          <KpiCard title="New Leads" value={stats.leads || '47'} icon={UserPlus} trend="↑ 24.5%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
+          <KpiCard title="Leads Enrolled" value={stats.converted || '45'} icon={CheckSquare} trend="↑ 24.5%" iconBg="rgba(34,197,94,0.1)" trendBg="rgba(34,197,94,0.15)" trendColor="#22c55e" />
         </div>
       </div>
 
@@ -245,7 +245,7 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           <div style={{ flex: '1', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Generated Leads</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>Quarterly Report</div>
-            
+
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto' }}>
               <div>
                 <div style={{ fontSize: '42px', fontWeight: 800, color: 'var(--text)', lineHeight: 1, marginBottom: '12px' }}>
@@ -264,7 +264,7 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           <div style={{ flex: '1', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Ticket Tracker</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '24px' }}>Last 7 Days</div>
-            
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: 'auto' }}>
               <div>
                 <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', lineHeight: 1, marginBottom: '6px' }}>164</div>
@@ -298,40 +298,45 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
 
       {/* Third Row: Client Progress, Service Hub */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '40px', alignItems: 'start' }}>
-        
+
         {/* Client Progress */}
         <div style={{ flex: '1', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
           <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Client Progress</div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '24px' }}>Average 72% Completed</div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Real progress bars removed for now, or you can map `clients.slice(0,5)` to them instead of fake list */}
-            {[
-              { name: 'Priya Mehta', id: 'CLT-12345678', progress: 65, color: '#f97316' },
-            ].map((client, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: client.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
-                  {client.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{client.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{client.id}</div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', width: '80px' }}>
-                  <div style={{ width: '100%', height: '6px', background: 'var(--bg)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ width: `${client.progress}%`, height: '100%', background: client.color, borderRadius: '4px' }}></div>
+            {clients.length > 0 ? clients.slice(0, 5).map((client, i) => {
+              const colors = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#eab308'];
+              const color = colors[i % colors.length];
+              const progress = 65 + (i * 5); // Dummy progress for now
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
+                    {client.name ? client.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'CL'}
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: client.color }}>{client.progress}%</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{client.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{client.client_id_ref || `CLT-${parseInt(String(client._id).substring(0,8), 16)}`}</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', width: '80px' }}>
+                    <div style={{ width: '100%', height: '6px', background: 'var(--bg)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: color, borderRadius: '4px' }}></div>
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: color }}>{progress}%</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            }) : (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No clients found.</div>
+            )}
           </div>
         </div>
 
         {/* Service Hub */}
         <div style={{ flex: '1', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '20px', padding: '16px 20px' }}>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)', marginBottom: '12px' }}>Service Hub</div>
-          
+
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
             <div style={{ flex: 1, background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
               <div style={{ fontSize: '20px', fontWeight: 800, color: '#10b981', marginBottom: '2px' }}>12</div>
@@ -346,35 +351,35 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           <div style={{ overflowX: 'auto', width: '100%' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
               <thead>
-              <tr style={{ color: 'var(--text-muted)', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ paddingBottom: '8px', fontWeight: 600 }}>SERVICE</th>
-                <th style={{ paddingBottom: '8px', fontWeight: 600 }}>CLIENT</th>
-                <th style={{ paddingBottom: '8px', fontWeight: 600 }}>DATE</th>
-                <th style={{ paddingBottom: '8px', fontWeight: 600 }}>STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { s: 'Lost Shares', c: 'Priya M.', d: '10 Dec', st: 'Active', bg: 'rgba(34,197,94,0.15)', co: '#22c55e' },
-                { s: 'GST Reg.', c: 'Amit P.', d: '16 Nov', st: 'Active', bg: 'rgba(34,197,94,0.15)', co: '#22c55e' },
-                { s: 'Trademark', c: 'Suresh K.', d: '8 Aug', st: 'On Hold', bg: 'rgba(239,68,68,0.15)', co: '#ef4444' },
-                { s: 'ITR Filing', c: 'Neha G.', d: '8 Jan', st: 'Pending', bg: 'rgba(245,158,11,0.15)', co: '#f59e0b' },
-              ].map((row, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '8px 0', color: 'var(--text)', fontWeight: 600 }}>{row.s}</td>
-                  <td style={{ padding: '8px 0', color: 'var(--text-muted)' }}>{row.c}</td>
-                  <td style={{ padding: '8px 0', color: 'var(--text-muted)' }}>{row.d}</td>
-                  <td style={{ padding: '8px 0' }}>
-                    <span style={{ background: row.bg, color: row.co, padding: '3px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>{row.st}</span>
-                  </td>
+                <tr style={{ color: 'var(--text-muted)', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ paddingBottom: '8px', fontWeight: 600 }}>SERVICE</th>
+                  <th style={{ paddingBottom: '8px', fontWeight: 600 }}>CLIENT</th>
+                  <th style={{ paddingBottom: '8px', fontWeight: 600 }}>DATE</th>
+                  <th style={{ paddingBottom: '8px', fontWeight: 600 }}>STATUS</th>
                 </tr>
-              ))}
-            </tbody>
+              </thead>
+              <tbody>
+                {[
+                  { s: 'Lost Shares', c: 'Priya M.', d: '10 Dec', st: 'Active', bg: 'rgba(34,197,94,0.15)', co: '#22c55e' },
+                  { s: 'GST Reg.', c: 'Amit P.', d: '16 Nov', st: 'Active', bg: 'rgba(34,197,94,0.15)', co: '#22c55e' },
+                  { s: 'Trademark', c: 'Suresh K.', d: '8 Aug', st: 'On Hold', bg: 'rgba(239,68,68,0.15)', co: '#ef4444' },
+                  { s: 'ITR Filing', c: 'Neha G.', d: '8 Jan', st: 'Pending', bg: 'rgba(245,158,11,0.15)', co: '#f59e0b' },
+                ].map((row, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '8px 0', color: 'var(--text)', fontWeight: 600 }}>{row.s}</td>
+                    <td style={{ padding: '8px 0', color: 'var(--text-muted)' }}>{row.c}</td>
+                    <td style={{ padding: '8px 0', color: 'var(--text-muted)' }}>{row.d}</td>
+                    <td style={{ padding: '8px 0' }}>
+                      <span style={{ background: row.bg, color: row.co, padding: '3px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>{row.st}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         </div>
       </div>
-          
+
       {/* Footer removed */}
     </>
   );
@@ -408,9 +413,9 @@ function AddLeadModal({ onClose, onAdd }) {
         notes: `[Alt Phone: ${form.altPhone ? form.altPhoneCode + ' ' + form.altPhone : 'N/A'}]\n[Category: ${form.category}]`,
       };
       const { data } = await api.post('/leads', payload);
-      
+
       onAdd({
-        id: data.client_id_ref || String(data._id).slice(-6).toUpperCase(),
+        id: data.client_id_ref || `CLT-${parseInt(String(data._id).substring(0,8), 16)}`,
         name: data.name,
         phone: data.phone,
         service: data.serviceInterest || 'N/A',
@@ -426,7 +431,7 @@ function AddLeadModal({ onClose, onAdd }) {
 
   const inputStyle = { background: '#050B14', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '14px 16px', color: '#ffffff', outline: 'none', transition: 'all 0.2s' };
   const selectStyle = { ...inputStyle, padding: '14px 10px', appearance: 'auto' };
-  const labelStyle = { fontSize: '11px', fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: '8px', display: 'block' };
+  const labelStyle = { fontSize: '11px', fontWeight: 700, color: '#7697c5ff', letterSpacing: '1px', marginBottom: '8px', display: 'block' };
 
   return (
     <div className="modal-overlay open" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -435,18 +440,18 @@ function AddLeadModal({ onClose, onAdd }) {
           <div className="modal-title" style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', margin: 0 }}>Add New Lead</div>
           <button className="modal-close" onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>?</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div className="modal-body" style={{ overflowY: 'auto', padding: '24px 32px 32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            
+
             <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={labelStyle}>FIRST NAME <span style={{ color: '#ef4444' }}>*</span></label>
-                <input className="form-input" style={{...inputStyle, width: '100%'}} placeholder="Enter first name" value={form.firstName} onChange={set('firstName')} required />
+                <input className="form-input" style={{ ...inputStyle, width: '100%' }} placeholder="Enter first name" value={form.firstName} onChange={set('firstName')} required />
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={labelStyle}>LAST NAME <span style={{ color: '#ef4444' }}>*</span></label>
-                <input className="form-input" style={{...inputStyle, width: '100%'}} placeholder="Enter last name" value={form.lastName} onChange={set('lastName')} required />
+                <input className="form-input" style={{ ...inputStyle, width: '100%' }} placeholder="Enter last name" value={form.lastName} onChange={set('lastName')} required />
               </div>
             </div>
 
@@ -454,15 +459,15 @@ function AddLeadModal({ onClose, onAdd }) {
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={labelStyle}>CONTACT NUMBER <span style={{ color: '#ef4444' }}>*</span></label>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <select style={{...selectStyle, width: '100px', flexShrink: 0}} value={form.phoneCode} onChange={set('phoneCode')}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                  <input className="form-input" style={{...inputStyle, flex: 1}} placeholder="98765 43210" value={form.phone} onChange={set('phone')} required />
+                  <select style={{ ...selectStyle, width: '100px', flexShrink: 0 }} value={form.phoneCode} onChange={set('phoneCode')}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                  <input className="form-input" style={{ ...inputStyle, flex: 1 }} placeholder="98765 43210" value={form.phone} onChange={set('phone')} required />
                 </div>
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={labelStyle}>ALTERNATE NUMBER</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <select style={{...selectStyle, width: '100px', flexShrink: 0}} value={form.altPhoneCode} onChange={set('altPhoneCode')}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                  <input className="form-input" style={{...inputStyle, flex: 1}} placeholder="98765 43210" value={form.altPhone} onChange={set('altPhone')} />
+                  <select style={{ ...selectStyle, width: '100px', flexShrink: 0 }} value={form.altPhoneCode} onChange={set('altPhoneCode')}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                  <input className="form-input" style={{ ...inputStyle, flex: 1 }} placeholder="98765 43210" value={form.altPhone} onChange={set('altPhone')} />
                 </div>
               </div>
             </div>
@@ -470,7 +475,7 @@ function AddLeadModal({ onClose, onAdd }) {
             <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={labelStyle}>SERVICE CATEGORY</label>
-                <select className="form-select" style={{...selectStyle, width: '100%'}} value={form.category} onChange={set('category')}>
+                <select className="form-select" style={{ ...selectStyle, width: '100%' }} value={form.category} onChange={set('category')}>
                   <option value="">Select category...</option>
                   <option value="Physical Shares">Physical Shares</option>
                   <option value="Company Compliance">Company Compliance</option>
@@ -479,7 +484,7 @@ function AddLeadModal({ onClose, onAdd }) {
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={labelStyle}>SERVICE REQUEST</label>
-                <select className="form-select" style={{...selectStyle, width: '100%'}} value={form.serviceRequest} onChange={set('serviceRequest')}>
+                <select className="form-select" style={{ ...selectStyle, width: '100%' }} value={form.serviceRequest} onChange={set('serviceRequest')}>
                   <option value="">Select service...</option>
                   {SERVICE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -492,7 +497,7 @@ function AddLeadModal({ onClose, onAdd }) {
             </div>
 
           </div>
-          
+
           <div className="modal-footer" style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px 32px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
             <button type="button" onClick={onClose} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#94a3b8', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>Cancel</button>
             <button type="submit" style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#ffffff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.3)', transition: 'all 0.2s' }}>Submit Lead</button>
@@ -518,25 +523,25 @@ function LeadsTab() {
       let myLeads = [];
       try {
         const { data } = await api.get('/leads');
-        
+
         // Filter to only this partner's leads:
         myLeads = data.filter(l => l.sourceUserId?._id === user?._id);
-        
+
         const formatted = myLeads.map(l => ({
-          id: l.client_id_ref || String(l._id).slice(-6).toUpperCase(),
+          id: l.client_id_ref || `CLT-${parseInt(String(l._id).substring(0,8), 16)}`,
           name: l.name,
           phone: l.phone,
           email: l.email || '—',
           service: l.serviceInterest || 'N/A',
           status: l.status === 'in_discussion' ? 'In Discussion' :
-                  l.status === 'converted' ? 'Converted' :
-                  l.status === 'not_interested' ? 'Not Interested' : 'New',
+            l.status === 'converted' ? 'Converted' :
+              l.status === 'not_interested' ? 'Not Interested' : 'New',
           source: l.source || '—',
           category: l.category || '—',
           notes: l.notes || 'No additional notes.',
           date: new Date(l.createdAt).toLocaleDateString('en-GB'),
         }));
-        
+
         setLeads(formatted);
       } catch (err) {
         console.error('Error fetching leads:', err);
@@ -545,11 +550,11 @@ function LeadsTab() {
       }
 
       try {
-        const [ { data: propData }, { data: ticketData } ] = await Promise.all([
-           api.get('/proposals').catch(() => ({ data: [] })),
-           api.get('/tickets').catch(() => ({ data: [] }))
+        const [{ data: propData }, { data: ticketData }] = await Promise.all([
+          api.get('/proposals').catch(() => ({ data: [] })),
+          api.get('/tickets').catch(() => ({ data: [] }))
         ]);
-        
+
         const userName = user?.name ? user.name.toLowerCase().trim() : '';
         const myProposals = propData.filter(p => {
           if (!userName) return false;
@@ -557,11 +562,11 @@ function LeadsTab() {
           const pAssign = p.assignUserName ? p.assignUserName.toLowerCase().trim() : '';
           return pPartner === userName || pAssign === userName || String(p.assignedTo?._id || p.assignedTo) === String(user?._id);
         });
-        
+
         const formattedProps = myProposals.map(p => ({
           id: String(p._id).slice(-6).toUpperCase(),
           client: p.clientName || 'Unknown',
-          initials: (p.clientName || 'U').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase(),
+          initials: (p.clientName || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
           color: ['#f97316', '#06b6d4', '#22c55e', '#8b5cf6'][Math.floor(Math.random() * 4)],
           service: p.serviceRequest || 'N/A',
           amount: '—',
@@ -582,7 +587,7 @@ function LeadsTab() {
           admin: p.admin,
           rawId: p._id
         }));
-        
+
         const myTickets = ticketData.filter(t => {
           const isMyLead = myLeads.some(l => String(l._id) === String(t.clientId?._id || t.clientId) || l.name === t.companyName || l.name === t.clientName);
           return isMyLead;
@@ -591,7 +596,7 @@ function LeadsTab() {
         const formattedTickets = myTickets.map(t => ({
           id: String(t._id).slice(-6).toUpperCase(),
           client: t.companyName || t.clientId?.name || t.clientName || 'Unknown',
-          initials: (t.companyName || t.clientId?.name || t.clientName || 'U').substring(0,2).toUpperCase(),
+          initials: (t.companyName || t.clientId?.name || t.clientName || 'U').substring(0, 2).toUpperCase(),
           color: ['#f97316', '#06b6d4', '#22c55e', '#8b5cf6'][Math.floor(Math.random() * 4)],
           service: t.service || t.topicName || t.hubType || 'N/A',
           amount: '—',
@@ -669,7 +674,7 @@ function LeadsTab() {
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 6px', borderRadius: '4px' }}>↑ 18%</span>
           </div>
         </div>
-        
+
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#06b6d4' }}>
             <UserPlus size={24} />
@@ -726,90 +731,90 @@ function LeadsTab() {
               }}>{s}</button>
             ))}
           </div>
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
-            Proposal List
+          <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+              Proposal List
+            </div>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>PROPOSAL ID</th>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CLIENT</th>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>SERVICE</th>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>AMOUNT</th>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>DATE</th>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>STATUS</th>
+                    <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>ATTACHMENT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProposals.map(row => (
+                    <tr
+                      key={row.id}
+                      style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.2s' }}
+                      onClick={() => setSelectedProposal(row)}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <td style={{ padding: '16px 24px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
+                      </td>
+                      <td style={{ padding: '16px 24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: row.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
+                            {row.initials}
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{row.client}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{row.service}</td>
+                      <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{row.amount}</td>
+                      <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>{row.date}</td>
+                      <td style={{ padding: '16px 24px' }}>
+                        <span style={{ background: row.statusBg, color: row.statusCol, padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>{row.status}</span>
+                      </td>
+                      <td style={{ padding: '16px 24px' }}>
+                        {row.attachmentPath ? (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setPreviewDoc({ name: `${row.client} - Proposal`, url: row.attachmentPath }); }}
+                              style={{
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                border: '1px solid rgba(59, 130, 246, 0.2)',
+                                color: '#60a5fa', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
+                                display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                              }}
+                            >
+                              <Eye size={12} /> Preview
+                            </button>
+                            <a
+                              href={getFullDocUrl(row.attachmentPath)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid var(--border)',
+                                color: 'var(--text-muted)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
+                                display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', textDecoration: 'none'
+                              }}
+                            >
+                              <Download size={12} /> DL
+                            </a>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{row.attachment}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-              <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>PROPOSAL ID</th>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CLIENT</th>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>SERVICE</th>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>AMOUNT</th>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>DATE</th>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>STATUS</th>
-                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>ATTACHMENT</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProposals.map(row => (
-                <tr 
-                  key={row.id} 
-                  style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.2s' }}
-                  onClick={() => setSelectedProposal(row)}
-                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{row.id}</span>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: row.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
-                        {row.initials}
-                      </div>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{row.client}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{row.service}</td>
-                  <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{row.amount}</td>
-                  <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>{row.date}</td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{ background: row.statusBg, color: row.statusCol, padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>{row.status}</span>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    {row.attachmentPath ? (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setPreviewDoc({ name: `${row.client} - Proposal`, url: row.attachmentPath }); }}
-                          style={{
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            border: '1px solid rgba(59, 130, 246, 0.2)',
-                            color: '#60a5fa', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
-                            display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
-                          }}
-                        >
-                          <Eye size={12} /> Preview
-                        </button>
-                        <a 
-                          href={getFullDocUrl(row.attachmentPath)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                          onClick={(e) => e.stopPropagation()}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            border: '1px solid var(--border)',
-                            color: 'var(--text-muted)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
-                            display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', textDecoration: 'none'
-                          }}
-                        >
-                          <Download size={12} /> DL
-                        </a>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{row.attachment}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
-      </div>
-      </div>
       )}
 
       {activeSubTab === 'leads' && (
@@ -1054,25 +1059,25 @@ function LeadsTab() {
       )}
 
       {previewDoc && (
-        <div 
-          className="modal-overlay open" 
+        <div
+          className="modal-overlay open"
           style={{ zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
           onClick={() => setPreviewDoc(null)}
         >
-          <div 
-            className="modal" 
-            style={{ 
-              maxWidth: '900px', 
-              width: '90%', 
-              height: '85vh', 
-              background: '#0f172a', 
-              border: '1px solid #334155', 
-              borderRadius: '16px', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              padding: 0, 
-              overflow: 'hidden' 
-            }} 
+          <div
+            className="modal"
+            style={{
+              maxWidth: '900px',
+              width: '90%',
+              height: '85vh',
+              background: '#0f172a',
+              border: '1px solid #334155',
+              borderRadius: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 0,
+              overflow: 'hidden'
+            }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ padding: '16px 24px', background: '#1e293b', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1081,15 +1086,15 @@ function LeadsTab() {
                 <span style={{ fontSize: '11px', color: '#94a3b8' }}>Document Preview</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <a 
-                  href={getFullDocUrl(previewDoc.url)} 
-                  target="_blank" 
+                <a
+                  href={getFullDocUrl(previewDoc.url)}
+                  target="_blank"
                   rel="noreferrer"
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: '#3b82f6', color: '#fff', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700 }}
                 >
                   <Download size={14} /> Open Original
                 </a>
-                <button 
+                <button
                   onClick={() => setPreviewDoc(null)}
                   style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '20px', cursor: 'pointer', padding: '4px' }}
                 >
@@ -1114,10 +1119,10 @@ function LeadsTab() {
                   <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
                     <p style={{ fontSize: '14px', marginBottom: '20px' }}>Preview is not directly embedded for <strong>.{ext}</strong> files.</p>
-                    <a 
-                      href={url} 
-                      target="_blank" 
-                      rel="noreferrer" 
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
                       style={{ background: '#3b82f6', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                     >
                       <Download size={16} /> Download File
@@ -1138,8 +1143,8 @@ function LeadsTab() {
 ════════════════════════════════════════════════════════════════ */
 function PartnersTab({ partners = [], onViewClients }) {
   const [search, setSearch] = useState('');
-  
-  const filtered = partners.filter(p => 
+
+  const filtered = partners.filter(p =>
     (p.name && p.name.toLowerCase().includes(search.toLowerCase())) ||
     (p.email && p.email.toLowerCase().includes(search.toLowerCase()))
   );
@@ -1156,10 +1161,10 @@ function PartnersTab({ partners = [], onViewClients }) {
         <div style={{ display: 'flex', gap: '12px' }}>
           <div className="search-box">
             <Search size={18} color="var(--text-muted)" />
-            <input 
-              placeholder="Search partners..." 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
+            <input
+              placeholder="Search partners..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               style={{ background: 'transparent', border: 'none', color: '#fff', outline: 'none', marginLeft: 8 }}
             />
           </div>
@@ -1170,6 +1175,7 @@ function PartnersTab({ partners = [], onViewClients }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+              <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Partner ID</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Partner Name</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Email</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Phone</th>
@@ -1179,16 +1185,17 @@ function PartnersTab({ partners = [], onViewClients }) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan="4" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>No partners found.</td>
+                <td colSpan="5" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>No partners found.</td>
               </tr>
             ) : (
               filtered.map(p => (
                 <tr key={p._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '16px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--blue)', fontSize: '12px' }}>{p.client_id_ref || `PRT-${parseInt(String(p._id).substring(0,8), 16)}`}</td>
                   <td style={{ padding: '16px', fontWeight: 600 }}>{p.name || 'Unknown'}</td>
                   <td style={{ padding: '16px', color: 'var(--text-muted)' }}>{p.email}</td>
                   <td style={{ padding: '16px', color: 'var(--text-muted)' }}>{p.phone || 'N/A'}</td>
                   <td style={{ padding: '16px' }}>
-                    <span 
+                    <span
                       onClick={() => onViewClients && onViewClients(p._id)}
                       style={{ padding: '4px 10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '12px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', border: '1px solid rgba(59, 130, 246, 0.2)' }}
                       title="Click to view this partner's clients"
@@ -1219,13 +1226,13 @@ function ClientsTab({ onNavigateToClient, partners = [], selectedPartnerId, onCl
 
         // Backend already filters by parent_id for partners — just pick clients
         const myClients = data.filter(u => u.role === 'client');
-        
+
         const partnerMap = {};
         partners.forEach(p => partnerMap[p._id] = p.name);
 
         const formatted = myClients.map((c, i) => ({
           // Identity
-          id: c.client_id_ref || String(c._id).slice(-6).toUpperCase(),
+          id: c.client_id_ref || `CLT-${parseInt(String(c._id).substring(0,8), 16)}`,
           dbId: c._id,
           name: c.name,
           email: c.email || '—',
@@ -1240,13 +1247,13 @@ function ClientsTab({ onNavigateToClient, partners = [], selectedPartnerId, onCl
             day: '2-digit', month: 'short', year: 'numeric'
           }),
           // ── Real Relationship & Reference from SuperAdmin onboarding ──
-          relation:        c.relation        || '—',
-          referenceType:   c.reference       || '—',
-          referenceName:   c.referenceName   || '—',
+          relation: c.relation || '—',
+          referenceType: c.reference || '—',
+          referenceName: c.referenceName || '—',
           referenceMobile: c.referenceMobileNo || '—',
           // Keep for display
           category: c.category || '—',
-          services:  c.preference || '—',
+          services: c.preference || '—',
         }));
 
         // Show real data only — no fake fallback
@@ -1294,7 +1301,7 @@ function ClientsTab({ onNavigateToClient, partners = [], selectedPartnerId, onCl
             </div>
           </div>
         </div>
-        
+
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
             <Check size={24} />
@@ -1344,7 +1351,7 @@ function ClientsTab({ onNavigateToClient, partners = [], selectedPartnerId, onCl
               <button onClick={onClearPartnerFilter} style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: '15px', fontWeight: 800, padding: 0, marginLeft: 4, display: 'flex', alignItems: 'center' }} title="Clear filter">×</button>
             </div>
           )}
-          
+
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
             {/* Partner Filter Dropdown */}
             <select
@@ -1374,7 +1381,7 @@ function ClientsTab({ onNavigateToClient, partners = [], selectedPartnerId, onCl
             </div>
           </div>
         </div>
-        
+
         <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
@@ -1591,14 +1598,14 @@ function CalculatorTab() {
   const n = timePeriod * 12;
   const r = expectedReturn / 12 / 100;
   const invested = monthlyInvest * n;
-  
+
   let fv = 0;
   if (r > 0) {
     fv = monthlyInvest * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
   } else {
     fv = invested;
   }
-  
+
   const estReturns = fv - invested;
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
@@ -1609,7 +1616,7 @@ function CalculatorTab() {
           <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Calculators</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Financial planning tools</p>
         </div>
-        
+
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px', display: 'flex', gap: '40px' }}>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -1618,7 +1625,7 @@ function CalculatorTab() {
                 &larr; Back
               </button>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Monthly Investment (₹)</label>
@@ -1634,22 +1641,22 @@ function CalculatorTab() {
               </div>
             </div>
           </div>
-          
+
           <div style={{ width: '380px', background: '#050B14', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <h4 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)' }}>Results</h4>
-            
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>Invested</span>
               <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 700 }}>{formatCurrency(invested)}</span>
             </div>
-            
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600 }}>Est. Returns</span>
               <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 700 }}>{formatCurrency(estReturns)}</span>
             </div>
-            
+
             <div style={{ height: '1px', background: 'var(--border)' }}></div>
-            
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 800 }}>Total Value</span>
               <span style={{ fontSize: '18px', color: '#22c55e', fontWeight: 800 }}>{formatCurrency(fv)}</span>
@@ -1696,7 +1703,7 @@ function DocumentTab() {
   const [activeNavTab, setActiveNavTab] = useState('Documents');
   const [activeFolderTab, setActiveFolderTab] = useState('MyClaim India Docs');
   const fileInputRef = useRef(null);
-  
+
   const [documents, setDocuments] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
 
@@ -1736,12 +1743,12 @@ function DocumentTab() {
 
       {/* Navigation Tabs */}
       <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid var(--border)', marginBottom: '40px' }}>
-        <button 
+        <button
           onClick={() => setActiveNavTab('Documents')}
           style={{ background: 'transparent', border: 'none', borderBottom: activeNavTab === 'Documents' ? '2px solid #22c55e' : '2px solid transparent', color: activeNavTab === 'Documents' ? '#fff' : 'var(--text-muted)', fontSize: '14px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer', transition: 'all 0.2s' }}>
           Documents
         </button>
-        <button 
+        <button
           onClick={() => setActiveNavTab('Legal doc generator')}
           style={{ background: 'transparent', border: 'none', borderBottom: activeNavTab === 'Legal doc generator' ? '2px solid #22c55e' : '2px solid transparent', color: activeNavTab === 'Legal doc generator' ? '#fff' : 'var(--text-muted)', fontSize: '14px', fontWeight: 600, padding: '0 0 12px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
           Legal doc generator
@@ -1758,7 +1765,7 @@ function DocumentTab() {
               <span style={{ fontWeight: 700, color: '#cbd5e1' }}>Need a legal agreement?</span> Protect your business with our expert-drafted contracts
             </div>
           </div>
-          
+
           <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }}>
             {AGREEMENTS.map((agr, i) => (
               <div key={i} style={{ flexShrink: 0, width: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
@@ -1781,14 +1788,14 @@ function DocumentTab() {
           {/* Folder Tabs Section */}
           <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
             {FOLDER_TABS.map(tab => (
-              <button 
+              <button
                 key={tab}
                 onClick={() => setActiveFolderTab(tab)}
-                style={{ 
-                  background: 'transparent', border: 'none', 
-                  borderBottom: activeFolderTab === tab ? '2px solid #10b981' : '2px solid transparent', 
-                  color: activeFolderTab === tab ? '#fff' : '#94a3b8', 
-                  fontSize: '15px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer', transition: 'all 0.2s' 
+                style={{
+                  background: 'transparent', border: 'none',
+                  borderBottom: activeFolderTab === tab ? '2px solid #10b981' : '2px solid transparent',
+                  color: activeFolderTab === tab ? '#fff' : '#94a3b8',
+                  fontSize: '15px', fontWeight: 700, padding: '0 0 12px 0', cursor: 'pointer', transition: 'all 0.2s'
                 }}>
                 {tab}
               </button>
@@ -1799,12 +1806,12 @@ function DocumentTab() {
             <div style={{ fontSize: '14px', color: '#94a3b8' }}>
               Select a folder to view your compliance documents, bills, and related files
             </div>
-            
+
             {/* Hidden File Input */}
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
               onChange={async (e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const file = e.target.files[0];
@@ -1812,7 +1819,7 @@ function DocumentTab() {
                   formData.append('file', file);
                   formData.append('linked_to', 'global');
                   formData.append('folder', activeFolderTab);
-                  
+
                   try {
                     await api.post('/documents/upload', formData, {
                       headers: { 'Content-Type': 'multipart/form-data' }
@@ -1823,18 +1830,18 @@ function DocumentTab() {
                     console.error('Upload failed', err);
                     alert('Upload failed: ' + (err.response?.data?.message || err.message));
                   }
-                  
+
                   // Reset input so the same file can be uploaded again if needed
                   if (fileInputRef.current) fileInputRef.current.value = '';
                 }
               }}
             />
-            
-            <button 
+
+            <button
               onClick={() => fileInputRef.current?.click()}
-              style={{ 
-                background: '#10b981', color: '#fff', border: 'none', 
-                padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, 
+              style={{
+                background: '#10b981', color: '#fff', border: 'none',
+                padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 700,
                 display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
                 boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', transition: 'background 0.2s'
               }}
@@ -1843,7 +1850,7 @@ function DocumentTab() {
               <Upload size={18} /> Upload Doc
             </button>
           </div>
-          
+
           {/* Folder Content Box */}
           {loadingDocs ? (
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
@@ -1905,13 +1912,13 @@ function CalendarTab() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const handlePrevMonth = () => {
-    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); } 
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
     else { setCurrentMonth(currentMonth - 1); }
     setSelectedDate(1);
   };
 
   const handleNextMonth = () => {
-    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); } 
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
     else { setCurrentMonth(currentMonth + 1); }
     setSelectedDate(1);
   };
@@ -1924,10 +1931,10 @@ function CalendarTab() {
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const DATES = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  
+
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
   const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
-  
+
   const EVENT_DATES = currentMonthDeadlines.map(d => parseInt(d.date.split('-')[2]));
   const displayedDeadlines = currentMonthDeadlines.filter(d => d.status === activeLeftTab);
 
@@ -1941,7 +1948,7 @@ function CalendarTab() {
       <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
         {/* Left Panel - Tasks */}
         <div style={{ width: '380px', flexShrink: 0, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', maxHeight: '700px' }}>
-          
+
           {/* Tabs */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
             <button onClick={() => setActiveLeftTab('needs_action')} style={{ flex: 1, padding: '10px 12px', background: activeLeftTab === 'needs_action' ? '#22c55e' : 'rgba(255,255,255,0.03)', color: activeLeftTab === 'needs_action' ? '#fff' : 'var(--text-muted)', border: activeLeftTab === 'needs_action' ? 'none' : '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: activeLeftTab === 'needs_action' ? 700 : 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
@@ -2001,20 +2008,20 @@ function CalendarTab() {
                 {day}
               </div>
             ))}
-            
+
             {/* Empty Slots */}
             {emptyDays.map(i => (
               <div key={`empty-${i}`} />
             ))}
-            
+
             {/* Dates */}
             {DATES.map(date => {
               const isSelected = date === selectedDate;
               const hasEvent = EVENT_DATES.includes(date);
-              
+
               return (
-                <div key={date} onClick={() => setSelectedDate(date)} style={{ 
-                  aspectRatio: '1.2', 
+                <div key={date} onClick={() => setSelectedDate(date)} style={{
+                  aspectRatio: '1.2',
                   borderRadius: '12px',
                   background: isSelected ? '#22c55e' : 'transparent',
                   color: isSelected ? '#fff' : 'var(--text)',
@@ -2028,8 +2035,8 @@ function CalendarTab() {
                   transition: 'background 0.2s',
                   position: 'relative'
                 }}
-                onMouseEnter={e => !isSelected && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                onMouseLeave={e => !isSelected && (e.currentTarget.style.background = 'transparent')}
+                  onMouseEnter={e => !isSelected && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                  onMouseLeave={e => !isSelected && (e.currentTarget.style.background = 'transparent')}
                 >
                   {date}
                   {hasEvent && (
@@ -2255,24 +2262,24 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
     const s = p.status?.toLowerCase() || '';
     const isAccepted = s.includes('accepted') || s.includes('active') || s.includes('converted');
     const isDeclined = s.includes('declined');
-    
+
     let matchStatus = true;
     if (filterStatus === 'Accepted') matchStatus = isAccepted;
     else if (filterStatus === 'Declined') matchStatus = isDeclined;
     else if (filterStatus === 'In Progress') matchStatus = !isAccepted && !isDeclined;
     else if (filterStatus !== 'All') matchStatus = (s === filterStatus.toLowerCase());
-    
+
     let matchPartner = true;
     if (filterPartner) {
       const clientData = clients.find(c => c.name === p.clientName);
       const proposalPartnerId = clientData ? clientData.parent_id : null;
       if (filterPartner === 'self') {
-         matchPartner = (!proposalPartnerId || proposalPartnerId === user?._id);
+        matchPartner = (!proposalPartnerId || proposalPartnerId === user?._id);
       } else {
-         matchPartner = (proposalPartnerId === filterPartner);
+        matchPartner = (proposalPartnerId === filterPartner);
       }
     }
-    
+
     return matchStatus && matchPartner;
   });
 
@@ -2291,17 +2298,17 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
       fetchProposals();
     }
   }, [mode, categoryName]);
-  
+
   const handleFundSelect = (fund) => {
     setSelectedFund(fund);
     setStep(2);
   };
-  
+
   const handleClientSelect = (client) => {
     setSelectedClient(client);
     setStep(3);
   };
-  
+
   const handleAccountSubmit = () => {
     if (!accountDetails) return;
     setStep(4);
@@ -2325,7 +2332,7 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
         notes: `Share Price: ₹${price} | No. of Shares: ${qty} | Total Investment: ₹${totalInvestment.toLocaleString('en-IN')} | Account Details: ${accountDetails} | ISIN: ${selectedFund?.isin}`,
         sendToUserType: 'client'
       };
-      
+
       const res = await api.post('/proposals', payload);
       if (res.status === 201 || res.status === 200) {
         // Also create a ticket for this proposal
@@ -2443,9 +2450,9 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
                 {status}
               </button>
             ))}
-            
+
             <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 8px' }}></div>
-            
+
             <select
               value={filterPartner || ''}
               onChange={(e) => setFilterPartner(e.target.value)}
@@ -2477,7 +2484,7 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
                 const isAccepted = p.status?.toLowerCase().includes('accept');
                 const isDeclined = p.status?.toLowerCase().includes('declin');
                 const badgeColor = isAccepted ? '#10b981' : isDeclined ? '#ef4444' : '#f59e0b';
-                
+
                 return (
                   <div key={p._id || i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
@@ -2508,190 +2515,191 @@ function GenericStoreFlow({ clients = [], partners = [], categoryName, products 
           )}
 
           {/* Stepper */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative', overflowX: 'auto', paddingBottom: '10px' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }} />
-        {[
-          { num: 1, label: 'Select Fund' },
-          { num: 2, label: 'Choose Client' },
-          { num: 3, label: 'Account Details' },
-          { num: 4, label: 'Set Price & Quantity' },
-          { num: 5, label: 'Proposal Summary' }
-        ].map(s => {
-           const isActive = step === s.num;
-           const isDone = step > s.num;
-           return (
-             <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg)', padding: '0 12px', position: 'relative', zIndex: 1, whiteSpace: 'nowrap' }}>
-               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isDone ? '#22c55e' : isActive ? 'transparent' : 'rgba(255,255,255,0.1)', border: isActive ? '1px solid #a855f7' : 'none', color: isDone ? '#000' : isActive ? '#a855f7' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>
-                 {isDone ? '✓' : s.num}
-               </div>
-               <span style={{ fontSize: '13px', fontWeight: 700, color: isDone ? '#22c55e' : isActive ? '#a855f7' : 'rgba(255,255,255,0.4)' }}>{s.label}</span>
-             </div>
-           );
-        })}
-      </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative', overflowX: 'auto', paddingBottom: '10px' }}>
+            <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }} />
+            {[
+              { num: 1, label: 'Select Fund' },
+              { num: 2, label: 'Choose Client' },
+              { num: 3, label: 'Account Details' },
+              { num: 4, label: 'Set Price & Quantity' },
+              { num: 5, label: 'Proposal Summary' }
+            ].map(s => {
+              const isActive = step === s.num;
+              const isDone = step > s.num;
+              return (
+                <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg)', padding: '0 12px', position: 'relative', zIndex: 1, whiteSpace: 'nowrap' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isDone ? '#22c55e' : isActive ? 'transparent' : 'rgba(255,255,255,0.1)', border: isActive ? '1px solid #a855f7' : 'none', color: isDone ? '#000' : isActive ? '#a855f7' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>
+                    {isDone ? '✓' : s.num}
+                  </div>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: isDone ? '#22c55e' : isActive ? '#a855f7' : 'rgba(255,255,255,0.4)' }}>{s.label}</span>
+                </div>
+              );
+            })}
+          </div>
 
-      {/* Content based on Step */}
-      {step === 1 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-          {displayProducts.map(fund => (
-            <div key={fund.id} onClick={() => handleFundSelect(fund)} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '16px', padding: '24px', cursor: 'pointer', transition: 'all 0.2s' }} className="pre-ipo-card">
-              <style>{`
+          {/* Content based on Step */}
+          {step === 1 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+              {displayProducts.map(fund => (
+                <div key={fund.id} onClick={() => handleFundSelect(fund)} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '16px', padding: '24px', cursor: 'pointer', transition: 'all 0.2s' }} className="pre-ipo-card">
+                  <style>{`
                 .pre-ipo-card:hover { border-color: #22c55e !important; }
               `}</style>
-              <div style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>{fund.name}</div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>{fund.sector}</div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>IDENTIFIER (ISIN)</span>
-                <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.isin}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>MIN QTY</span>
-                <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.minQty} units</span>
-              </div>
-              
-              <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Choose Client <ArrowRight size={16} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                  <div style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>{fund.name}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>{fund.sector}</div>
 
-      {step === 2 && (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px' }}>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Select Client for {selectedFund?.name}</h3>
-          
-          <div style={{ display: 'grid', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
-            {clients.map((c, i) => {
-              return (
-              <div key={i} onClick={() => handleClientSelect(c)} style={{ padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="pre-ipo-client">
-                <style>{`.pre-ipo-client:hover { background: rgba(255,255,255,0.08) !important; }`}</style>
-                <div>
-                  <span style={{ fontWeight: 700, display: 'block' }}>{c.name || c.username || c.email}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>IDENTIFIER (ISIN)</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.isin}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>MIN QTY</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800 }}>{fund.minQty} units</span>
+                  </div>
+
+                  <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    Choose Client <ArrowRight size={16} />
+                  </div>
                 </div>
-                <ArrowRight size={16} color="#22c55e" />
-              </div>
-            )})}
-            {clients.length === 0 && (
-              <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No clients found. Please add a client first.</div>
-            )}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px' }}>
-            <button onClick={() => setStep(1)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back to Products</button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
-          <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Account Details</div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Enter client's demat or holding account details for {selectedFund?.name}</div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>ACCOUNT DETAILS / BOID</label>
-              <input type="text" value={accountDetails} onChange={e => setAccountDetails(e.target.value)} placeholder="Enter Demat ID or equivalent" style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '15px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
+              ))}
             </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
-            <button onClick={() => setStep(2)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
-            <button onClick={handleAccountSubmit} disabled={!accountDetails} style={{ background: '#a855f7', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!accountDetails) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!accountDetails) ? 0.5 : 1 }}>
-              Continue <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
-          <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Set Price & Quantity</div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>{categoryName} • {selectedFund?.name}</div>
-
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>SHARE PRICE (₹)</label>
-              <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="e.g. 6" style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>NO. OF SHARES</label>
-              <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder={`Min: ${selectedFund?.minQty}`} style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Available: {selectedFund?.available}</div>
-            </div>
-          </div>
-          
-          {(price && qty) && (
-             <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-               <span style={{ fontSize: '13px', color: '#d8b4fe', fontWeight: 700 }}>Total Investment</span>
-               <span style={{ fontSize: '18px', color: '#fff', fontWeight: 800 }}>₹{(Number(price) * Number(qty)).toLocaleString('en-IN')}</span>
-             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
-            <button onClick={() => setStep(3)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
-            <button onClick={handleQtySubmit} disabled={!qty || !price || Number(qty) < selectedFund?.minQty} style={{ background: '#a855f7', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!qty || !price || Number(qty) < selectedFund?.minQty) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!qty || !price || Number(qty) < selectedFund?.minQty) ? 0.5 : 1 }}>
-              Continue <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
+          {step === 2 && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Select Client for {selectedFund?.name}</h3>
 
-      {step === 5 && (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>Proposal Summary</h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Please Check & Confirm the Proposal before sending</p>
-          
-          <div style={{ background: '#fff', color: '#000', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
-            {/* Client Info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fca5a5', color: '#991b1b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 800 }}>
-                {selectedClient?.name ? selectedClient.name.charAt(0).toUpperCase() : 'C'}
+              <div style={{ display: 'grid', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
+                {clients.map((c, i) => {
+                  return (
+                    <div key={i} onClick={() => handleClientSelect(c)} style={{ padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="pre-ipo-client">
+                      <style>{`.pre-ipo-client:hover { background: rgba(255,255,255,0.08) !important; }`}</style>
+                      <div>
+                        <span style={{ fontWeight: 700, display: 'block' }}>{c.name || c.username || c.email}</span>
+                      </div>
+                      <ArrowRight size={16} color="#22c55e" />
+                    </div>
+                  )
+                })}
+                {clients.length === 0 && (
+                  <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No clients found. Please add a client first.</div>
+                )}
               </div>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{selectedClient?.name || selectedClient?.username || 'Unknown Client'}</div>
-                <div style={{ fontSize: '12px', color: '#6b7280' }}>{selectedClient?.phone || '(+91) 0000000000'}</div>
-                <div style={{ fontSize: '12px', color: '#9ca3af' }}>{selectedClient?.email || 'email@example.com'}</div>
-              </div>
-            </div>
-            
-            {/* Fund Info */}
-            <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '24px' }}>
-              {selectedFund?.name}
-            </div>
-            
-            {/* Price & Qty */}
-            <div style={{ display: 'flex', gap: '48px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
-              <div>
-                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Share Price</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{price}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>No. of Shares</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{qty}</div>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px' }}>
+                <button onClick={() => setStep(1)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back to Products</button>
               </div>
             </div>
-            
-            {/* Total Investment & Share button */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div>
-                <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>Total Investment</div>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>₹{(Number(price) * Number(qty)).toLocaleString('en-IN')}</div>
-              </div>
-              <button onClick={handleConfirm} disabled={isProposalSubmitting} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 24px', fontSize: '14px', fontWeight: 700, cursor: isProposalSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: isProposalSubmitting ? 0.7 : 1, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#6d28d9'} onMouseLeave={e => e.currentTarget.style.background = '#7c3aed'}>
-                {isProposalSubmitting ? 'Sharing...' : 'Share Proposal →'}
-              </button>
-            </div>
-          </div>
+          )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <button onClick={() => setStep(4)} style={{ background: 'transparent', color: '#fff', border: 'none', padding: '8px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ← Back to Set Price & Quantity
-            </button>
-          </div>
-        </div>
-      )}
-      </>
+          {step === 3 && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Account Details</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Enter client's demat or holding account details for {selectedFund?.name}</div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>ACCOUNT DETAILS / BOID</label>
+                  <input type="text" value={accountDetails} onChange={e => setAccountDetails(e.target.value)} placeholder="Enter Demat ID or equivalent" style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '15px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
+                <button onClick={() => setStep(2)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
+                <button onClick={handleAccountSubmit} disabled={!accountDetails} style={{ background: '#a855f7', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!accountDetails) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!accountDetails) ? 0.5 : 1 }}>
+                  Continue <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px' }}>Set Price & Quantity</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>{categoryName} • {selectedFund?.name}</div>
+
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>SHARE PRICE (₹)</label>
+                  <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="e.g. 6" style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>NO. OF SHARES</label>
+                  <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder={`Min: ${selectedFund?.minQty}`} style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 20px', color: '#fff', fontSize: '16px', outline: 'none' }} onFocus={e => e.target.style.borderColor = '#a855f7'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'} />
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Available: {selectedFund?.available}</div>
+                </div>
+              </div>
+
+              {(price && qty) && (
+                <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', color: '#d8b4fe', fontWeight: 700 }}>Total Investment</span>
+                  <span style={{ fontSize: '18px', color: '#fff', fontWeight: 800 }}>₹{(Number(price) * Number(qty)).toLocaleString('en-IN')}</span>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px' }}>
+                <button onClick={() => setStep(3)} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>Back</button>
+                <button onClick={handleQtySubmit} disabled={!qty || !price || Number(qty) < selectedFund?.minQty} style={{ background: '#a855f7', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px 24px', fontSize: '14px', fontWeight: 800, cursor: (!qty || !price || Number(qty) < selectedFund?.minQty) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: (!qty || !price || Number(qty) < selectedFund?.minQty) ? 0.5 : 1 }}>
+                  Continue <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', maxWidth: '600px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }}>Proposal Summary</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '32px' }}>Please Check & Confirm the Proposal before sending</p>
+
+              <div style={{ background: '#fff', color: '#000', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
+                {/* Client Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fca5a5', color: '#991b1b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 800 }}>
+                    {selectedClient?.name ? selectedClient.name.charAt(0).toUpperCase() : 'C'}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{selectedClient?.name || selectedClient?.username || 'Unknown Client'}</div>
+                    <div style={{ fontSize: '12px', color: '#6b7280' }}>{selectedClient?.phone || '(+91) 0000000000'}</div>
+                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>{selectedClient?.email || 'email@example.com'}</div>
+                  </div>
+                </div>
+
+                {/* Fund Info */}
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '24px' }}>
+                  {selectedFund?.name}
+                </div>
+
+                {/* Price & Qty */}
+                <div style={{ display: 'flex', gap: '48px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Share Price</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{price}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>No. of Shares</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827' }}>{qty}</div>
+                  </div>
+                </div>
+
+                {/* Total Investment & Share button */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div>
+                    <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>Total Investment</div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>₹{(Number(price) * Number(qty)).toLocaleString('en-IN')}</div>
+                  </div>
+                  <button onClick={handleConfirm} disabled={isProposalSubmitting} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 24px', fontSize: '14px', fontWeight: 700, cursor: isProposalSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: isProposalSubmitting ? 0.7 : 1, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#6d28d9'} onMouseLeave={e => e.currentTarget.style.background = '#7c3aed'}>
+                    {isProposalSubmitting ? 'Sharing...' : 'Share Proposal →'}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <button onClick={() => setStep(4)} style={{ background: 'transparent', color: '#fff', border: 'none', padding: '8px 0', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ← Back to Set Price & Quantity
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -2720,7 +2728,7 @@ function StoreTab({ clients = [], partners = [] }) {
       <div style={{ background: 'linear-gradient(135deg, rgba(30,41,59,0.8), rgba(15,23,42,0.9))', borderRadius: '24px', padding: '48px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '32px', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '150px', height: '150px', background: 'rgba(34, 197, 94, 0.05)', borderRadius: '50%' }}></div>
         <div style={{ position: 'absolute', bottom: '-20%', right: '-5%', width: '250px', height: '250px', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '50%' }}></div>
-        
+
         <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', marginBottom: '24px', position: 'relative', zIndex: 1 }}>Wealtharth Store</h2>
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', maxWidth: '600px', position: 'relative', zIndex: 1 }}>
           <Search size={18} color="rgba(255,255,255,0.4)" />
@@ -2746,69 +2754,69 @@ function StoreTab({ clients = [], partners = [] }) {
       {activeCategory === 'Home' ? (
         <>
 
-      {/* Portfolios Section */}
-      <div style={{ marginBottom: '40px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Wealtharth Portfolios</h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Expert-curated investment portfolios</p>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {PORTFOLIOS.map(port => (
-            <div key={port.id} style={{ background: 'var(--card)', border: `1px solid ${port.active ? '#22c55e' : 'var(--border)'}`, borderRadius: '16px', padding: '24px', position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
-                <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: port.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: port.iconColor, flexShrink: 0 }}>
-                  <TrendingUp size={24} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', lineHeight: 1.3 }}>{port.title}</div>
-                  {port.badge && <span style={{ display: 'inline-block', background: '#fff', color: '#1e3a8a', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '20px' }}>{port.badge}</span>}
-                </div>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Risk</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>{port.risk}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Duration</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>{port.duration}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Return</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>{port.return}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+          {/* Portfolios Section */}
+          <div style={{ marginBottom: '40px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Wealtharth Portfolios</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Expert-curated investment portfolios</p>
 
-      {/* Popular Products */}
-      <div>
-        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Popular Products</h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Top products from Wealtharth Store</p>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {PRODUCTS.map(prod => (
-            <div key={prod.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: prod.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: prod.color, fontSize: '16px', fontWeight: 800, flexShrink: 0 }}>
-                {prod.avatar}
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1.3 }}>{prod.title}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{prod.sub}</div>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {PORTFOLIOS.map(port => (
+                <div key={port.id} style={{ background: 'var(--card)', border: `1px solid ${port.active ? '#22c55e' : 'var(--border)'}`, borderRadius: '16px', padding: '24px', position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
+                    <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: port.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: port.iconColor, flexShrink: 0 }}>
+                      <TrendingUp size={24} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '6px', lineHeight: 1.3 }}>{port.title}</div>
+                      {port.badge && <span style={{ display: 'inline-block', background: '#fff', color: '#1e3a8a', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '20px' }}>{port.badge}</span>}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Risk</div>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>{port.risk}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Duration</div>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>{port.duration}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Return</div>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>{port.return}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+
+          {/* Popular Products */}
+          <div>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Popular Products</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>Top products from Wealtharth Store</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {PRODUCTS.map(prod => (
+                <div key={prod.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: prod.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: prod.color, fontSize: '16px', fontWeight: 800, flexShrink: 0 }}>
+                    {prod.avatar}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1.3 }}>{prod.title}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{prod.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </>
       ) : (
-        <GenericStoreFlow 
-          clients={clients} 
+        <GenericStoreFlow
+          clients={clients}
           partners={partners}
-          categoryName={activeCategory} 
-          products={STORE_MOCK_DATA[activeCategory] || []} 
+          categoryName={activeCategory}
+          products={STORE_MOCK_DATA[activeCategory] || []}
         />
       )}
     </div>
@@ -2827,7 +2835,7 @@ function AddEmployeeModal({ onClose, onAdd, clients = [] }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.phone) return;
-    
+
     try {
       const res = await api.post('/users', {
         name: form.name,
@@ -2859,10 +2867,10 @@ function AddEmployeeModal({ onClose, onAdd, clients = [] }) {
           <div className="modal-title" style={{ fontSize: '20px', fontWeight: 800 }}>Add New Employee</div>
           <button className="modal-close" onClick={onClose} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>✕</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div className="modal-body" style={{ overflowY: 'auto', padding: '16px 32px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
+
             <div style={{ display: 'flex', gap: '24px' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px' }}>FULL NAME <span style={{ color: '#ef4444' }}>*</span></label>
@@ -2913,7 +2921,7 @@ function AddEmployeeModal({ onClose, onAdd, clients = [] }) {
             </div>
 
           </div>
-          
+
           <div className="modal-footer" style={{ background: 'transparent', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px' }}>
             <button type="button" onClick={onClose} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
             <button type="submit" style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>Submit for Approval</button>
@@ -2937,7 +2945,7 @@ function EmployeesTab({ clients = [] }) {
       const res = await api.get('/users');
       const data = res.data;
       const emps = data.filter(u => u.role === 'employee');
-      
+
       const formatted = emps.map((emp, i) => ({
         id: emp.id || `EMP-${Math.floor(100 + i)}`,
         dbId: emp._id,
@@ -2952,7 +2960,7 @@ function EmployeesTab({ clients = [] }) {
         specialization: emp.specialization || '—',
         skills: emp.skills || ''
       }));
-      
+
       setEmployees(formatted);
     } catch (err) {
       console.error(err);
@@ -3019,56 +3027,56 @@ function EmployeesTab({ clients = [] }) {
         <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-            <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE ID</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>ROLE</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CONTACT</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>STATUS</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>JOINED</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: '14px' }}>No employees found.</td></tr>
-            ) : filtered.map((emp) => (
-              <tr 
-                key={emp.id} 
-                onMouseEnter={() => setHoveredRow(emp.id)} 
-                onMouseLeave={() => setHoveredRow(null)}
-                onClick={() => setSelectedEmp(emp)}
-                style={{ 
-                  borderBottom: '1px solid var(--border)', 
-                  background: hoveredRow === emp.id ? 'rgba(255,255,255,0.03)' : 'transparent', 
-                  transition: 'background 0.2s',
-                  cursor: 'pointer'
-                }}
-              >
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{emp.id}</span>
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
-                      {emp.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{emp.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        {emp.email}
+              <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE ID</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>EMPLOYEE</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>ROLE</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CONTACT</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>STATUS</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>JOINED</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: '14px' }}>No employees found.</td></tr>
+              ) : filtered.map((emp) => (
+                <tr
+                  key={emp.id}
+                  onMouseEnter={() => setHoveredRow(emp.id)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                  onClick={() => setSelectedEmp(emp)}
+                  style={{
+                    borderBottom: '1px solid var(--border)',
+                    background: hoveredRow === emp.id ? 'rgba(255,255,255,0.03)' : 'transparent',
+                    transition: 'background 0.2s',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <td style={{ padding: '16px 24px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#a5b4fc', background: 'rgba(34, 197, 94,0.1)', padding: '4px 8px', borderRadius: '4px' }}>{emp.id}</span>
+                  </td>
+                  <td style={{ padding: '16px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
+                        {emp.name.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{emp.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {emp.email}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{emp.role}</td>
-                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{emp.phone}</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <StatusBadge status={emp.status} />
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>{emp.joined}</td>
-              </tr>
-            ))}
-          </tbody>
+                  </td>
+                  <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{emp.role}</td>
+                  <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text)' }}>{emp.phone}</td>
+                  <td style={{ padding: '16px 24px' }}>
+                    <StatusBadge status={emp.status} />
+                  </td>
+                  <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>{emp.joined}</td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </div>
@@ -3085,7 +3093,7 @@ function EmployeesTab({ clients = [] }) {
               <button className="modal-close" onClick={() => setSelectedEmp(null)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>✕</button>
             </div>
             <div className="modal-body" style={{ padding: '16px 32px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
+
               {/* Profile Header Card */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #15803d, #22c55e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 800 }}>
@@ -3189,15 +3197,15 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
 
       let newProgress = selectedTicket.progress || 0;
       if (editStages.length > 0) {
-         let totalProgress = 0;
-         const stageWorth = 100 / editStages.length;
-         editStages.forEach(stage => {
-           if (stage.status === 'completed') totalProgress += stageWorth;
-           else if (stage.status === 'in-progress' || stage.status === 'in_process') {
-             totalProgress += (stageWorth * (stage.subProgress > 0 ? stage.subProgress / 100 : 0.5));
-           }
-         });
-         newProgress = Math.round(totalProgress);
+        let totalProgress = 0;
+        const stageWorth = 100 / editStages.length;
+        editStages.forEach(stage => {
+          if (stage.status === 'completed') totalProgress += stageWorth;
+          else if (stage.status === 'in-progress' || stage.status === 'in_process') {
+            totalProgress += (stageWorth * (stage.subProgress > 0 ? stage.subProgress / 100 : 0.5));
+          }
+        });
+        newProgress = Math.round(totalProgress);
       }
 
       setTickets(prev => prev.map(t => t.id === selectedTicket.id ? { ...t, progress: newProgress, notes: editNotes, rawTicket: { ...t.rawTicket, progress: newProgress, notes: editNotes, stages: editStages } } : t));
@@ -3365,7 +3373,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
           <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px', lineHeight: 1 }}>{hubFilteredTickets.length}</div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Tickets</div>
         </div>
-        
+
         <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
@@ -3430,110 +3438,110 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
 
         <div style={{ padding: '0 24px', display: 'flex', gap: '24px', borderBottom: '1px solid var(--border)' }}>
           {STATUS_FILTERS_TICKET.map(s => {
-             const isActive = filterStatus === s;
-             return (
-               <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '16px 0', background: 'transparent', border: 'none', borderBottom: isActive ? '2px solid #22c55e' : '2px solid transparent', color: isActive ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                 {s} <span style={{ background: isActive ? 'rgba(34, 197, 94,0.2)' : 'rgba(255,255,255,0.05)', color: isActive ? '#4ade80' : 'var(--text-muted)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{ticketCounts[s] || 0}</span>
-               </button>
-             );
+            const isActive = filterStatus === s;
+            return (
+              <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '16px 0', background: 'transparent', border: 'none', borderBottom: isActive ? '2px solid #22c55e' : '2px solid transparent', color: isActive ? '#fff' : 'var(--text-muted)', fontSize: '13px', fontWeight: isActive ? 700 : 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                {s} <span style={{ background: isActive ? 'rgba(34, 197, 94,0.2)' : 'rgba(255,255,255,0.05)', color: isActive ? '#4ade80' : 'var(--text-muted)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px' }}>{ticketCounts[s] || 0}</span>
+              </button>
+            );
           })}
         </div>
-        
+
         <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>TICKET ID</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CLIENT</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>SERVICE</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>PROGRESS</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CREATED BY</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>DATE</th>
-              <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST ACTIVITY</th>
-              <th style={{ padding: '16px 24px' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
-                  No tickets found. <span style={{ color: '#22c55e', cursor: 'pointer' }} onClick={() => setShowModal(true)}>Create one</span>
-                </td>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CLIENT</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>SERVICE</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>STATUS</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>PROGRESS</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>CREATED BY</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>DATE</th>
+                <th style={{ padding: '16px 24px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST ACTIVITY</th>
+                <th style={{ padding: '16px 24px' }}></th>
               </tr>
-            ) : filtered.map((ticket) => {
-              const isHovered = hoveredRow === ticket.id;
-              return (
-                <tr 
-                  key={ticket.id} 
-                  onMouseEnter={() => setHoveredRow(ticket.id)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                  style={{ 
-                    borderBottom: '1px solid var(--border)', 
-                    background: isHovered ? 'rgba(255,255,255,0.03)' : 'transparent', 
-                    transition: 'background 0.2s',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setSelectedTicket(ticket)}
-                >
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0' }}>#{ticket.id}</span>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Avatar name={ticket.client} size={36} gradient={ticket.status === 'Active' ? ['#22c55e', '#16a34a'] : ['#22c55e', '#16a34a']} fontSize={13} />
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.client}</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.rawTicket?.client?.email || 'N/A'}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.service}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.vertical}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: ticket.status === 'Active' ? 'rgba(34, 197, 94,0.1)' : 'rgba(254, 243, 199, 0.1)', color: ticket.status === 'Active' ? '#22c55e' : '#f59e0b', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: ticket.status === 'Active' ? '#22c55e' : '#f59e0b' }} />
-                      {ticket.status === 'In Process' ? 'Pending' : ticket.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px' }}>
-                      <div style={{ flex: 1, height: '6px', background: 'var(--bg)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: `${ticket.progress || 0}%`, height: '100%', background: ticket.status === 'Completed' ? '#22c55e' : '#3b82f6', borderRadius: '4px' }} />
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>{ticket.progress || 0}%</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'capitalize' }}>
-                      {ticket.rawTicket?.creatorRole === 'super_admin' || ticket.rawTicket?.creatorRole === 'admin' ? 'Admin' : (ticket.rawTicket?.creatorRole || 'Partner')}
-                    </span>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.created}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(ticket.rawTicket?.createdAt || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.lastUpdate}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(ticket.rawTicket?.updatedAt || ticket.rawTicket?.createdAt || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                    <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
-                      <MoreVertical size={16} />
-                    </button>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
+                    No tickets found. <span style={{ color: '#22c55e', cursor: 'pointer' }} onClick={() => setShowModal(true)}>Create one</span>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
+              ) : filtered.map((ticket) => {
+                const isHovered = hoveredRow === ticket.id;
+                return (
+                  <tr
+                    key={ticket.id}
+                    onMouseEnter={() => setHoveredRow(ticket.id)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                    style={{
+                      borderBottom: '1px solid var(--border)',
+                      background: isHovered ? 'rgba(255,255,255,0.03)' : 'transparent',
+                      transition: 'background 0.2s',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setSelectedTicket(ticket)}
+                  >
+                    <td style={{ padding: '16px 24px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0' }}>#{ticket.id}</span>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Avatar name={ticket.client} size={36} gradient={ticket.status === 'Active' ? ['#22c55e', '#16a34a'] : ['#22c55e', '#16a34a']} fontSize={13} />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.client}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.rawTicket?.client?.email || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{ticket.service}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ticket.vertical}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: ticket.status === 'Active' ? 'rgba(34, 197, 94,0.1)' : 'rgba(254, 243, 199, 0.1)', color: ticket.status === 'Active' ? '#22c55e' : '#f59e0b', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: ticket.status === 'Active' ? '#22c55e' : '#f59e0b' }} />
+                        {ticket.status === 'In Process' ? 'Pending' : ticket.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px' }}>
+                        <div style={{ flex: 1, height: '6px', background: 'var(--bg)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ width: `${ticket.progress || 0}%`, height: '100%', background: ticket.status === 'Completed' ? '#22c55e' : '#3b82f6', borderRadius: '4px' }} />
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>{ticket.progress || 0}%</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'capitalize' }}>
+                        {ticket.rawTicket?.creatorRole === 'super_admin' || ticket.rawTicket?.creatorRole === 'admin' ? 'Admin' : (ticket.rawTicket?.creatorRole || 'Partner')}
+                      </span>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.created}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(ticket.rawTicket?.createdAt || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{ticket.lastUpdate}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(ticket.rawTicket?.updatedAt || ticket.rawTicket?.createdAt || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                      <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
+                        <MoreVertical size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         </div>
       </div>
@@ -3542,14 +3550,14 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
         <CreateTicketModal
           onClose={() => setShowModal(false)}
           onSuccess={data => setTickets(prev => [{
-             id: data.client_id_ref || String(data._id).slice(-6).toUpperCase(),
-             clientId: data.client?._id || data.clientId,
-             client: data.client?.name || dbClients.find(c => String(c._id) === String(data.clientId))?.name || 'Client',
-             service: data.service,
-             vertical: 'service',
-             status: data.status || 'Active',
-             created: new Date(data.createdAt).toLocaleDateString('en-GB'),
-             lastUpdate: 'Just now'
+            id: data.client_id_ref || `CLT-${parseInt(String(data._id).substring(0,8), 16)}`,
+            clientId: data.client?._id || data.clientId,
+            client: data.client?.name || dbClients.find(c => String(c._id) === String(data.clientId))?.name || 'Client',
+            service: data.service,
+            vertical: 'service',
+            status: data.status || 'Active',
+            created: new Date(data.createdAt).toLocaleDateString('en-GB'),
+            lastUpdate: 'Just now'
           }, ...prev])}
           initialClients={dbClients}
         />
@@ -3621,47 +3629,47 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
                 </div>
               </div>
               {editStages.length > 0 && (
-                  <div style={{ marginTop: 24 }}>
-                    <div className="lead-view-title">Progress Timeline</div>
-                    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.1)' }}>
-                      <div style={{ position: 'absolute', left: '37px', top: '38px', bottom: '38px', width: '2px', background: 'rgba(255,255,255,0.05)', zIndex: 1 }} />
-                      {editStages.map((stage, idx) => {
-                         const isDone = stage.status === 'completed';
-                         const isProg = stage.status === 'in-progress' || stage.status === 'in_process';
-                         const isPend = !isDone && !isProg;
-                         const color = isDone ? '#22c55e' : isProg ? '#3b82f6' : '#475569';
-                         const icon = isDone ? '✓' : isProg ? '↻' : '○';
-                         return (
-                           <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', position: 'relative', zIndex: 2 }}>
-                             <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isDone ? 'rgba(34,197,94,0.15)' : isProg ? 'rgba(59,130,246,0.15)' : 'rgba(71,85,105,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color, fontWeight: 800, fontSize: '14px', flexShrink: 0, marginTop: '2px' }}>
-                               {icon}
-                             </div>
-                             <div style={{ flex: 1 }}>
-                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                 <div style={{ fontSize: '14px', fontWeight: 700, color: isPend ? 'var(--text-muted)' : 'var(--text)' }}>{stage.name || `Stage ${idx + 1}`}</div>
-                                 <div style={{ background: 'rgba(255,255,255,0.05)', color: color, padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, textTransform: 'capitalize' }}>
-                                   {stage.status === 'in_process' ? 'in-progress' : stage.status || 'pending'}
-                                 </div>
-                               </div>
-                               {isProg && (
-                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
-                                   <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                                     <div style={{ width: `${stage.subProgress || 50}%`, height: '100%', background: color, borderRadius: '3px', transition: 'width 0.3s ease' }} />
-                                   </div>
-                                   <div style={{ fontSize: '12px', fontWeight: 700, color }}>{stage.subProgress || 50}%</div>
-                                 </div>
-                               )}
-                             </div>
-                           </div>
-                         );
-                      })}
-                    </div>
+                <div style={{ marginTop: 24 }}>
+                  <div className="lead-view-title">Progress Timeline</div>
+                  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(148,163,184,0.1)' }}>
+                    <div style={{ position: 'absolute', left: '37px', top: '38px', bottom: '38px', width: '2px', background: 'rgba(255,255,255,0.05)', zIndex: 1 }} />
+                    {editStages.map((stage, idx) => {
+                      const isDone = stage.status === 'completed';
+                      const isProg = stage.status === 'in-progress' || stage.status === 'in_process';
+                      const isPend = !isDone && !isProg;
+                      const color = isDone ? '#22c55e' : isProg ? '#3b82f6' : '#475569';
+                      const icon = isDone ? '✓' : isProg ? '↻' : '○';
+                      return (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', position: 'relative', zIndex: 2 }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isDone ? 'rgba(34,197,94,0.15)' : isProg ? 'rgba(59,130,246,0.15)' : 'rgba(71,85,105,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color, fontWeight: 800, fontSize: '14px', flexShrink: 0, marginTop: '2px' }}>
+                            {icon}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '14px', fontWeight: 700, color: isPend ? 'var(--text-muted)' : 'var(--text)' }}>{stage.name || `Stage ${idx + 1}`}</div>
+                              <div style={{ background: 'rgba(255,255,255,0.05)', color: color, padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, textTransform: 'capitalize' }}>
+                                {stage.status === 'in_process' ? 'in-progress' : stage.status || 'pending'}
+                              </div>
+                            </div>
+                            {isProg && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+                                <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${stage.subProgress || 50}%`, height: '100%', background: color, borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                                </div>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color }}>{stage.subProgress || 50}%</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
+                </div>
               )}
               <div style={{ marginTop: 24 }}>
                 <div className="lead-view-title">Notes</div>
-                <textarea 
-                  value={editNotes} 
+                <textarea
+                  value={editNotes}
                   onChange={e => setEditNotes(e.target.value)}
                   style={{ width: '100%', padding: '16px', background: 'rgba(148, 163, 184, 0.12)', border: '1px solid rgba(148, 163, 184, 0.25)', borderRadius: '12px', color: '#f8fafc', fontSize: '13px', minHeight: '100px', resize: 'vertical' }}
                   placeholder="No notes available."
@@ -3687,18 +3695,18 @@ function AnalyticsTab({ leads = [], tickets = [] }) {
   const convertedLeads = leads.filter(l => l.status === 'converted').length;
   const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
   const total = tickets.length || 0;
-  
+
   const funnelData = [
-    { label: 'New',            val: leads.filter(l => l.status === 'new' || !l.status).length, color: '#22c55e' },
-    { label: 'In Discussion',  val: leads.filter(l => l.status === 'in_discussion').length, color: '#f59e0b' },
-    { label: 'Converted',      val: convertedLeads, color: '#22c55e' },
+    { label: 'New', val: leads.filter(l => l.status === 'new' || !l.status).length, color: '#22c55e' },
+    { label: 'In Discussion', val: leads.filter(l => l.status === 'in_discussion').length, color: '#f59e0b' },
+    { label: 'Converted', val: convertedLeads, color: '#22c55e' },
     { label: 'Not Interested', val: leads.filter(l => l.status === 'not_interested').length, color: '#ef4444' },
   ];
 
   const verticalData = [
-    { label: 'Claim Hub',  tickets: 3, color: '#7c3aed' },
-    { label: 'Service Hub',tickets: 2, color: '#0891b2' },
-    { label: 'Store',      tickets: 1, color: '#d97706' },
+    { label: 'Claim Hub', tickets: 3, color: '#7c3aed' },
+    { label: 'Service Hub', tickets: 2, color: '#0891b2' },
+    { label: 'Store', tickets: 1, color: '#d97706' },
   ];
 
   const monthly = [
@@ -3718,10 +3726,10 @@ function AnalyticsTab({ leads = [], tickets = [] }) {
       />
 
       <div className="stats-row cols-4" style={{ marginBottom: 28 }}>
-        <StatCard label="Total Leads"       value={MOCK_LEADS.length}   icon={<Target size={18} />}        trend="↑ 3 this month"       color="#22c55e" delay={0.05} />
-        <StatCard label="Conversion Rate"   value={`${conversionRate}%`} icon={<TrendingUp size={18} />}  trend="2 of 6 leads"         color="#22c55e" delay={0.1}  />
-        <StatCard label="Total Tickets"     value={total}                icon={<ClipboardCheck size={18} />} trend="3 verticals"        color="#7c3aed" delay={0.15} />
-        <StatCard label="Completed Tickets" value="2"                    icon={<CheckCircle2 size={18} />} trend="33% completion rate"  color="#f59e0b" delay={0.2}  />
+        <StatCard label="Total Leads" value={MOCK_LEADS.length} icon={<Target size={18} />} trend="↑ 3 this month" color="#22c55e" delay={0.05} />
+        <StatCard label="Conversion Rate" value={`${conversionRate}%`} icon={<TrendingUp size={18} />} trend="2 of 6 leads" color="#22c55e" delay={0.1} />
+        <StatCard label="Total Tickets" value={total} icon={<ClipboardCheck size={18} />} trend="3 verticals" color="#7c3aed" delay={0.15} />
+        <StatCard label="Completed Tickets" value="2" icon={<CheckCircle2 size={18} />} trend="33% completion rate" color="#f59e0b" delay={0.2} />
       </div>
 
       <div className="grid-2" style={{ marginBottom: 24 }}>
@@ -3824,28 +3832,28 @@ function InfoBanner({ color, title, body, Icon }) {
    SIDEBAR & TOPBAR FOR PARTNER
 ════════════════════════════════════════════════════════════════ */
 const getNavItems = (stats) => [
-  { id: 'overview',   label: 'Home',         icon: Home,          section: 'DASHBOARD', badge: 5 },
-  { id: 'leads',      label: 'Lead Centre',  icon: Layout,        section: 'DASHBOARD' },
-  { id: 'activity',   label: 'Activity Log', icon: Activity,      section: 'DASHBOARD' },
+  { id: 'overview', label: 'Home', icon: Home, section: 'DASHBOARD', badge: 5 },
+  { id: 'leads', label: 'Lead Centre', icon: Layout, section: 'DASHBOARD' },
+  { id: 'activity', label: 'Activity Log', icon: Activity, section: 'DASHBOARD' },
 
-  { id: 'clients',    label: 'My Client',    icon: Users,         section: 'PEOPLE',    badge: stats?.clients !== undefined ? stats.clients : 0 },
-  { id: 'employees',  label: 'My Employee',  icon: UserPlus,      section: 'PEOPLE',    badge: stats?.employees !== undefined ? stats.employees : 0 },
-  { id: 'partners',   label: 'My Partners',  icon: Users2,        section: 'PEOPLE',    badge: stats?.partners !== undefined ? stats.partners : 0 },
+  { id: 'clients', label: 'My Client', icon: Users, section: 'PEOPLE', badge: stats?.clients !== undefined ? stats.clients : 0 },
+  { id: 'employees', label: 'My Employee', icon: UserPlus, section: 'PEOPLE', badge: stats?.employees !== undefined ? stats.employees : 0 },
+  { id: 'partners', label: 'My Partners', icon: Users2, section: 'PEOPLE', badge: stats?.partners !== undefined ? stats.partners : 0 },
 
-  { id: 'tickets',    label: 'Service Hub',  icon: Settings,      section: 'OPERATIONS', badge: 5 },
-  { id: 'claim-hub',  label: 'Claim Hub',    icon: Scale,         section: 'OPERATIONS' },
-  { id: 'store',      label: 'Wealth Store', icon: ShoppingBag,   section: 'OPERATIONS' },
-  { id: 'marketplace',label: 'Marketplace',  icon: ShoppingBag,   section: 'OPERATIONS' },
+  { id: 'tickets', label: 'Service Hub', icon: Settings, section: 'OPERATIONS', badge: 5 },
+  { id: 'claim-hub', label: 'Claim Hub', icon: Scale, section: 'OPERATIONS' },
+  { id: 'store', label: 'Wealth Store', icon: ShoppingBag, section: 'OPERATIONS' },
+  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag, section: 'OPERATIONS' },
 
-  { id: 'task',       label: 'Task',         icon: CheckSquare,   section: 'APPS & TOOLS', badge: 8 },
-  { id: 'calendar',   label: 'Calendar',     icon: Calendar,      section: 'APPS & TOOLS' },
-  { id: 'document',   label: 'Document',     icon: FileText,      section: 'APPS & TOOLS' },
-  { id: 'automation', label: 'Automation',   icon: GitMerge,      section: 'APPS & TOOLS', badge: 'Soon', badgeColor: '#facc15', badgeBg: 'rgba(250, 204, 21, 0.15)' },
-  { id: 'calculator', label: 'Calculator',   icon: Calculator,    section: 'APPS & TOOLS' },
+  { id: 'task', label: 'Task', icon: CheckSquare, section: 'APPS & TOOLS', badge: 8 },
+  { id: 'calendar', label: 'Calendar', icon: Calendar, section: 'APPS & TOOLS' },
+  { id: 'document', label: 'Document', icon: FileText, section: 'APPS & TOOLS' },
+  { id: 'automation', label: 'Automation', icon: GitMerge, section: 'APPS & TOOLS', badge: 'Soon', badgeColor: '#facc15', badgeBg: 'rgba(250, 204, 21, 0.15)' },
+  { id: 'calculator', label: 'Calculator', icon: Calculator, section: 'APPS & TOOLS' },
 
-  { id: 'poster',     label: 'Poster',       icon: Monitor,       section: 'RESOURCE' },
-  { id: 'academy',    label: 'My Academy',   icon: BookOpen,      section: 'RESOURCE' },
-  { id: 'product',    label: 'Product Deck', icon: Box,           section: 'RESOURCE' },
+  { id: 'poster', label: 'Poster', icon: Monitor, section: 'RESOURCE' },
+  { id: 'academy', label: 'My Academy', icon: BookOpen, section: 'RESOURCE' },
+  { id: 'product', label: 'Product Deck', icon: Box, section: 'RESOURCE' },
 ];
 
 const PartnerSidebar = ({ activePage, setPage, user, onLogout, stats }) => {
@@ -3925,12 +3933,12 @@ const PartnerSidebar = ({ activePage, setPage, user, onLogout, stats }) => {
 };
 
 const PAGE_META = {
-  overview:  { title: 'Dashboard', sub: 'Your frontline originations overview' },
-  leads:     { title: 'My Leads', sub: 'Manage your direct pipeline' },
-  clients:   { title: 'My Clients', sub: 'Your scoped converted accounts' },
-  tickets:   { title: 'My Tickets', sub: 'Service updates inside your scope' },
+  overview: { title: 'Dashboard', sub: 'Your frontline originations overview' },
+  leads: { title: 'My Leads', sub: 'Manage your direct pipeline' },
+  clients: { title: 'My Clients', sub: 'Your scoped converted accounts' },
+  tickets: { title: 'My Tickets', sub: 'Service updates inside your scope' },
   analytics: { title: 'Analytics', sub: 'Conversion and volume trends' },
-  profile:   { title: 'My Profile', sub: 'Your personal contact and account details' },
+  profile: { title: 'My Profile', sub: 'Your personal contact and account details' },
 };
 
 const PartnerTopbar = ({ page, setPage, onLogout }) => {
@@ -4016,22 +4024,22 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
       <div>
         {page === 'overview' ? (
           <div className="animate-slide-up">
-            <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 800, 
-              color: '#475569', 
+            <div style={{
+              fontSize: '24px',
+              fontWeight: 800,
+              color: '#475569',
               letterSpacing: '-0.5px',
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
             }}>
-            Welcome back, <span style={{ color: '#22c55e', fontWeight: 800 }}>
-              {user?.name ? (user.name.toLowerCase().includes('partner') ? user.name : user.name.split(' ')[0]) : 'Partner'}
-            </span> <span className="wave" style={{ fontSize: '24px', display: 'inline-block', animation: 'wave 2.5s infinite', transformOrigin: '70% 70%' }}>👋</span>
+              Welcome back, <span style={{ color: '#22c55e', fontWeight: 800 }}>
+                {user?.name ? (user.name.toLowerCase().includes('partner') ? user.name : user.name.split(' ')[0]) : 'Partner'}
+              </span> <span className="wave" style={{ fontSize: '24px', display: 'inline-block', animation: 'wave 2.5s infinite', transformOrigin: '70% 70%' }}>👋</span>
             </div>
-            <div style={{ 
-              color: '#64748b', 
-              fontSize: '14px', 
+            <div style={{
+              color: '#64748b',
+              fontSize: '14px',
               fontWeight: 500,
               display: 'flex',
               alignItems: 'center',
@@ -4067,9 +4075,9 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
         <div style={{ position: 'relative' }} ref={profileMenuRef}>
           <button
             onClick={() => setShowProfileMenu(prev => !prev)}
-            style={{ 
+            style={{
               width: '42px', height: '42px', borderRadius: '50%', padding: 0, background: 'transparent',
-              border: showProfileMenu ? '1.5px solid #10B981' : '1px solid transparent', 
+              border: showProfileMenu ? '1.5px solid #10B981' : '1px solid transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               color: 'var(--text-muted)'
             }}
@@ -4078,7 +4086,7 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
               {(user?.name || 'P').charAt(0).toUpperCase()}
             </div>
           </button>
-          
+
           {showProfileMenu && (
             <div className="animate-slide-up" style={{
               position: 'absolute',
@@ -4190,7 +4198,7 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
         </div>
 
         <div style={{ position: 'relative' }} ref={dropdownRef}>
-          <div 
+          <div
             onClick={handleBellClick}
             style={{ width: '46px', height: '46px', borderRadius: '12px', background: 'var(--bg)', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           >
@@ -4206,10 +4214,10 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="animate-slide-up" style={{ 
-              position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: '340px', 
-              background: '#0f172a', border: '1px solid var(--border)', borderRadius: '16px', 
-              boxShadow: '0 10px 40px rgba(0,0,0,0.5)', overflow: 'hidden', zIndex: 100 
+            <div className="animate-slide-up" style={{
+              position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: '340px',
+              background: '#0f172a', border: '1px solid var(--border)', borderRadius: '16px',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.5)', overflow: 'hidden', zIndex: 100
             }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34, 197, 94, 0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Notifications</div>
@@ -4221,22 +4229,22 @@ const PartnerTopbar = ({ page, setPage, onLogout }) => {
               </div>
               <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
                 {notifications.length > 0 ? notifications.map((notif) => (
-                  <div key={notif._id} style={{ 
-                    padding: '16px 20px', 
-                    borderBottom: '1px solid var(--border)', 
+                  <div key={notif._id} style={{
+                    padding: '16px 20px',
+                    borderBottom: '1px solid var(--border)',
                     background: 'transparent',
                     display: 'flex', gap: '12px', alignItems: 'flex-start'
                   }}>
                     <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {notif.action.toLowerCase().includes('create') ? <Clock size={16} /> : 
-                       notif.action.toLowerCase().includes('delete') ? <Activity size={16} /> :
-                       <ShieldCheck size={16} />}
+                      {notif.action.toLowerCase().includes('create') ? <Clock size={16} /> :
+                        notif.action.toLowerCase().includes('delete') ? <Activity size={16} /> :
+                          <ShieldCheck size={16} />}
                     </div>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', marginBottom: '4px', lineHeight: 1.4 }}>{notif.action}</div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', gap: '8px' }}>
                         <span>{new Date(notif.createdAt).toLocaleDateString()}</span>
-                        <span>{new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        <span>{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     </div>
                   </div>
@@ -4506,33 +4514,33 @@ export default function SuperPartnerDashboard() {
     if (dbData.loading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Synchronizing dashboard data...</div>;
 
     switch (page) {
-      case 'profile':   return <PartnerProfileView user={user} />;
-      case 'overview':  return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
-      case 'leads':     return <LeadsTab />;
-      case 'clients':   return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} partners={dbData.users.filter(u => u.role === 'partner' || u.role === 'super_partner')} selectedPartnerId={selectedPartnerForClients} onClearPartnerFilter={() => setSelectedPartnerForClients(null)} onPartnerFilterChange={setSelectedPartnerForClients} />;
+      case 'profile': return <PartnerProfileView user={user} />;
+      case 'overview': return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} clients={dbData.clients} />;
+      case 'leads': return <LeadsTab />;
+      case 'clients': return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} partners={dbData.users.filter(u => u.role === 'partner' || u.role === 'super_partner')} selectedPartnerId={selectedPartnerForClients} onClearPartnerFilter={() => setSelectedPartnerForClients(null)} onPartnerFilterChange={setSelectedPartnerForClients} />;
       case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
       case 'employees': return <EmployeesTab clients={dbData.clients} />;
       case 'partners': return <PartnersTab partners={dbData.users.filter(u => u.role === 'partner')} onViewClients={(id) => { setSelectedPartnerForClients(id); setPage('clients'); }} />;
-      case 'store':     return <WealthManagementStore />;
+      case 'store': return <WealthManagementStore />;
       case 'marketplace': return <StoreTab clients={dbData.clients} partners={dbData.users} />;
-      case 'task':      return <TaskTab />;
-      case 'calendar':  return <CalendarTab />;
-      case 'document':  return <DocumentTab />;
-      case 'calculator':return <CalculatorTab />;
-      case 'academy':   return <AcademyTab />;
-      case 'automation':return <ComingSoonTab title="Automation Engine Loading..." />;
-      case 'poster':    return <ComingSoonTab title="Poster Generator Loading..." />;
-      case 'product':   return <ComingSoonTab title="Product Deck Loading..." />;
+      case 'task': return <TaskTab />;
+      case 'calendar': return <CalendarTab />;
+      case 'document': return <DocumentTab />;
+      case 'calculator': return <CalculatorTab />;
+      case 'academy': return <AcademyTab />;
+      case 'automation': return <ComingSoonTab title="Automation Engine Loading..." />;
+      case 'poster': return <ComingSoonTab title="Poster Generator Loading..." />;
+      case 'product': return <ComingSoonTab title="Product Deck Loading..." />;
       case 'activity':
-        return <TicketsTab 
-          tickets={dbData.tickets} 
+        return <TicketsTab
+          tickets={dbData.tickets}
           clients={dbData.clients}
           onNavigate={setPage}
         />;
-      case 'tickets':   return <PartnerServiceHubTab type="service" onTicketCreated={() => setPage('activity')} />;
+      case 'tickets': return <PartnerServiceHubTab type="service" onTicketCreated={() => setPage('activity')} />;
       case 'claim-hub': return <PartnerServiceHubTab type="claim" onTicketCreated={() => setPage('activity')} />;
       case 'analytics': return <AnalyticsTab leads={dbData.leads} tickets={dbData.tickets} />;
-      default:          return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
+      default: return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} clients={dbData.clients} />;
     }
   };
 
@@ -4551,7 +4559,7 @@ export default function SuperPartnerDashboard() {
         .bell-animate:hover { animation: bellRing 1s ease-in-out infinite; }
         .partner-page-wrap { position: relative; overflow: hidden; display: flex; flex: 1; z-index: 1; }
       `}</style>
-      
+
       {/* Background Particles */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
         {[
@@ -4574,18 +4582,18 @@ export default function SuperPartnerDashboard() {
       </div>
 
       <div className="partner-page-wrap">
-      {/* ← Dedicated Partner Sidebar (replaces shared Sidebar for this role) */}
-      <PartnerSidebar activePage={page} setPage={setPage} user={user} onLogout={handleLogout} stats={dashboardStats} />
+        {/* ← Dedicated Partner Sidebar (replaces shared Sidebar for this role) */}
+        <PartnerSidebar activePage={page} setPage={setPage} user={user} onLogout={handleLogout} stats={dashboardStats} />
 
-      {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-        <PartnerTopbar page={page} setPage={setPage} onLogout={handleLogout} />
-        <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'transparent' }}>
-          <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-            {renderPage()}
+        {/* Main Content Area */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+          <PartnerTopbar page={page} setPage={setPage} onLogout={handleLogout} />
+          <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'transparent' }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+              {renderPage()}
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

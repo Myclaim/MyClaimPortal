@@ -222,10 +222,14 @@ const createUser = async (req, res) => {
     }
 
     // Auto-generate client_id_ref if not provided, using epoch time format (e.g., CLT-1698765432)
-    let finalClientIdRef = client_id_ref;
-    if (!finalClientIdRef && ['client', 'partner', 'super_partner'].includes(role)) {
-      finalClientIdRef = `CLT-${Date.now()}`;
-    }
+      let finalClientIdRef = client_id_ref;
+      if (!finalClientIdRef && ['client', 'partner', 'super_partner', 'admin'].includes(role)) {
+        let prefix = 'CLT';
+        if (role === 'partner') prefix = 'PRT';
+        else if (role === 'super_partner') prefix = 'SPR';
+        else if (role === 'admin') prefix = 'ADM';
+        finalClientIdRef = `${prefix}-${Math.floor(Date.now() / 1000)}`;
+      }
 
     let newUser;
     const payload = {
@@ -388,12 +392,18 @@ const enrolClient = async (req, res) => {
 
     let parsedParentId = (parent_id === '' || parent_id == null || !mongoose.Types.ObjectId.isValid(parent_id)) ? undefined : parent_id;
 
+    let finalClientIdRef = client_id_ref;
+    if (!finalClientIdRef) {
+      finalClientIdRef = `CLT-${Math.floor(Date.now() / 1000)}`;
+    }
+
     const clientPayload = {
       ...req.body,
       name,
       email: normalizedEmail,
       username: generatedUsername,
       password: hashedPassword,
+      client_id_ref: finalClientIdRef,
       role: 'client',
       parent_id: parsedParentId
     };

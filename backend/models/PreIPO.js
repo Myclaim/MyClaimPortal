@@ -6,7 +6,7 @@ const preIPOSchema = new mongoose.Schema(
     name: { type: String, required: true },
     category: { type: String, default: 'Pre-IPO Equity' },
     subCategory: { type: String }, // e.g., Food Tech, Fintech
-    price: { type: Number, required: true },
+    price: { type: String, required: true },
     totalEquity: { type: Number, required: true },
     availableEquity: { type: Number, required: true },
     stages: { type: Number, default: 4 },

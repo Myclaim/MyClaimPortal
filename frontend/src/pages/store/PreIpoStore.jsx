@@ -6,11 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 const DEFAULT_STORE_SERVICES = [
-  { id: 't1', code: 'STR-SWG-001', name: 'Swiggy', category: 'Pre-IPO Equity', subCategory: 'Food Tech', price: 485, stages: 4, status: true, mappedStore: 'Store A', description: 'Pre-IPO shares of Swiggy', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
-  { id: 't2', code: 'STR-PHP-002', name: 'PhonePe', category: 'Pre-IPO Equity', subCategory: 'Fintech', price: 1240, stages: 4, status: true, mappedStore: 'Store B', description: 'Pre-IPO shares of PhonePe', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
-  { id: 't3', code: 'STR-ATH-003', name: 'Ather Energy', category: 'Pre-IPO Equity', subCategory: 'EV', price: 680, stages: 4, status: true, mappedStore: 'All Stores', description: 'Pre-IPO shares of Ather Energy', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
-  { id: 't4', code: 'STR-LNS-004', name: 'Lenskart', category: 'Pre-IPO Equity', subCategory: 'Retail', price: 340, stages: 4, status: true, mappedStore: 'All Stores', description: 'Pre-IPO shares of Lenskart', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
-  { id: 't5', code: 'STR-BYJ-005', name: "BYJU's", category: 'Pre-IPO Equity', subCategory: 'EdTech', price: 12, stages: 4, status: false, mappedStore: 'Store A', description: "Pre-IPO shares of BYJU's", tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
+  { id: 't1', code: 'STR-SWG-001', name: 'Swiggy', category: 'Pre-IPO Equity', subCategory: 'Food Tech', price: '480 - 495', stages: 4, status: true, mappedStore: 'Store A', description: 'Pre-IPO shares of Swiggy', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
+  { id: 't2', code: 'STR-PHP-002', name: 'PhonePe', category: 'Pre-IPO Equity', subCategory: 'Fintech', price: '1200 - 1250', stages: 4, status: true, mappedStore: 'Store B', description: 'Pre-IPO shares of PhonePe', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
+  { id: 't3', code: 'STR-ATH-003', name: 'Ather Energy', category: 'Pre-IPO Equity', subCategory: 'EV', price: '650 - 700', stages: 4, status: true, mappedStore: 'All Stores', description: 'Pre-IPO shares of Ather Energy', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
+  { id: 't4', code: 'STR-LNS-004', name: 'Lenskart', category: 'Pre-IPO Equity', subCategory: 'Retail', price: '320 - 360', stages: 4, status: true, mappedStore: 'All Stores', description: 'Pre-IPO shares of Lenskart', tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
+  { id: 't5', code: 'STR-BYJ-005', name: "BYJU's", category: 'Pre-IPO Equity', subCategory: 'EdTech', price: '10 - 15', stages: 4, status: false, mappedStore: 'Store A', description: "Pre-IPO shares of BYJU's", tracking: ['Order Placed', 'Payment Verified', 'Transfer Initiated', 'Shares Credited'] },
 ];
 
 const PreIpoStore = () => {
@@ -30,7 +30,7 @@ const PreIpoStore = () => {
     try {
       const { data } = await api.get('/pre-ipo');
       if (data && data.length > 0) {
-        setStoreFunds(data.map(ipo => ({
+        setStoreFunds(data.filter(ipo => ipo.status !== false).map(ipo => ({
           ...ipo,
           id: ipo._id,
           sector: ipo.subCategory || 'Pre-IPO',
@@ -238,7 +238,7 @@ const PreIpoStore = () => {
                       <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 700 }}>{f.isin}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Price</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Price Range</span>
                       <span style={{ fontSize: '13px', color: '#10b981', fontWeight: 800 }}>₹{f.price}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', background: 'rgba(59, 130, 246, 0.05)', padding: '8px', borderRadius: '6px' }}>

@@ -137,7 +137,7 @@ function Avatar({ name, size = 36, gradient = ['#15803d', '#22c55e'], fontSize =
 /* ═══════════════════════════════════════════════════════════════
    TAB: OVERVIEW
 ════════════════════════════════════════════════════════════════ */
-function OverviewTab({ onNavigate, stats, recentLeads }) {
+function OverviewTab({ onNavigate, stats, recentLeads, clients = [] }) {
   const KpiCard = ({ title, value, icon: Icon, trend, iconBg, trendBg, trendColor }) => (
     <div style={{
       background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px',
@@ -306,25 +306,29 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Real progress bars removed for now, or you can map `clients.slice(0,5)` to them instead of fake list */}
-            {[
-              { name: 'Priya Mehta', id: 'CLT-12345678', progress: 65, color: '#f97316' },
-            ].map((client, i) => (
+            {clients.length > 0 ? clients.slice(0, 5).map((client, i) => {
+              const colors = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#eab308'];
+              const color = colors[i % colors.length];
+              const progress = 65 + (i * 5); // Dummy progress for now
+              return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: client.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
-                  {client.name.split(' ').map(n => n[0]).join('')}
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
+                  {client.name ? client.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'CL'}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>{client.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{client.id}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{client.client_id_ref || `CLT-${parseInt(String(client._id).substring(0,8), 16)} || '0000'}`}</div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', width: '80px' }}>
                   <div style={{ width: '100%', height: '6px', background: 'var(--bg)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ width: `${client.progress}%`, height: '100%', background: client.color, borderRadius: '4px' }}></div>
+                    <div style={{ width: `${progress}%`, height: '100%', background: color, borderRadius: '4px' }}></div>
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: client.color }}>{client.progress}%</div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: color }}>{progress}%</div>
                 </div>
               </div>
-            ))}
+            )}) : (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No clients found.</div>
+            )}
           </div>
         </div>
 
@@ -410,7 +414,7 @@ function AddLeadModal({ onClose, onAdd }) {
       const { data } = await api.post('/leads', payload);
       
       onAdd({
-        id: data.client_id_ref || String(data._id).slice(-6).toUpperCase(),
+        id: data.client_id_ref || `CLT-${parseInt(String(data._id).substring(0,8), 16)}`,
         name: data.name,
         phone: data.phone,
         service: data.serviceInterest || 'N/A',
@@ -523,7 +527,7 @@ function LeadsTab() {
         myLeads = data.filter(l => l.sourceUserId?._id === user?._id);
         
         const formatted = myLeads.map(l => ({
-          id: l.client_id_ref || String(l._id).slice(-6).toUpperCase(),
+          id: l.client_id_ref || `CLT-${parseInt(String(l._id).substring(0,8), 16)}`,
           name: l.name,
           phone: l.phone,
           email: l.email || '—',
@@ -1220,7 +1224,7 @@ function ClientsTab({ onNavigateToClient }) {
 
         const formatted = myClients.map((c, i) => ({
           // Identity
-          id: c.client_id_ref || String(c._id).slice(-6).toUpperCase(),
+          id: c.client_id_ref || `CLT-${parseInt(String(c._id).substring(0,8), 16)}`,
           dbId: c._id,
           name: c.name,
           email: c.email || '—',
@@ -3453,7 +3457,7 @@ function TicketsTab({ tickets: initialTickets = [], clients = [], onNavigate }) 
         <CreateTicketModal
           onClose={() => setShowModal(false)}
           onSuccess={data => setTickets(prev => [{
-             id: data.client_id_ref || String(data._id).slice(-6).toUpperCase(),
+             id: data.client_id_ref || `CLT-${parseInt(String(data._id).substring(0,8), 16)}`,
              clientId: data.client?._id || data.clientId,
              client: data.client?.name || dbClients.find(c => String(c._id) === String(data.clientId))?.name || 'Client',
              service: data.service,
@@ -4412,7 +4416,7 @@ export default function PartnerDashboard() {
 
     switch (page) {
       case 'profile':   return <PartnerProfileView user={user} />;
-      case 'overview':  return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
+      case 'overview':  return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} clients={dbData.clients} />;
       case 'leads':     return <LeadsTab />;
       case 'clients':   return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} />;
       case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
@@ -4436,7 +4440,7 @@ export default function PartnerDashboard() {
       case 'tickets':   return <PartnerServiceHubTab type="service" onTicketCreated={() => setPage('activity')} />;
       case 'claim-hub': return <PartnerServiceHubTab type="claim" onTicketCreated={() => setPage('activity')} />;
       case 'analytics': return <AnalyticsTab leads={dbData.leads} tickets={dbData.tickets} />;
-      default:          return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} />;
+      default:          return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} clients={dbData.clients} />;
     }
   };
 

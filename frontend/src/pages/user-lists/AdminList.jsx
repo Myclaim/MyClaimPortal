@@ -137,7 +137,7 @@ const AdminList = () => {
         phone.includes(q) ||
         department.includes(q) ||
         role.includes(q) ||
-        String(u._id || '').slice(-6).toLowerCase().includes(q)
+        String(u._id || '').slice(-4).toLowerCase().includes(q)
       );
     });
   }, [admins, query, statusFilter, roleFilter, departmentFilter, dateFrom, dateTo]);
@@ -178,7 +178,7 @@ const AdminList = () => {
   const UserRow = ({ user }) => (
     <tr style={{ cursor: 'pointer' }}>
       <td>
-        <b style={{ color: 'var(--blue)', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px' }}>{user.client_id_ref || String(user._id).slice(-6).toUpperCase()}</b>
+        <b style={{ color: 'var(--blue)', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px' }}>{user.client_id_ref || `ADM-${parseInt(String(user._id).substring(0,8), 16)}`}</b>
       </td>
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -494,7 +494,7 @@ const AdminList = () => {
                   <div style={{ marginBottom: 32 }}>
                     <div className="va-row">
                       <span className="va-label">User ID</span>
-                      <span className="va-value">{activeAdmin.client_id_ref || String(activeAdmin._id).slice(-6).toUpperCase()}</span>
+                      <span className="va-value">{activeAdmin.client_id_ref || `ADM-${parseInt(String(activeAdmin._id).substring(0,8), 16)}`}</span>
                     </div>
                     <div className="va-row">
                       <span className="va-label">User Name</span>
@@ -650,7 +650,7 @@ const AdminList = () => {
           <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '760px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title" style={{ fontSize: '20px' }}>
-                Edit Admin — {(editForm.client_id_ref || String(editForm._id).slice(-6).toUpperCase())}
+                Edit Admin — {(editForm.client_id_ref || `ADM-${parseInt(String(editForm._id).substring(0,8), 16)}`)}
               </div>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />

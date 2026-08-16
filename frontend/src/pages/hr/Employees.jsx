@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Search, Download, Eye, Edit2, Trash2, Plus, X, Ticket,
   CheckCircle2, Loader2, Users, Briefcase, RefreshCw, ChevronRight,
@@ -223,7 +223,7 @@ const AdminEmployeeManagement = () => {
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
-        <td><b style={{ fontFamily: 'monospace', fontSize: 12 }}>{String(emp._id).slice(-6).toUpperCase()}</b></td>
+        <td><b style={{ fontFamily: 'monospace', fontSize: 12 }}>{emp.client_id_ref || `EMP-${parseInt(String(emp._id).substring(0,8), 16)}`}</b></td>
         <td>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{

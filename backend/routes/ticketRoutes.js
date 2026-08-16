@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { protect, admin } = require('../middleware/authMiddleware');
 const uploadDocs = require('../middleware/docsUploadMiddleware');
-const { getTickets, getTicketById, createTicket, updateTicketStatus, updateEmployeeTicketStatus, assignTicket, addTicketComment, bulkUpdateTickets, escalateTicket, addTicketAttachment, updateTicketStages } = require('../controllers/ticketController');
+const { getTickets, getTicketById, createTicket, updateTicketStatus, updateEmployeeTicketStatus, assignTicket, addTicketComment, bulkUpdateTickets, escalateTicket, addTicketAttachment, updateTicketStages, updateTicketDetails } = require('../controllers/ticketController');
 
 router.route('/').get(protect, getTickets).post(protect, createTicket);
-router.route('/:id').get(protect, getTicketById);
+router.route('/:id').get(protect, getTicketById).patch(protect, admin, updateTicketDetails);
 router.route('/bulk').patch(protect, admin, bulkUpdateTickets);
 router.route('/:id/status').patch(protect, updateTicketStatus);
 router.route('/:id/employee-status').patch(protect, updateEmployeeTicketStatus);
