@@ -123,7 +123,7 @@ const ClientProfile = ({ idProp, onClose }) => {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px', fontSize: '12px', color: '#64748b' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={12} strokeWidth={3} color="#10b981" /> {client?.phone || 'N/A'} <CheckCircle2 size={12} color="#10b981" fill="#f0fdf4" /></span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={12} strokeWidth={3} color="#10b981" /> {client?.phone ? (client.phone.startsWith('+') ? client.phone : `+91 ${client.phone}`) : 'N/A'} <CheckCircle2 size={12} color="#10b981" fill="#f0fdf4" /></span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={12} /> {client?.email}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> {client?.city || 'Location N/A'}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '10px' }}>
@@ -286,7 +286,7 @@ const ProfileView = ({ client, onEdit }) => {
         { label: 'Client Code / ID', value: client?.client_id_ref || client?._id, blue: true },
         { label: 'Username', value: client?.username || '—' },
         { label: 'Email (Login)', value: client?.email || '—' },
-        { label: 'Phone', value: client?.phone || '—', verified: !!client?.phone }
+        { label: 'Phone', value: client?.phone ? (client.phone.startsWith('+') ? client.phone : `+91 ${client.phone}`) : '—', verified: !!client?.phone }
       ]} />
 
       <ProfileSection title="2. Personal Info" onEdit={() => onEdit(2)} data={[
@@ -1177,7 +1177,15 @@ const TicketsView = ({ tickets }) => (
 );
 
 const EditClientModal = ({ client, section, onClose, onSave }) => {
-  const [formData, setFormData] = useState({ ...client });
+  const match = (client.phone || '').match(/^(\+\d{1,4})\s?(.*)$/);
+  const initialPhoneCountryCode = match ? match[1] : '+91';
+  const initialPhone = match ? match[2] : (client.phone || '');
+  
+  const [formData, setFormData] = useState({ 
+    ...client,
+    phoneCountryCode: initialPhoneCountryCode,
+    phone: initialPhone
+  });
   const [saving, setSaving] = useState(false);
   const [files, setFiles] = useState({});
 
@@ -1191,7 +1199,9 @@ const EditClientModal = ({ client, section, onClose, onSave }) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.patch(`/users/${client._id}`, formData);
+      const payload = { ...formData, phone: formData.phone ? `${formData.phoneCountryCode} ${formData.phone}` : '' };
+      delete payload.phoneCountryCode;
+      await api.patch(`/users/${client._id}`, payload);
 
       if (Object.keys(files).length > 0) {
         const fileForm = new FormData();
@@ -1222,7 +1232,24 @@ const EditClientModal = ({ client, section, onClose, onSave }) => {
               <div className="form-group"><label className="form-label">Email</label><input className="form-input" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
             </div>
             <div className="form-row cols-1" style={{ marginTop: 16 }}>
-              <div className="form-group"><label className="form-label">Phone</label><input className="form-input" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
+              <div className="form-group">
+                <label className="form-label">Phone</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select 
+                    className="form-select" 
+                    style={{ width: '100px', flexShrink: 0 }} 
+                    value={formData.phoneCountryCode} 
+                    onChange={e => setFormData({...formData, phoneCountryCode: e.target.value})}
+                  >
+                    <option value="+91">+91 (IN)</option>
+                    <option value="+1">+1 (US)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+61">+61 (AU)</option>
+                    <option value="+971">+971 (AE)</option>
+                  </select>
+                  <input className="form-input" style={{ flex: 1 }} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                </div>
+              </div>
             </div>
           </>
         );

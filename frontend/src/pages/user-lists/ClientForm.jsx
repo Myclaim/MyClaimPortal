@@ -80,7 +80,7 @@ const ClientForm = () => {
     // Step 2
     name: '', dob: '', gender: 'Male', maritalStatus: '', oldName: '', citizenship: 'Indian',
     // Step 3
-    phone: '', alternatePhone: '', email: '', myClaimEmail: '',
+    phone: '', phoneCountryCode: '+91', alternatePhone: '', alternatePhoneCountryCode: '+91', email: '', myClaimEmail: '',
     country: 'India', state: '', city: '', pincode: '', permanentAddress: '', temporaryAddress: '',
     stateOld: '', cityOld: '', pincodeOld: '', oldAddress: '',
     // Step 4
@@ -204,6 +204,8 @@ const ClientForm = () => {
 
       const payload = {
         ...form,
+        phone: form.phone ? `${form.phoneCountryCode} ${form.phone}` : '',
+        alternatePhone: form.alternatePhone ? `${form.alternatePhoneCountryCode} ${form.alternatePhone}` : '',
         relationWithHolder: form.relationWithHolder === 'Other' ? form.relationWithHolderOther : form.relationWithHolder,
         nomineeRelation: form.nomineeRelation === 'Other' ? form.nomineeRelationOther : form.nomineeRelation,
         name: form.name || `${form.firstName} ${form.lastName}`.trim() || form.username,
@@ -374,9 +376,33 @@ const ClientForm = () => {
                 <>
                   <div className="cf-section">STEP 3: CONTACT & ADDRESS</div>
                   <div className="cf-grid">
-                    <div className="cf-group"><label className="cf-label">Phone <span>*</span></label><input name="phone" className="cf-input" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} /></div>
+                    <div className="cf-group">
+                      <label className="cf-label">Phone <span>*</span></label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select name="phoneCountryCode" className="cf-select" style={{ width: '90px', padding: '11px 8px', flexShrink: 0 }} value={form.phoneCountryCode} onChange={handleChange}>
+                          <option value="+91">+91 (IN)</option>
+                          <option value="+1">+1 (US)</option>
+                          <option value="+44">+44 (UK)</option>
+                          <option value="+61">+61 (AU)</option>
+                          <option value="+971">+971 (AE)</option>
+                        </select>
+                        <input name="phone" className="cf-input" placeholder="98765 43210" value={form.phone} onChange={handleChange} style={{ flex: 1 }} />
+                      </div>
+                    </div>
                     <div className="cf-group"><label className="cf-label">Email <span>*</span></label><input name="email" type="email" className="cf-input" placeholder="john@email.com" value={form.email} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Alternate Phone</label><input name="alternatePhone" className="cf-input" value={form.alternatePhone} onChange={handleChange} /></div>
+                    <div className="cf-group">
+                      <label className="cf-label">Alternate Phone</label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select name="alternatePhoneCountryCode" className="cf-select" style={{ width: '90px', padding: '11px 8px', flexShrink: 0 }} value={form.alternatePhoneCountryCode} onChange={handleChange}>
+                          <option value="+91">+91 (IN)</option>
+                          <option value="+1">+1 (US)</option>
+                          <option value="+44">+44 (UK)</option>
+                          <option value="+61">+61 (AU)</option>
+                          <option value="+971">+971 (AE)</option>
+                        </select>
+                        <input name="alternatePhone" className="cf-input" placeholder="98765 43210" value={form.alternatePhone} onChange={handleChange} style={{ flex: 1 }} />
+                      </div>
+                    </div>
                     <div className="cf-group"><label className="cf-label">MyClaim Email</label><input name="myClaimEmail" type="email" className="cf-input" value={form.myClaimEmail} onChange={handleChange} /></div>
                     <div className="cf-group" style={{ gridColumn: 'span 2' }}><label className="cf-label">Permanent Address</label><textarea name="permanentAddress" className="cf-input" style={{ minHeight: 68 }} value={form.permanentAddress} onChange={handleChange}></textarea></div>
                     <div className="cf-group"><label className="cf-label">City</label><input name="city" className="cf-input" value={form.city} onChange={handleChange} /></div>
