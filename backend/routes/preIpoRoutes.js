@@ -65,6 +65,19 @@ router.put('/:id', protect, admin, async (req, res) => {
   }
 });
 
+// Delete Pre-IPO (Admin Only)
+router.delete('/:id', protect, admin, async (req, res) => {
+  try {
+    const preIpo = await PreIPO.findById(req.params.id);
+    if (!preIpo) return res.status(404).json({ message: 'Pre-IPO not found' });
+    
+    await preIpo.deleteOne();
+    res.json({ message: 'Pre-IPO removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Allocate shares to a client (Admin, Partner, Super Partner)
 router.post('/:id/allocate', protect, adminOrSuperPartner, async (req, res) => {
   try {

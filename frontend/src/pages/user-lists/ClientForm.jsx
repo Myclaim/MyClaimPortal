@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { extractAadharDetails, extractPanDetails } from '../../utils/ocrUtils';
+import { COUNTRY_CODES } from '../../utils/countryCodes';
 
 const ClientForm = () => {
   const navigate = useNavigate();
@@ -380,11 +381,9 @@ const ClientForm = () => {
                       <label className="cf-label">Phone <span>*</span></label>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <select name="phoneCountryCode" className="cf-select" style={{ width: '90px', padding: '11px 8px', flexShrink: 0 }} value={form.phoneCountryCode} onChange={handleChange}>
-                          <option value="+91">+91 (IN)</option>
-                          <option value="+1">+1 (US)</option>
-                          <option value="+44">+44 (UK)</option>
-                          <option value="+61">+61 (AU)</option>
-                          <option value="+971">+971 (AE)</option>
+                          {COUNTRY_CODES.map(c => (
+                            <option key={c.code} value={c.code}>{c.label}</option>
+                          ))}
                         </select>
                         <input name="phone" className="cf-input" placeholder="98765 43210" value={form.phone} onChange={handleChange} style={{ flex: 1 }} />
                       </div>
@@ -394,11 +393,9 @@ const ClientForm = () => {
                       <label className="cf-label">Alternate Phone</label>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <select name="alternatePhoneCountryCode" className="cf-select" style={{ width: '90px', padding: '11px 8px', flexShrink: 0 }} value={form.alternatePhoneCountryCode} onChange={handleChange}>
-                          <option value="+91">+91 (IN)</option>
-                          <option value="+1">+1 (US)</option>
-                          <option value="+44">+44 (UK)</option>
-                          <option value="+61">+61 (AU)</option>
-                          <option value="+971">+971 (AE)</option>
+                          {COUNTRY_CODES.map(c => (
+                            <option key={c.code} value={c.code}>{c.label}</option>
+                          ))}
                         </select>
                         <input name="alternatePhone" className="cf-input" placeholder="98765 43210" value={form.alternatePhone} onChange={handleChange} style={{ flex: 1 }} />
                       </div>

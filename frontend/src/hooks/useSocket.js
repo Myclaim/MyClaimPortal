@@ -10,11 +10,8 @@ export const getSocketUrl = () => {
       return import.meta.env.VITE_API_URL;
     }
   }
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return `${window.location.protocol}//${window.location.hostname}:5005`;
-    }
-    return window.location.origin;
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5005';
   }
   return 'https://myclaimportal.onrender.com';
 };

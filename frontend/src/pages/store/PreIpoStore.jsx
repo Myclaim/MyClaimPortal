@@ -24,10 +24,7 @@ const PreIpoStore = () => {
 
   const [storeFunds, setStoreFunds] = useState([]);
   const { user } = useAuth();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingIpo, setEditingIpo] = useState(null);
-  const [ipoFormData, setIpoFormData] = useState({ name: '', subCategory: '', price: '', totalEquity: '' });
+
 
   const fetchPreIpos = async () => {
     try {
@@ -54,47 +51,6 @@ const PreIpoStore = () => {
     } catch (error) {
       console.error('Error fetching Pre-IPOs', error);
     }
-  };
-
-  const handleCreateIpo = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post('/pre-ipo', ipoFormData);
-      setIsAddModalOpen(false);
-      setIpoFormData({ name: '', subCategory: '', price: '', totalEquity: '', description: '' });
-      fetchPreIpos();
-    } catch (err) {
-      alert('Error creating IPO: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
-  const handleUpdateIpo = async (e) => {
-    e.preventDefault();
-    try {
-      await api.put(`/pre-ipo/${editingIpo._id}`, {
-        price: ipoFormData.price,
-        totalEquity: ipoFormData.totalEquity
-      });
-      setIsEditModalOpen(false);
-      setEditingIpo(null);
-      fetchPreIpos();
-    } catch (err) {
-      alert('Error updating IPO: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
-  const openEditModal = (fund, e) => {
-    e.stopPropagation();
-    if (!fund._id) {
-      alert('This is a default mock IPO and cannot be edited. Please add a new real IPO.');
-      return;
-    }
-    setEditingIpo(fund);
-    setIpoFormData({
-      price: fund.price,
-      totalEquity: fund.totalEquity
-    });
-    setIsEditModalOpen(true);
   };
 
 
@@ -220,15 +176,7 @@ const PreIpoStore = () => {
         <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text)', marginBottom: '4px' }}>Store Pre-IPO</h1>
         <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Pre-IPO shares — Select company, choose client, set quantity, buy/sell</p>
       
-        {(user?.role === 'super_admin' || user?.role === 'admin') && (
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            style={{ padding: '8px 16px', background: 'var(--blue)', color: '#fff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, float: 'right' }}
-          >
-            <Plus size={16} /> Add IPO
-          </button>
-        )}
-</div>
+      </div>
 
       {/* Store-wise Dashboard */}
       <div style={{ padding: '32px 32px 0', maxWidth: '1200px', margin: '0 auto' }}>
@@ -298,14 +246,7 @@ const PreIpoStore = () => {
                       <span style={{ fontSize: '13px', color: 'var(--blue)', fontWeight: 800 }}>{f.availableEquity !== undefined ? f.availableEquity : 5000}</span>
                     </div>
 
-                    {(user?.role === 'super_admin' || user?.role === 'admin') && (
-                      <button 
-                        onClick={(e) => openEditModal(f, e)}
-                        style={{ position: 'absolute', top: 12, right: 12, padding: '6px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-muted)' }}
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                    )}
+
 
 
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto' }}>
@@ -433,44 +374,7 @@ const PreIpoStore = () => {
 
       </div>
 
-      {/* ADD IPO MODAL */}
-      {isAddModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--card)', width: 400, borderRadius: '16px', padding: '32px', border: '1px solid var(--border)' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px', color: 'var(--text)' }}>Add New Pre-IPO</h2>
-            <form onSubmit={handleCreateIpo}>
-              <input placeholder="Company Name" required value={ipoFormData.name} onChange={e => setIpoFormData({...ipoFormData, name: e.target.value})} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' }} />
-              <input placeholder="Sector (e.g. Fintech)" value={ipoFormData.subCategory} onChange={e => setIpoFormData({...ipoFormData, subCategory: e.target.value})} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' }} />
-              <input type="number" placeholder="Price per Share" required value={ipoFormData.price} onChange={e => setIpoFormData({...ipoFormData, price: e.target.value})} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' }} />
-              <input type="number" placeholder="Total Equity (Quantity)" required value={ipoFormData.totalEquity} onChange={e => setIpoFormData({...ipoFormData, totalEquity: e.target.value})} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' }} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', cursor: 'pointer', fontWeight: 700 }}>Cancel</button>
-                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: 'var(--blue)', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>Add IPO</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* EDIT IPO MODAL */}
-      {isEditModalOpen && editingIpo && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--card)', width: 400, borderRadius: '16px', padding: '32px', border: '1px solid var(--border)' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px', color: 'var(--text)' }}>Update {editingIpo.name}</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '24px' }}>Modify current price or equity limit.</p>
-            <form onSubmit={handleUpdateIpo}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>Price per Share</label>
-              <input type="number" required value={ipoFormData.price} onChange={e => setIpoFormData({...ipoFormData, price: e.target.value})} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' }} />
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>Total Equity</label>
-              <input type="number" required value={ipoFormData.totalEquity} onChange={e => setIpoFormData({...ipoFormData, totalEquity: e.target.value})} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' }} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="button" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', cursor: 'pointer', fontWeight: 700 }}>Cancel</button>
-                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: 'var(--blue)', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );

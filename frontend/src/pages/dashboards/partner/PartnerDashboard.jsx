@@ -305,12 +305,9 @@ function OverviewTab({ onNavigate, stats, recentLeads }) {
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '24px' }}>Average 72% Completed</div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Real progress bars removed for now, or you can map `clients.slice(0,5)` to them instead of fake list */}
             {[
-              { name: 'Priya Mehta', id: 'CL-000', progress: 65, color: '#f97316' },
-              { name: 'Amit Patel', id: 'CL-001', progress: 86, color: '#8b5cf6' },
-              { name: 'Suresh Kumar', id: 'CL-002', progress: 90, color: '#22c55e' },
-              { name: 'Neha Gupta', id: 'CL-003', progress: 37, color: '#06b6d4' },
-              { name: 'Vikram Joshi', id: 'CL-004', progress: 55, color: '#f97316' },
+              { name: 'Priya Mehta', id: 'CLT-12345678', progress: 65, color: '#f97316' },
             ].map((client, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: client.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 800 }}>
@@ -1223,7 +1220,7 @@ function ClientsTab({ onNavigateToClient }) {
 
         const formatted = myClients.map((c, i) => ({
           // Identity
-          id: c.client_id_ref || `CL-${String(i + 1).padStart(3, '0')}`,
+          id: c.client_id_ref || String(c._id).slice(-6).toUpperCase(),
           dbId: c._id,
           name: c.name,
           email: c.email || '—',

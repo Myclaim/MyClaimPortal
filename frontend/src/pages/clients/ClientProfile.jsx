@@ -12,6 +12,7 @@ import ClientDocumentsHub from '../../components/documents/ClientDocumentsHub';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
 import AddFamilyMemberModal from '../../components/forms/AddFamilyMemberModal';
 import useAuth from '../../hooks/useAuth';
+import { COUNTRY_CODES } from '../../utils/countryCodes';
 
 const ClientProfile = ({ idProp, onClose }) => {
   const navigate = useNavigate();
@@ -433,25 +434,32 @@ const StatBox = ({ title, data, meta }) => (
   </div>
 );
 
-const FamilyTreeNode = ({ name, role, isClient }) => (
-  <div style={{ 
+const FamilyTreeNode = ({ name, role, isClient, onClick }) => (
+  <div onClick={onClick} style={{ 
     background: isClient ? '#2563eb' : '#fff', 
     border: `2px solid ${isClient ? '#1d4ed8' : '#e2e8f0'}`,
     color: isClient ? '#fff' : '#0f172a',
-    padding: '12px 24px', 
-    borderRadius: '12px', 
-    minWidth: '120px',
+    padding: '16px 24px', 
+    borderRadius: '16px', 
+    minWidth: '160px',
     textAlign: 'center',
     boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
     position: 'relative',
-    zIndex: 2
-  }}>
+    zIndex: 2,
+    cursor: onClick ? 'pointer' : 'default',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+  }}
+  onMouseOver={e => { if(onClick) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)'; } }}
+  onMouseOut={e => { if(onClick) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)'; } }}
+  >
     <div style={{ fontWeight: 800, fontSize: '14px' }}>{name}</div>
     <div style={{ fontSize: '10px', color: isClient ? '#bfdbfe' : '#64748b', fontWeight: 800, marginTop: 4, textTransform: 'uppercase' }}>{role}</div>
   </div>
 );
 
 const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
+  const [selectedMember, setSelectedMember] = useState(null);
+
   const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
   const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
   const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
@@ -475,7 +483,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
         {/* Ancestors Level */}
         {ancestors.length > 0 && (
           <div style={{ display: 'flex', gap: '30px', marginBottom: '40px', position: 'relative' }}>
-            {ancestors.map((m, i) => <FamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {ancestors.map((m, i) => <FamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
             <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
             {ancestors.length > 1 && (
               <div style={{ position: 'absolute', bottom: '-20px', left: '10%', right: '10%', height: '2px', background: '#cbd5e1', zIndex: 1 }} />
@@ -488,7 +496,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
           
           {/* Siblings (Left) */}
           <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-end' }}>
-            {siblings.map((m, i) => <FamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {siblings.map((m, i) => <FamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
             {siblings.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', right: '-40px', width: '40px', height: '2px', background: '#cbd5e1', zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
@@ -496,7 +504,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
 
           {/* Client Node (Center) */}
           <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center' }}>
-            <FamilyTreeNode name={client?.name} role="PRIMARY CLIENT" isClient={true} />
+            <FamilyTreeNode name={client?.name} role="PRIMARY CLIENT" isClient={true} onClick={() => setSelectedMember(client)} />
             {children.length > 0 && (
               <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
             )}
@@ -507,7 +515,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
             {spouse.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', left: '-40px', width: '40px', height: '2px', background: '#cbd5e1', zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
-            {spouse.map((m, i) => <FamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {spouse.map((m, i) => <FamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
           </div>
         </div>
 
@@ -520,7 +528,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
             {children.map((m, i) => (
               <div key={`child-${i}`} style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '-20px', left: '50%', width: '2px', height: '20px', background: '#cbd5e1', transform: 'translateX(-50%)', zIndex: 1 }} />
-                <FamilyTreeNode name={m.name} role={m.relationWithHolder} />
+                <FamilyTreeNode name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />
               </div>
             ))}
           </div>
@@ -532,7 +540,7 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
             <div style={{ height: '1px', background: '#e2e8f0', margin: '0 0 20px' }} />
             <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#64748b', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Other Relatives</h4>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {others.map((m, i) => <FamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} />)}
+              {others.map((m, i) => <FamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
             </div>
           </div>
         )}
@@ -546,6 +554,37 @@ const FamilyTreeView = ({ familyMembers, client, onRefresh, onAddFamily }) => {
         )}
 
       </div>
+
+      {selectedMember && (
+        <div className="modal-overlay open" onClick={() => setSelectedMember(null)} style={{ zIndex: 1200 }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ color: '#0f172a' }}>{selectedMember === client ? 'Primary Client Details' : 'Member Details'}</h3>
+              <button className="modal-close" onClick={() => setSelectedMember(null)} style={{ color: '#64748b' }}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>{selectedMember.name || selectedMember.username || 'N/A'}</div></div>
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Relation</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>{selectedMember === client ? 'Self' : (selectedMember.relationWithHolder || 'N/A')}</div></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Phone</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>{selectedMember.phone || 'N/A'}</div></div>
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px', wordBreak: 'break-all' }}>{selectedMember.email || 'N/A'}</div></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Aadhaar</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>{selectedMember.aadharNo || selectedMember.kyc_data?.aadhaar || 'N/A'}</div></div>
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>PAN</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>{selectedMember.panNo || selectedMember.kyc_data?.pan || 'N/A'}</div></div>
+              </div>
+              {selectedMember.dob && (
+                <div><span style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>DOB</span><div style={{ fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>{new Date(selectedMember.dob).toLocaleDateString('en-GB')}</div></div>
+              )}
+            </div>
+            <div className="modal-footer" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginTop: '8px' }}>
+              <button className="topbar-btn secondary" onClick={() => setSelectedMember(null)} style={{ width: '100%' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1241,11 +1280,9 @@ const EditClientModal = ({ client, section, onClose, onSave }) => {
                     value={formData.phoneCountryCode} 
                     onChange={e => setFormData({...formData, phoneCountryCode: e.target.value})}
                   >
-                    <option value="+91">+91 (IN)</option>
-                    <option value="+1">+1 (US)</option>
-                    <option value="+44">+44 (UK)</option>
-                    <option value="+61">+61 (AU)</option>
-                    <option value="+971">+971 (AE)</option>
+                    {COUNTRY_CODES.map(c => (
+                      <option key={c.code} value={c.code}>{c.label}</option>
+                    ))}
                   </select>
                   <input className="form-input" style={{ flex: 1 }} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
                 </div>

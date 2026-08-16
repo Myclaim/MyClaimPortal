@@ -650,7 +650,7 @@ const AdminList = () => {
           <div className="modal" style={{ animation: 'fadeInScale 0.3s forwards', maxWidth: '760px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title" style={{ fontSize: '20px' }}>
-                Edit Admin — {(editForm.client_id_ref || editForm._id || '').toString().slice(-6).toUpperCase()}
+                Edit Admin — {(editForm.client_id_ref || String(editForm._id).slice(-6).toUpperCase())}
               </div>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />

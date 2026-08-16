@@ -221,6 +221,12 @@ const createUser = async (req, res) => {
       parsedParentId = req.user._id;
     }
 
+    // Auto-generate client_id_ref if not provided, using epoch time format (e.g., CLT-1698765432)
+    let finalClientIdRef = client_id_ref;
+    if (!finalClientIdRef && ['client', 'partner', 'super_partner'].includes(role)) {
+      finalClientIdRef = `CLT-${Date.now()}`;
+    }
+
     let newUser;
     const payload = {
       name,
@@ -232,7 +238,7 @@ const createUser = async (req, res) => {
       password: hashedPassword,
       role: role || 'team',
       parent_id: parsedParentId,
-      client_id_ref,
+      client_id_ref: finalClientIdRef,
       address: req.body.address,
       // Add all possible client fields
       firstName: req.body.firstName,

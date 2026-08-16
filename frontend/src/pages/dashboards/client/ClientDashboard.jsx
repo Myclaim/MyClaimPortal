@@ -973,7 +973,7 @@ const MyClaimsView = ({ claims, navigate }) => {
    DASHBOARD TAB VIEW (default, no ?tab or ?tab=dashboard)
 ═══════════════════════════════════════════════ */
 /* ── FAMILY TREE COMPONENT ── */
-const ClientFamilyTreeNode = ({ name, role, isClient }) => (
+const ClientFamilyTreeNode = ({ name, role, isClient, onClick }) => (
   <div style={{ 
     background: isClient ? 'linear-gradient(135deg, #10B981, #059669)' : 'var(--family-node-bg)', 
     border: `2px solid ${isClient ? 'rgba(16,185,129,0.5)' : 'var(--family-node-border)'}`,
@@ -987,10 +987,12 @@ const ClientFamilyTreeNode = ({ name, role, isClient }) => (
       : 'var(--family-node-shadow)',
     position: 'relative',
     zIndex: 2,
+    cursor: onClick ? 'pointer' : 'default',
     backdropFilter: 'blur(8px)',
     transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
   }}
   className="family-node-hover"
+  onClick={onClick}
   >
     <div style={{ fontWeight: 800, fontSize: '14px', letterSpacing: '-0.3px', color: isClient ? '#fff' : 'var(--dashboard-text)' }}>{name}</div>
     <div style={{ fontSize: '10px', color: isClient ? '#A7F3D0' : 'var(--family-role-color)', fontWeight: 800, margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{role}</div>
@@ -998,6 +1000,8 @@ const ClientFamilyTreeNode = ({ name, role, isClient }) => (
 );
 
 const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
+  const [selectedMember, setSelectedMember] = useState(null);
+
   const ancestors = familyMembers.filter(m => ['Father', 'Mother', 'Grandfather', 'Grandmother'].includes(m.relationWithHolder));
   const siblings = familyMembers.filter(m => ['Brother', 'Sister'].includes(m.relationWithHolder));
   const children = familyMembers.filter(m => ['Son', 'Daughter'].includes(m.relationWithHolder));
@@ -1078,7 +1082,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
         {/* Ancestors Level */}
         {ancestors.length > 0 && (
           <div style={{ display: 'flex', gap: '30px', marginBottom: '40px', position: 'relative' }}>
-            {ancestors.map((m, i) => <ClientFamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {ancestors.map((m, i) => <ClientFamilyTreeNode key={`anc-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
             <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
             {ancestors.length > 1 && (
               <div style={{ position: 'absolute', bottom: '-20px', left: '10%', right: '10%', height: '2px', background: lineBg, zIndex: 1 }} />
@@ -1091,7 +1095,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
           
           {/* Siblings (Left) */}
           <div style={{ display: 'flex', gap: '20px', position: 'relative', justifyContent: 'flex-end' }}>
-            {siblings.map((m, i) => <ClientFamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {siblings.map((m, i) => <ClientFamilyTreeNode key={`sib-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
             {siblings.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', right: '-40px', width: '40px', height: '2px', background: lineBg, zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
@@ -1099,7 +1103,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
 
           {/* Client Node (Center) */}
           <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center' }}>
-            <ClientFamilyTreeNode name={client?.name || 'Primary Client'} role="PRIMARY CLIENT" isClient={true} />
+            <ClientFamilyTreeNode name={client?.name || 'Primary Client'} role="PRIMARY CLIENT" isClient={true} onClick={() => setSelectedMember(client)} />
             {(children.length > 0 || spouse.length > 0) && (
               <div style={{ position: 'absolute', bottom: '-40px', left: '50%', width: '2px', height: '40px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
             )}
@@ -1110,7 +1114,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
             {spouse.length > 0 && (
               <div style={{ position: 'absolute', top: '50%', left: '-40px', width: '40px', height: '2px', background: lineBg, zIndex: 1, transform: 'translateY(-50%)' }} />
             )}
-            {spouse.map((m, i) => <ClientFamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} />)}
+            {spouse.map((m, i) => <ClientFamilyTreeNode key={`sp-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
           </div>
         </div>
 
@@ -1123,7 +1127,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
             {children.map((m, i) => (
               <div key={`child-${i}`} style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '-20px', left: '50%', width: '2px', height: '20px', background: lineBg, transform: 'translateX(-50%)', zIndex: 1 }} />
-                <ClientFamilyTreeNode name={m.name} role={m.relationWithHolder} />
+                <ClientFamilyTreeNode name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />
               </div>
             ))}
           </div>
@@ -1135,7 +1139,7 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.08)', margin: '0 0 20px' }} />
             <h4 style={{ fontSize: '13px', fontWeight: 800, color: CL.textMuted, marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Other Relatives</h4>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {others.map((m, i) => <ClientFamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} />)}
+              {others.map((m, i) => <ClientFamilyTreeNode key={`oth-${i}`} name={m.name} role={m.relationWithHolder} onClick={() => setSelectedMember(m)} />)}
             </div>
           </div>
         )}
@@ -1170,6 +1174,37 @@ const ClientFamilyTreeView = ({ familyMembers, client, onAddClick }) => {
         )}
 
       </div>
+
+      {selectedMember && (
+        <div className="modal-overlay open" onClick={() => setSelectedMember(null)} style={{ zIndex: 1200 }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', background: CL.card, border: `1px solid ${CL.border}` }}>
+            <div className="modal-header" style={{ borderBottom: `1px solid ${CL.border}` }}>
+              <h3 className="modal-title" style={{ color: CL.text }}>{selectedMember === client ? 'Primary Client Details' : 'Member Details'}</h3>
+              <button className="modal-close" onClick={() => setSelectedMember(null)} style={{ color: CL.textMuted }}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px' }}>{selectedMember.name || selectedMember.username || 'N/A'}</div></div>
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Relation</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px' }}>{selectedMember === client ? 'Self' : (selectedMember.relationWithHolder || 'N/A')}</div></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Phone</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px' }}>{selectedMember.phone || 'N/A'}</div></div>
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px', wordBreak: 'break-all' }}>{selectedMember.email || 'N/A'}</div></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Aadhaar</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px' }}>{selectedMember.aadharNo || selectedMember.kyc_data?.aadhaar || 'N/A'}</div></div>
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>PAN</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px' }}>{selectedMember.panNo || selectedMember.kyc_data?.pan || 'N/A'}</div></div>
+              </div>
+              {selectedMember.dob && (
+                <div><span style={{ color: CL.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>DOB</span><div style={{ fontWeight: 800, color: CL.text, marginTop: '4px' }}>{new Date(selectedMember.dob).toLocaleDateString('en-GB')}</div></div>
+              )}
+            </div>
+            <div className="modal-footer" style={{ borderTop: `1px solid ${CL.border}`, paddingTop: '16px', marginTop: '8px' }}>
+              <button className="topbar-btn secondary" onClick={() => setSelectedMember(null)} style={{ width: '100%' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

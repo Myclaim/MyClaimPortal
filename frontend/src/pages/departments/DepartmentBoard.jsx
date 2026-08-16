@@ -47,14 +47,16 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
 
   const fetchAllServices = async () => {
     try {
-      const res = await api.get('/department-services');
+      const [res, preIpoRes] = await Promise.all([
+        api.get('/department-services'),
+        api.get('/pre-ipo')
+      ]);
       let data = res.data;
       if (data.length === 0) {
         // Seed default data
         const seedData = [
           ...DEFAULT_CLAIM_SERVICES.map(s => ({ ...s, type: 'claim' })),
-          ...DEFAULT_SERVICE_SERVICES.map(s => ({ ...s, type: 'service' })),
-          ...DEFAULT_STORE_SERVICES.map(s => ({ ...s, type: 'store' }))
+          ...DEFAULT_SERVICE_SERVICES.map(s => ({ ...s, type: 'service' }))
         ];
         await api.post('/department-services/seed', { services: seedData });
         const res2 = await api.get('/department-services');
@@ -62,7 +64,15 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
       }
       setClaimServices(data.filter(d => d.type === 'claim'));
       setServiceServices(data.filter(d => d.type === 'service'));
-      setStoreServices(data.filter(d => d.type === 'store'));
+      
+      const preIposFormatted = preIpoRes.data.map(ipo => ({
+        ...ipo,
+        id: ipo._id,
+        category: 'Pre-IPO Equity',
+        stages: ipo.tracking?.length || 4,
+        type: 'store'
+      }));
+      setStoreServices(preIposFormatted);
     } catch (err) {
       console.error('Failed to fetch services', err);
     } finally {
@@ -110,7 +120,11 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
     
     try {
       const updated = { ...service, status: !service.status };
-      await api.put(`/department-services/${service._id}`, { status: updated.status });
+      if (activeTab === 'store') {
+        await api.put(`/pre-ipo/${service._id}`, { status: updated.status });
+      } else {
+        await api.put(`/department-services/${service._id}`, { status: updated.status });
+      }
       fetchAllServices();
       if (activeService && (activeService._id === id || activeService.id === id)) {
         setActiveService(prev => ({ ...prev, status: !prev.status }));
@@ -134,18 +148,30 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
   };
 
   const openAdd = () => {
-    setEditForm({ name: '', code: '', category: '', subCategory: '', description: '', price: 0, stages: 3, tracking: ['Stage 1', 'Stage 2', 'Stage 3'], status: true, mappedStore: 'All Stores' });
+    if (activeTab === 'store') {
+      setEditForm({ name: '', code: '', subCategory: 'Fintech', description: '', price: 0, totalEquity: 10000, status: true });
+    } else {
+      setEditForm({ name: '', code: '', category: '', subCategory: '', description: '', price: 0, stages: 3, tracking: ['Stage 1', 'Stage 2', 'Stage 3'], status: true, mappedStore: 'All Stores' });
+    }
     setIsAdding(true);
   };
 
   const handleSaveEdit = async () => {
     try {
       if (isAdding) {
-        const newService = { ...editForm, type: activeTab };
-        await api.post('/department-services', newService);
+        if (activeTab === 'store') {
+          await api.post('/pre-ipo', { ...editForm });
+        } else {
+          const newService = { ...editForm, type: activeTab };
+          await api.post('/department-services', newService);
+        }
         setIsAdding(false);
       } else {
-        await api.put(`/department-services/${editForm._id}`, editForm);
+        if (activeTab === 'store') {
+          await api.put(`/pre-ipo/${editForm._id}`, editForm);
+        } else {
+          await api.put(`/department-services/${editForm._id}`, editForm);
+        }
         if (activeService && activeService._id === editForm._id) {
           setActiveService(editForm);
         }
@@ -258,11 +284,11 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
             <table className="db-table">
               <thead>
                 <tr>
-                  <th>Service Name</th>
-                  <th>Category</th>
-                  <th>Sub Category</th>
+                  <th>{activeTab === 'store' ? 'IPO Name' : 'Service Name'}</th>
+                  <th>{activeTab === 'store' ? 'Sector' : 'Category'}</th>
+                  <th>{activeTab === 'store' ? 'Total Equity' : 'Sub Category'}</th>
                   <th>Price</th>
-                  <th>Stages</th>
+                  <th>{activeTab === 'store' ? 'Available' : 'Stages'}</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -274,10 +300,10 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                       <div style={{ fontWeight: 800 }}>{service.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'monospace' }}>{service.code}</div>
                     </td>
-                    <td><span className="db-pill blue">{service.category}</span></td>
-                    <td style={{ color: 'var(--text-muted)' }}>{service.subCategory}</td>
+                    <td><span className="db-pill blue">{activeTab === 'store' ? service.subCategory : service.category}</span></td>
+                    <td style={{ color: 'var(--text-muted)' }}>{activeTab === 'store' ? service.totalEquity : service.subCategory}</td>
                     <td style={{ fontWeight: 800 }}>₹{service.price.toLocaleString('en-IN')}</td>
-                    <td><span className="db-pill purple">{service.stages} stages</span></td>
+                    <td><span className="db-pill purple">{activeTab === 'store' ? service.availableEquity : `${service.stages} stages`}</span></td>
                     <td>
                       <div className={`db-toggle ${service.status ? 'active' : ''}`} onClick={() => handleToggle(service.id)}></div>
                     </td>
@@ -286,9 +312,13 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
                         <div className="db-action-icon" onClick={() => openView(service)}><Eye size={14} /></div>
                         <div className="db-action-icon" onClick={() => openEdit(service)}><Edit2 size={14} /></div>
                         <div className="db-action-icon" onClick={async () => {
-                          if (window.confirm('Are you sure you want to delete this service?')) {
+                          if (window.confirm('Are you sure you want to delete this?')) {
                             try {
-                              await api.delete(`/department-services/${service._id}`);
+                              if (activeTab === 'store') {
+                                await api.delete(`/pre-ipo/${service._id}`);
+                              } else {
+                                await api.delete(`/department-services/${service._id}`);
+                              }
                               fetchAllServices();
                             } catch(err) {
                               console.error(err);
@@ -349,12 +379,14 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div className="db-card">
                 <div className="db-card-title">Service Details</div>
+                {activeTab !== 'store' && (
+                  <div className="db-row">
+                    <span className="db-label">Category</span>
+                    <span className="db-value">{activeService.category}</span>
+                  </div>
+                )}
                 <div className="db-row">
-                  <span className="db-label">Category</span>
-                  <span className="db-value">{activeService.category}</span>
-                </div>
-                <div className="db-row">
-                  <span className="db-label">Sub Category</span>
+                  <span className="db-label">{activeTab === 'store' ? 'Sector' : 'Sub Category'}</span>
                   <span className="db-value">{activeService.subCategory}</span>
                 </div>
                 <div className="db-row">
@@ -378,13 +410,26 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
               </div>
 
               <div className="db-card">
-                <div className="db-card-title">Tracking Stages</div>
-                {activeService.tracking?.map((stage, idx) => (
-                  <div className="db-stage" key={idx}>
-                    <div className="db-stage-num">{idx + 1}</div> 
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{stage}</span>
+                <div className="db-card-title">{activeTab === 'store' ? 'Equity Details' : 'Tracking Stages'}</div>
+                {activeTab === 'store' ? (
+                  <div>
+                    <div className="db-row" style={{ padding: '0 0 12px 0' }}>
+                      <span className="db-label">Total Equity</span>
+                      <span className="db-value">{activeService.totalEquity} shares</span>
+                    </div>
+                    <div className="db-row" style={{ padding: '12px 0 0 0', border: 'none' }}>
+                      <span className="db-label">Available Equity</span>
+                      <span className="db-value" style={{ color: 'var(--blue)' }}>{activeService.availableEquity} shares</span>
+                    </div>
                   </div>
-                ))}
+                ) : (
+                  activeService.tracking?.map((stage, idx) => (
+                    <div className="db-stage" key={idx}>
+                      <div className="db-stage-num">{idx + 1}</div> 
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{stage}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -404,38 +449,47 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
             <div className="db-modal-body">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Service Name</div>
-                  <input type="text" className="db-input" placeholder="e.g. IEPF Claim Recovery" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{activeTab === 'store' ? 'IPO Name' : 'Service Name'}</div>
+                  <input type="text" className="db-input" placeholder={activeTab === 'store' ? "e.g. Swiggy" : "e.g. IEPF Claim Recovery"} value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Service Code</div>
-                  <input type="text" className="db-input" placeholder="e.g. CLM-IEPF-001" value={editForm.code} onChange={e => setEditForm({...editForm, code: e.target.value})} />
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{activeTab === 'store' ? 'IPO Code' : 'Service Code'}</div>
+                  <input type="text" className="db-input" placeholder={activeTab === 'store' ? "e.g. STR-SWG-001" : "e.g. CLM-IEPF-001"} value={editForm.code} onChange={e => setEditForm({...editForm, code: e.target.value})} />
                 </div>
+                {activeTab !== 'store' && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Category</div>
+                    <input type="text" className="db-input" placeholder="e.g. Physical Shares" value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})} />
+                  </div>
+                )}
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Category</div>
-                  <input type="text" className="db-input" placeholder="e.g. Physical Shares" value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Sub Category</div>
-                  <input type="text" className="db-input" placeholder="e.g. IEPF Authority" value={editForm.subCategory} onChange={e => setEditForm({...editForm, subCategory: e.target.value})} />
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{activeTab === 'store' ? 'Sector' : 'Sub Category'}</div>
+                  <input type="text" className="db-input" placeholder={activeTab === 'store' ? "e.g. Food Tech" : "e.g. IEPF Authority"} value={editForm.subCategory} onChange={e => setEditForm({...editForm, subCategory: e.target.value})} />
                 </div>
               </div>
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Description</div>
-                <textarea className="db-input" placeholder="Service description..." style={{ height: 80, resize: 'vertical' }} value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})}></textarea>
+                <textarea className="db-input" placeholder="Description..." style={{ height: 80, resize: 'vertical' }} value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})}></textarea>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                {activeTab === 'store' ? (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Total Equity</div>
+                    <input type="number" className="db-input" placeholder="e.g. 5000" value={editForm.totalEquity || ''} onChange={e => setEditForm({...editForm, totalEquity: Number(e.target.value)})} />
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Mapped Store</div>
+                    <select className="db-input" value={editForm.mappedStore || 'All Stores'} onChange={e => setEditForm({...editForm, mappedStore: e.target.value})}>
+                      <option value="All Stores">All Stores</option>
+                      <option value="Store A">Store A</option>
+                      <option value="Store B">Store B</option>
+                      <option value="Store C">Store C</option>
+                    </select>
+                  </div>
+                )}
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Mapped Store</div>
-                  <select className="db-input" value={editForm.mappedStore || 'All Stores'} onChange={e => setEditForm({...editForm, mappedStore: e.target.value})}>
-                    <option value="All Stores">All Stores</option>
-                    <option value="Store A">Store A</option>
-                    <option value="Store B">Store B</option>
-                    <option value="Store C">Store C</option>
-                  </select>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Base Price (₹)</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Price per Share / Base Price (₹)</div>
                   <input type="number" className="db-input" placeholder="e.g. 2499" value={editForm.price || ''} onChange={e => setEditForm({...editForm, price: Number(e.target.value)})} />
                 </div>
               </div>
