@@ -1,0 +1,48 @@
+[
+  {
+    "_id": "69d5eda117fad4b70e3f4380",
+    "email": "superadmin@myclaim.com",
+    "__v": 0,
+    "createdAt": "2026-04-08T05:54:41.470Z",
+    "is_active": true,
+    "name": "Super Admin",
+    "password": "$2a$10$35tDF01xts2v.k4iDuVyGemO4T56sSIxcr1WtJjzCYpooX8t97E2i",
+    "role": "super_admin",
+    "updatedAt": "2026-04-08T05:58:00.851Z"
+  },
+  {
+    "_id": "69d5ee6817fad4b70e3f4383",
+    "email": "admin@myclaim.com",
+    "__v": 0,
+    "createdAt": "2026-04-08T05:58:00.861Z",
+    "is_active": true,
+    "name": "Admin User",
+    "password": "$2a$10$35tDF01xts2v.k4iDuVyGemO4T56sSIxcr1WtJjzCYpooX8t97E2i",
+    "role": "admin",
+    "updatedAt": "2026-04-08T05:58:00.861Z"
+  },
+  {
+    "_id": "69d88d463bc574b7e1cc897d",
+    "name": "Prathmesh Ahire",
+    "email": "patilpratham@gmail.com",
+    "username": "abcd",
+    "password": "$2a$10$QjC4FQplvdyPYt3WdRt6Ru5IIel1ungzvGRciV8hL9jsy3Gho1jz2",
+    "role": "admin",
+    "is_active": true,
+    "createdAt": "2026-04-10T05:40:22.998Z",
+    "updatedAt": "2026-04-10T05:40:22.998Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e35e4f4157da3cfed28ae5",
+    "name": "super Adminn",
+    "email": "patilprath0105@gmail.com",
+    "username": "super admin",
+    "password": "$2a$10$kmMz8zRLr3r0ICgKsxFVZOj/Ok8tv6wE/PXXRO/IQgiEUhL0y7JOm",
+    "role": "super_admin",
+    "is_active": true,
+    "createdAt": "2026-04-18T10:34:55.878Z",
+    "updatedAt": "2026-04-18T10:34:55.878Z",
+    "__v": 0
+  }
+]

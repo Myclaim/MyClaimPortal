@@ -1,0 +1,202 @@
+/* -------------------------------------------------------------
+ * ENTERPRISE FORM ANIMATION SYSTEM
+ * Premium, SaaS-grade animations for User Management forms
+ * ------------------------------------------------------------- */
+
+/* 1. PROGRESSIVE SECTION REVEAL */
+@keyframes sectionFadeUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.ent-section {
+  animation: sectionFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 2. FIELD STAGGER ANIMATION */
+@keyframes fieldFadeUp {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger Classes (Up to 20 fields per section) */
+.ent-stagger {
+  opacity: 0;
+  animation: fieldFadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+.ent-stagger-1 { animation-delay: 0.04s; }
+.ent-stagger-2 { animation-delay: 0.08s; }
+.ent-stagger-3 { animation-delay: 0.12s; }
+.ent-stagger-4 { animation-delay: 0.16s; }
+.ent-stagger-5 { animation-delay: 0.20s; }
+.ent-stagger-6 { animation-delay: 0.24s; }
+.ent-stagger-7 { animation-delay: 0.28s; }
+.ent-stagger-8 { animation-delay: 0.32s; }
+.ent-stagger-9 { animation-delay: 0.36s; }
+.ent-stagger-10 { animation-delay: 0.40s; }
+.ent-stagger-11 { animation-delay: 0.44s; }
+.ent-stagger-12 { animation-delay: 0.48s; }
+.ent-stagger-13 { animation-delay: 0.52s; }
+.ent-stagger-14 { animation-delay: 0.56s; }
+.ent-stagger-15 { animation-delay: 0.60s; }
+
+/* 3 & 4. FLOATING LABELS & ACTIVE FIELD SPOTLIGHT */
+/* Wrapper for forms to enable spotlight sibling dimming */
+.ent-spotlight-group {
+  position: relative;
+}
+
+/* Base Field Container */
+.ent-field-wrap {
+  position: relative;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sibling Dimming */
+.ent-spotlight-group:focus-within .ent-field-wrap:not(:focus-within) {
+  opacity: 0.55;
+  transform: scale(0.995);
+}
+
+/* Focus State Elevation */
+.ent-field-wrap:focus-within {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+/* Label Transitions */
+.ent-field-wrap label {
+  display: block;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left bottom;
+}
+
+.ent-field-wrap:focus-within label {
+  color: #10b981 !important; /* Emerald */
+  transform: translateY(-2px);
+}
+
+/* Enhanced Focus on Inputs */
+.ent-field-wrap input:focus,
+.ent-field-wrap select:focus,
+.ent-field-wrap textarea:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* 5. FORM SECTION COLLAPSE SYSTEM */
+.ent-collapse-header {
+  cursor: pointer;
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  transition: background 0.2s ease;
+}
+
+.ent-collapse-header:hover {
+  background: rgba(16, 185, 129, 0.02);
+}
+
+.ent-collapse-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text, #1e293b);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ent-collapse-title.completed {
+  color: #10b981;
+}
+
+.ent-collapse-summary {
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+.ent-collapse-content {
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  max-height: 2000px; /* arbitrary large max-height for CSS transition */
+  opacity: 1;
+}
+
+.ent-collapse-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border: none !important;
+}
+
+/* 6. DOCUMENT UPLOAD ANIMATION */
+.ent-upload-zone {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.ent-upload-zone:hover {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.03) !important;
+  transform: translateY(-1px);
+}
+
+.ent-upload-zone.success {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+/* 7. PROGRESS TRACKER (Shared utility) */
+.ent-progress-track {
+  height: 4px;
+  background: var(--border, #e2e8f0);
+  border-radius: 4px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ent-progress-fill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+/* 8. VALIDATION & ERROR */
+@keyframes errorMicroShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-3px); }
+  40%, 80% { transform: translateX(3px); }
+}
+
+.ent-error-field {
+  animation: errorMicroShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.ent-error-field input,
+.ent-error-field select,
+.ent-error-field textarea {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1) !important;
+}
+
+.ent-error-field label {
+  color: #f43f5e !important;
+}
+
+.ent-error-text {
+  animation: sectionFadeUp 0.3s ease forwards;
+}
