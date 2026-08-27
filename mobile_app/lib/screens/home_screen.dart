@@ -124,15 +124,18 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {},
             ),
             SizedBox(width: 4.w),
-            Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(Icons.person_outline_rounded, color: AppColors.background, size: 20.sp),
+            GestureDetector(
+              onTap: () => onNavigate?.call(3),
+              child: Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(Icons.person_outline_rounded, color: AppColors.background, size: 20.sp),
+                ),
               ),
             ),
           ],
