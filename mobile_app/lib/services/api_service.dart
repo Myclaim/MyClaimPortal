@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -189,5 +191,39 @@ class ApiService {
       // ignore errors
     }
     return [];
+  }
+
+  /// POST /api/documents/upload - Multipart upload
+  static Future<bool> uploadDocument({
+    required String filePath,
+    required String name,
+    required String folder,
+    required String docCategory,
+    required String clientId,
+  }) async {
+    try {
+      final token = await getToken();
+      final uri = Uri.parse('$baseUrl/documents/upload');
+      final request = http.MultipartRequest('POST', uri);
+      
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      
+      request.fields['name'] = name;
+      request.fields['linked_to'] = 'client';
+      request.fields['doc_category'] = docCategory;
+      request.fields['folder'] = folder;
+      request.fields['client_id'] = clientId;
+      
+      final file = await http.MultipartFile.fromPath('file', filePath);
+      request.files.add(file);
+      
+      final response = await request.send();
+      return response.statusCode == 201;
+    } catch (e) {
+      debugPrint('Error uploading document: $e');
+      return false;
+    }
   }
 }

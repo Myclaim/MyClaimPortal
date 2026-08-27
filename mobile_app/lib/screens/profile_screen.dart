@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/biometric_provider.dart';
 import '../providers/family_tree_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../utils/constants.dart';
 import '../services/api_service.dart';
 import '../services/biometric_service.dart';
@@ -31,6 +32,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final dash = context.watch<DashboardProvider>();
+
+    double parseEstValue(String valueStr) {
+      if (valueStr.isEmpty || valueStr.toLowerCase() == 'n/a' || valueStr == '---') return 0;
+      try {
+        var cleanStr = valueStr.replaceAll('₹', '').replaceAll(',', '').trim();
+        double multiplier = 1.0;
+        if (cleanStr.toUpperCase().endsWith('L')) {
+          multiplier = 100000.0;
+          cleanStr = cleanStr.substring(0, cleanStr.length - 1).trim();
+        } else if (cleanStr.toUpperCase().endsWith('K')) {
+          multiplier = 1000.0;
+          cleanStr = cleanStr.substring(0, cleanStr.length - 1).trim();
+        } else if (cleanStr.toUpperCase().endsWith('CR')) {
+          multiplier = 10000000.0;
+          cleanStr = cleanStr.substring(0, cleanStr.length - 2).trim();
+        }
+        return double.parse(cleanStr) * multiplier;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    String formatEstValueShort(double val) {
+      if (val == 0) return '₹0';
+      if (val >= 10000000) return '₹${(val / 10000000).toStringAsFixed(2)}Cr';
+      if (val >= 100000) return '₹${(val / 100000).toStringAsFixed(2)}L';
+      if (val >= 1000) return '₹${(val / 1000).toStringAsFixed(1)}K';
+      return '₹${val.toStringAsFixed(0)}';
+    }
+
+    int inProgressCount = 0;
+    double totalEstimatedVal = 0.0;
+
+    for (var ticket in dash.claims) {
+      final s = ticket['status']?.toString().toLowerCase() ?? '';
+      if (s.contains('progress') || s.contains('active') || s.contains('pending')) {
+        inProgressCount++;
+      }
+      totalEstimatedVal += parseEstValue(ticket['estValue']?.toString() ?? '');
+    }
 
     final sections = [
       {
@@ -66,11 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // ── Gradient Profile Header ─────────────────
           Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF3D2C8D), Color(0xFF6C3BAA), Color(0xFF916BBF)],
-              ),
+              gradient: AppColors.greenGradient,
             ),
             child: SafeArea(
               bottom: false,
@@ -122,11 +160,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // Quick stats
                     Row(children: [
-                      _ProfileStat(label: 'Total Claims', value: '3'),
+                      _ProfileStat(label: 'Total Claims', value: dash.claims.length.toString()),
                       _vDivider(context),
-                      _ProfileStat(label: 'In Progress', value: '2'),
+                      _ProfileStat(label: 'In Progress', value: inProgressCount.toString()),
                       _vDivider(context),
-                      _ProfileStat(label: 'Recovered', value: '₹1.88L'),
+                      _ProfileStat(label: 'Est Value', value: formatEstValueShort(totalEstimatedVal)),
                     ]),
                   ],
                 ),

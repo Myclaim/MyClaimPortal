@@ -142,6 +142,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWelcomeSection(String name, DashboardProvider dash) {
+    double parseEstValue(String valueStr) {
+      if (valueStr.isEmpty || valueStr.toLowerCase() == 'n/a' || valueStr == '---') return 0;
+      try {
+        var cleanStr = valueStr.replaceAll('₹', '').replaceAll(',', '').trim();
+        double multiplier = 1.0;
+        if (cleanStr.toUpperCase().endsWith('L')) {
+          multiplier = 100000.0;
+          cleanStr = cleanStr.substring(0, cleanStr.length - 1).trim();
+        } else if (cleanStr.toUpperCase().endsWith('K')) {
+          multiplier = 1000.0;
+          cleanStr = cleanStr.substring(0, cleanStr.length - 1).trim();
+        } else if (cleanStr.toUpperCase().endsWith('CR')) {
+          multiplier = 10000000.0;
+          cleanStr = cleanStr.substring(0, cleanStr.length - 2).trim();
+        }
+        return double.parse(cleanStr) * multiplier;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    String formatEstValueShort(double val) {
+      if (val == 0) return '₹0';
+      if (val >= 10000000) return '₹${(val / 10000000).toStringAsFixed(2)}Cr';
+      if (val >= 100000) return '₹${(val / 100000).toStringAsFixed(2)}L';
+      if (val >= 1000) return '₹${(val / 1000).toStringAsFixed(1)}K';
+      return '₹${val.toStringAsFixed(0)}';
+    }
+
+    int totalShares = 0;
+    double totalEstimatedVal = 0.0;
+
+    for (var ticket in dash.claims) {
+      final s = ticket['shares']?.toString() ?? '0';
+      totalShares += int.tryParse(s.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      totalEstimatedVal += parseEstValue(ticket['estValue']?.toString() ?? '');
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,17 +189,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Your claims are progressing 12% faster this month.',
+          'Your claims are progressing smoothly.',
           style: GoogleFonts.inter(fontSize: 14.sp, color: AppColors.textSecondary),
         ),
         SizedBox(height: 16.h),
-        // Estimated Recovery Card
+        // Premium Teal Dashboard Card
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            gradient: const LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF115E59)], begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF115E59).withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    dash.overview['estimatedValue']?.toString() ?? dash.overview['estValue']?.toString() ?? '₹12,45,000',
+                    formatEstValueShort(totalEstimatedVal),
                     style: GoogleFonts.inter(fontSize: 32.sp, fontWeight: FontWeight.w800, color: Colors.white, height: 1),
                   ),
                   SizedBox(width: 8.w),
@@ -187,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
-                      '+4.2%',
+                      '$totalShares Shares',
                       style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
@@ -195,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(height: 16.h),
               Text(
-                'This represents the total projected value across 4 active insurance claims.',
+                'This represents the total projected value across ${dash.claims.length} active assets.',
                 style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.8)),
               ),
             ],

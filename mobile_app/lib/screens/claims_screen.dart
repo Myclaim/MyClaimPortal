@@ -79,24 +79,6 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => _showNewClaimSheet(context),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.add_rounded, color: Colors.white, size: 16.sp),
-                            SizedBox(width: 4.w),
-                            Text('New', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13.sp)),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

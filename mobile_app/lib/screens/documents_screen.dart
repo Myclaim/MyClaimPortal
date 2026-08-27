@@ -3,6 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
+import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
 
@@ -165,11 +169,10 @@ class _ClientDocumentsTabState extends State<_ClientDocumentsTab> {
     final custom = (_profile?['customFolders'] as List?)?.cast<String>() ?? [];
     final fromDocs = _documents
         .map((d) => d['folder']?.toString() ?? 'General')
-        .where((f) => f != 'General')
         .toSet()
         .toList();
     final all = {...custom, ...fromDocs}.toList();
-    if (all.isEmpty) all.add('Client Registration Form');
+    if (!all.contains('General')) all.add('General');
     return all;
   }
 
@@ -420,18 +423,104 @@ class _FolderCard extends StatelessWidget {
   }
 }
 
-class _FolderDetailView extends StatelessWidget {
+class _FolderDetailView extends StatefulWidget {
   final String folderName;
   final List<dynamic> documents;
   final VoidCallback onBack;
   const _FolderDetailView({required this.folderName, required this.documents, required this.onBack});
 
   @override
+  State<_FolderDetailView> createState() => _FolderDetailViewState();
+}
+
+class _FolderDetailViewState extends State<_FolderDetailView> {
+  bool _isUploading = false;
+
+  Future<void> _pickAndUpload(BuildContext context) async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        final defaultName = result.files.single.name;
+        
+        final auth = context.read<AuthProvider>();
+        final clientId = auth.user?['_id']?.toString() ?? auth.user?['id']?.toString() ?? '';
+
+        String docName = defaultName;
+        final nameController = TextEditingController(text: defaultName);
+
+        final shouldUpload = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: ctx.surfaceColor,
+            title: Text('Name your document', style: GoogleFonts.inter(color: ctx.textColor)),
+            content: TextField(
+              controller: nameController,
+              style: TextStyle(color: ctx.textColor),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: ctx.backgroundColor,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel', style: TextStyle(color: ctx.textSecondaryColor))),
+              ElevatedButton(
+                onPressed: () {
+                  docName = nameController.text.trim();
+                  if (docName.isEmpty) docName = defaultName;
+                  Navigator.pop(ctx, true);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                child: const Text('Upload', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldUpload == true) {
+          setState(() => _isUploading = true);
+
+          final success = await ApiService.uploadDocument(
+            filePath: filePath,
+            name: docName,
+            folder: widget.folderName,
+            docCategory: 'other',
+            clientId: clientId,
+          );
+
+          if (mounted) {
+            setState(() => _isUploading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(success ? 'Upload successful!' : 'Upload failed'),
+                backgroundColor: success ? Colors.green : Colors.red,
+              ),
+            );
+            if (success) {
+              widget.onBack(); // Refresh hack
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error selecting file')));
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(children: [
       Row(children: [
         GestureDetector(
-          onTap: onBack,
+          onTap: widget.onBack,
           child: Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(color: context.surfaceColor, borderRadius: BorderRadius.circular(10.r), border: Border.all(color: context.borderColor)),
@@ -439,18 +528,33 @@ class _FolderDetailView extends StatelessWidget {
           ),
         ),
         SizedBox(width: 12.w),
-        Expanded(child: Text(folderName, style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.bold, color: context.textColor), overflow: TextOverflow.ellipsis)),
+        Expanded(child: Text(widget.folderName, style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.bold, color: context.textColor), overflow: TextOverflow.ellipsis)),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
           decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8.r)),
-          child: Text('${documents.length} files', style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: AppColors.primary)),
+          child: Text('${widget.documents.length} files', style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: AppColors.primary)),
         ),
       ]),
       SizedBox(height: 16.h),
-      if (documents.isEmpty)
-        _EmptyDocState(label: 'Folder is empty', sub: 'No documents in "$folderName".')
+      if (widget.documents.isEmpty)
+        _EmptyDocState(label: 'Folder is empty', sub: 'No documents in "${widget.folderName}".')
       else
-        ...documents.map((doc) => _DocumentTile(doc: doc)),
+        ...widget.documents.map((doc) => _DocumentTile(doc: doc)),
+        
+      SizedBox(height: 20.h),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _isUploading ? null : () => _pickAndUpload(context),
+          icon: _isUploading ? SizedBox(width: 20.w, height: 20.w, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Icon(Icons.upload_file_rounded, size: 20.sp, color: Colors.white),
+          label: Text(_isUploading ? 'Uploading...' : 'Upload Document', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          ),
+        ),
+      ),
     ]);
   }
 }
