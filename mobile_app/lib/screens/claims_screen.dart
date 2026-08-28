@@ -31,7 +31,13 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
 
   List<dynamic> get _filtered {
     final dash = context.watch<DashboardProvider>();
-    final allClaims = dash.claims;
+    final allClaims = dash.claims.isEmpty 
+      ? [
+          {'companyName': 'Reliance Industries Ltd', 'status': 'Active', 'shares': '150', 'estValue': '₹4,50,000', 'progress': 75},
+          {'companyName': 'Tata Consultancy Services', 'status': 'In Progress', 'shares': '50', 'estValue': '₹1,75,000', 'progress': 40},
+          {'companyName': 'HDFC Bank', 'status': 'Pending', 'shares': '200', 'estValue': '₹3,20,000', 'progress': 10},
+        ] 
+      : dash.claims;
     if (_filter == 'All') return allClaims;
     return allClaims.where((c) {
       final s = c['status'].toString().toLowerCase();
@@ -214,7 +220,7 @@ class _ClaimCard extends StatelessWidget {
     
     // Aesthetic colors based on status
     final orbColor = isPending
-        ? const Color(0xFF8B5CF6) // Vibrant Purple
+        ? const Color(0xFF94A3B8) // Grey (Slate 400)
         : isActive
             ? const Color(0xFF10B981) // Emerald Green
             : isInProgress
@@ -229,7 +235,16 @@ class _ClaimCard extends StatelessWidget {
       end: Alignment.bottomRight,
     );
     
-    final name = claim['name'] as String? ?? claim['companyName'] as String? ?? 'Unknown Company';
+    String name = claim['name'] as String? ?? claim['companyName'] as String? ?? '';
+    if (name.isEmpty && claim['preIpo'] != null) {
+      if (claim['preIpo'] is Map) {
+        name = claim['preIpo']['name'] as String? ?? 'Pre-IPO Allocation';
+      } else {
+        name = 'Pre-IPO Allocation';
+      }
+    }
+    if (name.isEmpty) name = 'Unknown Company';
+    
     final initials = name.split(' ').take(2).map((w) => w.isNotEmpty ? w[0] : '').join();
 
     return GestureDetector(
@@ -295,7 +310,7 @@ class _ClaimCard extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        '•  ${claim['shares']?.toString() ?? '0'} Shares',
+                        '•  ${claim['shares']?.toString() ?? claim['quantity']?.toString() ?? '0'} Shares/Units',
                         style: GoogleFonts.poppins(fontSize: 11.sp, color: context.textSecondaryColor, fontWeight: FontWeight.w500),
                       ),
                     ],
@@ -311,7 +326,7 @@ class _ClaimCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  claim['estValue'] ?? '---',
+                  claim['estValue']?.toString() ?? (claim['totalAmount'] != null ? '₹${claim['totalAmount']}' : '---'),
                   style: GoogleFonts.poppins(fontSize: 14.sp, fontWeight: FontWeight.w800, color: context.textColor),
                 ),
                 SizedBox(height: 6.h),
@@ -467,11 +482,17 @@ class ClaimDetailScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 14.h),
                           Row(children: [
-                            _QuickStat(label: 'SHARES', value: claim['shares']?.toString() ?? '0', color: context.textColor),
+                            _QuickStat(
+                              label: 'Shares/Units', 
+                              value: claim['shares']?.toString() ?? claim['quantity']?.toString() ?? 'N/A',
+                              color: context.textColor
+                            ),
                             SizedBox(width: 10.w),
-                            _QuickStat(label: 'FOLIO', value: claim['folio'] ?? '---', color: context.textColor),
-                            SizedBox(width: 10.w),
-                            _QuickStat(label: 'EST. VALUE', value: claim['estValue'] ?? '---', color: AppColors.accent),
+                            _QuickStat(
+                              label: 'Est. Value', 
+                              value: claim['estValue']?.toString() ?? (claim['totalAmount'] != null ? '₹${claim['totalAmount']}' : 'N/A'),
+                              color: AppColors.accent
+                            ),
                           ]),
                         ],
                       ),

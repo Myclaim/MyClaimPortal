@@ -220,10 +220,16 @@ class ApiService {
       request.files.add(file);
       
       final response = await request.send();
-      return response.statusCode == 201;
+      if (response.statusCode == 201) {
+        return true;
+      } else {
+        final respBody = await response.stream.bytesToString();
+        debugPrint('Upload failed with status ${response.statusCode}: $respBody');
+        throw Exception('Status ${response.statusCode}: $respBody');
+      }
     } catch (e) {
       debugPrint('Error uploading document: $e');
-      return false;
+      throw Exception(e.toString());
     }
   }
 }

@@ -9,6 +9,7 @@ import 'claims_screen.dart';
 import 'services_screen.dart';
 import 'folder_documents_screen.dart';
 import 'documents_screen.dart';
+import 'profile_screen.dart';
 import 'quick_actions/new_claim_screen.dart'; // Using as Claim Hub for now
 
 class MainShell extends StatefulWidget {

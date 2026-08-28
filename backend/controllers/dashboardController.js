@@ -9,6 +9,7 @@ const Employee = require('../models/employee/Employee');
 const Client = require('../models/client/Client');
 const Partner = require('../models/partner/Partner');
 const Admin = require('../models/admin/Admin');
+const PreIPOAllocation = require('../models/PreIPOAllocation');
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard
@@ -258,7 +259,8 @@ const getClientDashboardStats = async (req, res) => {
       recentTickets,
       recentActivity,
       recentNotifications,
-      claimTickets
+      claimTickets,
+      clientAllocations
     ] = await Promise.all([
       Ticket.countDocuments({ client: _id, hubType: 'Service Hub', status: { $in: ['active', 'in_process'] } }),
       Ticket.countDocuments({ client: _id, hubType: 'Claim Hub', status: { $in: ['active', 'in_process'] } }),
@@ -267,7 +269,8 @@ const getClientDashboardStats = async (req, res) => {
       Ticket.find({ client: _id }).sort({ createdAt: -1 }).limit(5).lean(),
       Activity.find({ user: _id }).sort({ createdAt: -1 }).limit(5).lean(),
       Notification.find({ user: _id }).sort({ createdAt: -1 }).limit(5).lean(),
-      Ticket.find({ client: _id, hubType: 'Claim Hub' }).sort({ createdAt: -1 }).lean()
+      Ticket.find({ client: _id, hubType: 'Claim Hub' }).sort({ createdAt: -1 }).lean(),
+      PreIPOAllocation.find({ client: _id }).populate('preIpo', 'name code').sort({ createdAt: -1 }).lean()
     ]);
 
     // Helper to generate deterministic-looking but realistic values from ticket _id seed
@@ -328,6 +331,7 @@ const getClientDashboardStats = async (req, res) => {
     res.json({
       overview,
       claims,
+      preIpos: clientAllocations,
       activeServices,
       activeTickets,
       completedServices,

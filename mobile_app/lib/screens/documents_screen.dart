@@ -139,14 +139,6 @@ class _ClientDocumentsTabState extends State<_ClientDocumentsTab> {
   Map<String, dynamic>? _profile;
   String? _selectedFolder;
 
-  final List<Map<String, dynamic>> _kycDocs = [
-    {'name': 'PAN Card', 'icon': Icons.credit_card_rounded, 'key': 'panCardFile'},
-    {'name': 'Aadhaar Card', 'icon': Icons.fingerprint_rounded, 'key': 'aadharCardFile'},
-    {'name': 'Passport', 'icon': Icons.book_rounded, 'key': 'passportFile'},
-    {'name': 'Driving Licence', 'icon': Icons.drive_eta_rounded, 'key': 'drivingLicenceFile'},
-    {'name': 'Other Docs', 'icon': Icons.attach_file_rounded, 'key': 'otherDocsFile'},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -173,7 +165,14 @@ class _ClientDocumentsTabState extends State<_ClientDocumentsTab> {
         .toList();
     final all = {...custom, ...fromDocs}.toList();
     if (!all.contains('General')) all.add('General');
+    if (!all.contains('Uploads')) all.add('Uploads');
     return all;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _load();
   }
 
   @override
@@ -186,35 +185,8 @@ class _ClientDocumentsTabState extends State<_ClientDocumentsTab> {
       color: AppColors.primary,
       onRefresh: _load,
       child: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         children: [
-          _SectionHeader(title: 'KYC Documents', subtitle: 'Identity verification files'),
-          SizedBox(height: 12.h),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12.w,
-              mainAxisSpacing: 12.h,
-              childAspectRatio: 1.5,
-            ),
-            itemCount: _kycDocs.length,
-            itemBuilder: (context, i) {
-              final doc = _kycDocs[i];
-              final key = doc['key'] as String;
-              final kycData = _profile?['kyc_data'] as Map?;
-              final fileUrl = kycData?[key] as String?;
-              final isUploaded = fileUrl != null && fileUrl.isNotEmpty;
-              return _KycDocCard(
-                name: doc['name'] as String,
-                icon: doc['icon'] as IconData,
-                isUploaded: isUploaded,
-                url: fileUrl,
-              );
-            },
-          ),
-          SizedBox(height: 28.h),
           _SectionHeader(title: 'Form Folders', subtitle: 'Documents organized by submission'),
           SizedBox(height: 12.h),
           if (_selectedFolder == null)
@@ -489,7 +461,7 @@ class _FolderDetailViewState extends State<_FolderDetailView> {
             filePath: filePath,
             name: docName,
             folder: widget.folderName,
-            docCategory: 'other',
+            docCategory: 'secondary',
             clientId: clientId,
           );
 

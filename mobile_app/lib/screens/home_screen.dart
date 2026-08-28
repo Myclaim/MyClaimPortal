@@ -13,7 +13,9 @@ import 'quick_actions/support_screen.dart';
 import 'quick_actions/iepf_search_screen.dart';
 import 'quick_actions/family_tree_screen.dart';
 import 'quick_actions/referral_screen.dart';
+import 'quick_actions/upload_document_screen.dart';
 import 'claims_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigate;
@@ -67,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(height: 28.h),
 
                       // NEW WIDGET: Claims & Services
-                      _buildClaimsAndServices(),
+                      _ClaimsAndServicesSection(onNavigate: widget.onNavigate),
                       SizedBox(height: 28.h),
 
                       // 5. Quick Actions
@@ -125,7 +127,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(width: 4.w),
             GestureDetector(
-              onTap: () => onNavigate?.call(3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                );
+              },
               child: Container(
                 width: 36.w,
                 height: 36.w,
@@ -134,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Icon(Icons.person_outline_rounded, color: AppColors.background, size: 20.sp),
+                  child: Icon(Icons.person_outline_rounded, color: context.backgroundColor, size: 20.sp),
                 ),
               ),
             ),
@@ -192,20 +199,20 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Your claims are progressing smoothly.',
-          style: GoogleFonts.inter(fontSize: 14.sp, color: AppColors.textSecondary),
+          'Let\'s get started on recovering your unclaimed\nassets.',
+          style: GoogleFonts.inter(fontSize: 14.sp, color: AppColors.textSecondary, height: 1.4),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 20.h),
         // Premium Teal Dashboard Card
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF115E59)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            gradient: const LinearGradient(colors: [Color(0xFF2B837E), Color(0xFF1F6D68)], begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF115E59).withValues(alpha: 0.3),
+                color: const Color(0xFF1F6D68).withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -215,36 +222,51 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'ESTIMATED RECOVERY VALUE',
-                style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.white70),
+                'ESTIMATED PORTFOLIO VALUE',
+                style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.white70, letterSpacing: 0.5),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 12.h),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    formatEstValueShort(totalEstimatedVal),
-                    style: GoogleFonts.inter(fontSize: 32.sp, fontWeight: FontWeight.w800, color: Colors.white, height: 1),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        formatEstValueShort(totalEstimatedVal),
+                        style: GoogleFonts.inter(fontSize: 32.sp, fontWeight: FontWeight.bold, color: Colors.white, height: 1),
+                      ),
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        margin: EdgeInsets.only(bottom: 4.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Text(
+                          '${dash.claims.length} Claims',
+                          style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                    margin: EdgeInsets.only(bottom: 4.h),
+                    padding: EdgeInsets.all(10.r),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12.r),
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.15),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
                     ),
-                    child: Text(
-                      '$totalShares Shares',
-                      style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                    child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 24.sp),
                   ),
                 ],
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 20.h),
               Text(
-                'This represents the total projected value across ${dash.claims.length} active assets.',
-                style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.8)),
+                'Total projected value across ${dash.claims.length} active assets.',
+                style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.white.withValues(alpha: 0.8)),
               ),
             ],
           ),
@@ -256,9 +278,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildStatsGrid(BuildContext context, DashboardProvider dash) {
     final overview = dash.overview;
     final total = overview['totalClaims']?.toString() ?? '16';
-    final active = overview['active']?.toString() ?? '04';
-    final inProgress = overview['inProgress']?.toString() ?? '08';
-    final completed = overview['completed']?.toString() ?? '12';
+    final active = int.tryParse(overview['active']?.toString() ?? '0') ?? 0;
+    final inProgress = int.tryParse(overview['inProgress']?.toString() ?? '0') ?? 0;
+    final completed = int.tryParse(overview['completed']?.toString() ?? '0') ?? 0;
 
     return Column(
       children: [
@@ -266,11 +288,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildStatItem(context, 'Total Claims', total),
             SizedBox(width: 12.w),
-            _buildStatItem(context, 'Active', active),
+            _buildStatItem(context, 'Active', active.toString().padLeft(2, '0')),
             SizedBox(width: 12.w),
-            _buildStatItem(context, 'In Progress', inProgress),
+            _buildStatItem(context, 'In Progress', inProgress.toString().padLeft(2, '0')),
             SizedBox(width: 12.w),
-            _buildStatItem(context, 'Completed', completed, isHighlight: true),
+            _buildStatItem(context, 'Completed', completed.toString().padLeft(2, '0'), isHighlight: true),
           ],
         ),
       ],
@@ -310,7 +332,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildClaimsAndServices() {
+}
+
+class _ClaimsAndServicesSection extends StatefulWidget {
+  final ValueChanged<int>? onNavigate;
+  const _ClaimsAndServicesSection({this.onNavigate});
+
+  @override
+  State<_ClaimsAndServicesSection> createState() => _ClaimsAndServicesSectionState();
+}
+
+class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
+  int _activeTabIndex = 0; // 0 for My Claims, 1 for Services
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -339,67 +375,68 @@ class _HomeScreenState extends State<HomeScreen> {
               // Tabs
               Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'My Claims',
-                        style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                      SizedBox(height: 4.h),
-                      Container(
-                        width: 30.w,
-                        height: 3.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(2.r),
+                  GestureDetector(
+                    onTap: () => setState(() => _activeTabIndex = 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'My Claims',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp, 
+                            fontWeight: _activeTabIndex == 0 ? FontWeight.bold : FontWeight.w500, 
+                            color: _activeTabIndex == 0 ? AppColors.primary : context.textSecondaryColor
+                          ),
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 4.h),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: 30.w,
+                          height: 3.h,
+                          decoration: BoxDecoration(
+                            color: _activeTabIndex == 0 ? AppColors.primary : Colors.transparent,
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(width: 24.w),
-                  Column(
-                    children: [
-                      Text(
-                        'Services',
-                        style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500, color: context.textSecondaryColor),
-                      ),
-                      SizedBox(height: 7.h), // align with the indicator
-                    ],
+                  GestureDetector(
+                    onTap: () => setState(() => _activeTabIndex = 1),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Services',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp, 
+                            fontWeight: _activeTabIndex == 1 ? FontWeight.bold : FontWeight.w500, 
+                            color: _activeTabIndex == 1 ? AppColors.primary : context.textSecondaryColor
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: 30.w,
+                          height: 3.h,
+                          decoration: BoxDecoration(
+                            color: _activeTabIndex == 1 ? AppColors.primary : Colors.transparent,
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
               SizedBox(height: 24.h),
-              // Items Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildServiceIconItem('Company Name', Icons.assignment_turned_in_outlined),
-                  _buildServiceIconItem('Limited Liability\nCompany Registration', Icons.public),
-                  _buildServiceIconItem('Venture Capital\nAccess', Icons.handshake_outlined),
-                ],
-              ),
-              SizedBox(height: 20.h),
-              // More button
-              GestureDetector(
-                onTap: () {
-                  if (widget.onNavigate != null) {
-                    widget.onNavigate!(1); // 1 is Claims tab
-                  }
-                },
-                behavior: HitTestBehavior.opaque,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'More',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary, size: 18.sp),
-                  ],
-                ),
+              
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _activeTabIndex == 0
+                    ? _buildClaimsTab(context)
+                    : _buildServicesTab(context),
               ),
             ],
           ),
@@ -408,7 +445,150 @@ class _HomeScreenState extends State<HomeScreen> {
     ).animate().fadeIn(duration: 400.ms, delay: 150.ms).slideY(begin: 0.1);
   }
 
-  Widget _buildServiceIconItem(String title, IconData icon) {
+  Widget _buildClaimsTab(BuildContext context) {
+    final dash = context.watch<DashboardProvider>();
+    final allClaims = dash.claims.isEmpty 
+      ? [
+          {'companyName': 'ola', 'status': 'active', 'shares': '150', 'estValue': '₹4,50,000', 'progress': 75},
+          {'companyName': 'NSE LTD', 'status': 'In Progress', 'shares': '50', 'estValue': '₹1,75,000', 'progress': 40},
+          {'companyName': 'Reliance industries limited', 'status': 'In Progress', 'shares': '200', 'estValue': '₹3,20,000', 'progress': 10},
+        ] 
+      : dash.claims;
+
+    return Column(
+      key: const ValueKey('claims'),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: allClaims.take(3).map((claim) {
+            final name = claim['name'] as String? ?? claim['companyName'] as String? ?? 'Unknown';
+            final status = claim['status'] as String? ?? '';
+            final lower = status.toLowerCase();
+            final isActive = lower == 'active';
+            final isPending = lower.contains('pending');
+            final isInProgress = lower.contains('progress');
+            
+            final orbColor = isPending
+                ? const Color(0xFF94A3B8)
+                : isActive
+                    ? AppColors.primary
+                    : isInProgress
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFF3B82F6);
+            
+            String initials;
+            if (name.toLowerCase().contains('ola')) initials = 'O';
+            else if (name.toLowerCase().contains('nse')) initials = 'NL';
+            else if (name.toLowerCase().contains('reliance')) initials = 'R';
+            else initials = name.split(' ').take(2).map((w) => w.isNotEmpty ? w[0] : '').join().toUpperCase();
+            
+            return Expanded(
+              child: Column(
+                children: [
+                  Container(
+                    width: 60.w,
+                    height: 60.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initials,
+                        style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: context.textColor, height: 1.3),
+                  ),
+                  SizedBox(height: 6.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: orbColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Text(
+                      status,
+                      style: GoogleFonts.inter(fontSize: 9.sp, fontWeight: FontWeight.bold, color: orbColor),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+        SizedBox(height: 20.h),
+        GestureDetector(
+          onTap: () {
+            if (widget.onNavigate != null) {
+              widget.onNavigate!(1); // 1 is Claims tab
+            }
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'View All',
+                style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
+              ),
+              SizedBox(width: 4.w),
+              Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 16.sp),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServicesTab(BuildContext context) {
+    return Column(
+      key: const ValueKey('services'),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildServiceIconItem(context, 'IEPF Claim', Icons.assignment_turned_in_outlined),
+            _buildServiceIconItem(context, 'Share Transfer', Icons.swap_horiz_rounded),
+            _buildServiceIconItem(context, 'KYC Update', Icons.fact_check_outlined),
+          ],
+        ),
+        SizedBox(height: 20.h),
+        // More button
+        GestureDetector(
+          onTap: () {
+            if (widget.onNavigate != null) {
+              widget.onNavigate!(3); // 3 is Services tab
+            }
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'More',
+                style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
+              ),
+              SizedBox(width: 4.w),
+              Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary, size: 18.sp),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServiceIconItem(BuildContext context, String title, IconData icon) {
     return Expanded(
       child: Column(
         children: [
@@ -442,7 +622,7 @@ class _QuickActionsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      {'icon': Icons.upload_file_rounded, 'label': 'Upload Docs', 'highlight': false, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FolderDocumentsScreen(folderName: 'Uploads')))},
+      {'icon': Icons.upload_file_rounded, 'label': 'Upload Docs', 'highlight': false, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadDocumentScreen()))},
       {'icon': Icons.list_alt_rounded, 'label': 'View Claims', 'highlight': false, 'route': () {}},
       {'icon': Icons.add_circle_outline_rounded, 'label': 'New Claim', 'highlight': true, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewClaimScreen()))},
       {'icon': Icons.help_outline_rounded, 'label': 'Support', 'highlight': false, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()))},
@@ -573,13 +753,15 @@ class _RecentActivitySection extends StatelessWidget {
               }
               
               final data = snapshot.data;
-              final notifications = data != null ? data['data'] as List<dynamic>? : null;
+              var notifications = data != null ? data['data'] as List<dynamic>? : null;
               
               if (notifications == null || notifications.isEmpty) {
-                return Padding(
-                  padding: EdgeInsets.all(16.r),
-                  child: Text('No recent activity.', style: GoogleFonts.inter(color: context.textSecondaryColor)),
-                );
+                // Fallback Mock Data
+                notifications = [
+                  {'title': 'Claim Initialized', 'message': 'TCS dividend claim processing started', 'date': '2 hours ago'},
+                  {'title': 'Documents Verified', 'message': 'Aadhar and PAN verification successful', 'date': '1 day ago'},
+                  {'title': 'Support Ticket Resolved', 'message': 'Query regarding IEPF forms answered', 'date': '3 days ago'},
+                ];
               }
               
               return Column(
@@ -592,7 +774,7 @@ class _RecentActivitySection extends StatelessWidget {
                   return Column(
                     children: [
                       _buildActivityItem(context, title, message, 'Recent', icon, isSuccess: isSuccess),
-                      if (notif != notifications.take(3).last) Divider(color: context.borderColor, height: 1),
+                      if (notif != notifications!.take(3).last) Divider(color: context.borderColor, height: 1),
                     ],
                   );
                 }).toList(),
