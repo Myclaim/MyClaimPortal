@@ -84,10 +84,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       },
       {
-        'title': 'Documents & Activity',
+        'title': 'Data & History',
         'items': [
-          {'icon': Icons.folder_rounded, 'label': 'My Documents', 'color': AppColors.warning, 'sub': 'KYC, PAN, Cheques'},
-          {'icon': Icons.history_rounded, 'label': 'Activity Log', 'color': AppColors.blue, 'sub': 'View all actions'},
           {'icon': Icons.receipt_rounded, 'label': 'Claim History', 'color': AppColors.accent, 'sub': 'All past claims'},
         ],
       },
@@ -862,34 +860,88 @@ class _ActivitySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6, minChildSize: 0.4, maxChildSize: 0.9,
-      builder: (_, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          children: [
-            SizedBox(height: 16.h),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(99.r))),
-            SizedBox(height: 16.h),
-            Text('Recent Activity', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w900, color: context.textColor)),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: ListView(
-                controller: scrollController,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                children: [
-                  _buildLogItem(context, 'Successful Login', 'You logged into the mobile portal', 'Just now', Icons.login_rounded, AppColors.accent),
-                  _buildLogItem(context, 'Profile Viewed', 'Accessed Personal Information', '2 mins ago', Icons.visibility_rounded, AppColors.blue),
-                ],
+    return FutureBuilder<Map<String, dynamic>?>
+        (future: ApiService.getClientActivities(), builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      }
+
+      final data = snapshot.data;
+      var activities = data != null ? data['data'] as List<dynamic>? : null;
+
+      if (activities == null || activities.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.r),
+            child: Text('No recent activity',
+                style: GoogleFonts.inter(fontSize: 14.sp, color: context.textSecondaryColor)),
+          ),
+        );
+      }
+
+      return DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          child: Column(
+            children: [
+              SizedBox(height: 16.h),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(99.r))),
+              SizedBox(height: 16.h),
+              Text('Recent Activity', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w900, color: context.textColor)),
+              SizedBox(height: 16.h),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                  itemCount: activities.length,
+                  itemBuilder: (context, index) {
+                    final act = activities[index] as Map<String, dynamic>;
+                    final title = 'Activity';
+                    final desc = act['action']?.toString() ?? 'Action performed';
+                    final createdAt = act['createdAt']?.toString() ?? '';
+                    final time = createdAt.length > 16 ? createdAt.substring(0, 10) : createdAt;
+                    final iconName = act['icon']?.toString() ?? 'login_rounded';
+                    final icon = _iconFromString(iconName);
+                    final color = _colorFromString(act['type']?.toString() ?? 'default');
+                    return _buildLogItem(context, title, desc, time, icon, color);
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
+  }
+
+  // Helper to map string name to IconData (basic fallback)
+  IconData _iconFromString(String name) {
+    switch (name) {
+      case 'login':
+        return Icons.login_rounded;
+      case 'profile':
+        return Icons.visibility_rounded;
+      default:
+        return Icons.info_rounded;
+    }
+  }
+
+  // Helper to map type to color (basic mapping)
+  Color _colorFromString(String type) {
+    switch (type) {
+      case 'success':
+        return AppColors.accent;
+      case 'info':
+        return AppColors.blue;
+      default:
+        return AppColors.accent;
+    }
   }
 
   Widget _buildLogItem(BuildContext context, String title, String desc, String time, IconData icon, Color color) {

@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.bold, color: context.textColor),
                       ),
                       SizedBox(height: 12.h),
-                      const _QuickActionsRow(),
+                      _QuickActionsRow(onNavigate: widget.onNavigate),
                       SizedBox(height: 28.h),
 
                       // 6. Referral Banner
@@ -121,9 +121,29 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Row(
           children: [
-            IconButton(
-              icon: Icon(Icons.notifications_none_rounded, color: context.textColor),
-              onPressed: () {},
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.notifications_none_rounded, color: context.textColor),
+                  onPressed: () => _showNotificationsSheet(context),
+                ),
+                Positioned(
+                  top: 8.h,
+                  right: 8.w,
+                  child: Container(
+                    padding: EdgeInsets.all(4.r),
+                    decoration: const BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '5',
+                      style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(width: 4.w),
             GestureDetector(
@@ -148,6 +168,108 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  void _showNotificationsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollController) => Column(
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(color: context.borderColor, borderRadius: BorderRadius.circular(2.r)),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Notifications', style: GoogleFonts.inter(fontSize: 20.sp, fontWeight: FontWeight.bold, color: context.textColor)),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Mark all read', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<Map<String, dynamic>?>(
+                future: ApiService.getNotifications(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  }
+                  var notifications = snapshot.data?['data'] as List<dynamic>?;
+                  
+                  if (notifications == null || notifications.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.r),
+                        child: Text(
+                          'No new notifications',
+                          style: GoogleFonts.inter(fontSize: 14.sp, color: context.textSecondaryColor),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    controller: scrollController,
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                    itemCount: notifications.length,
+                    separatorBuilder: (_, __) => Divider(color: context.borderColor, height: 16.h),
+                    itemBuilder: (context, index) {
+                      final notif = notifications![index];
+                      final isComment = notif['type'] == 'comment' || notif['title'].toString().contains('Comment');
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(10.r),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isComment ? Icons.chat_bubble_outline_rounded : Icons.trending_up_rounded, 
+                              color: AppColors.success, 
+                              size: 20.sp
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(notif['title']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: context.textColor)),
+                                SizedBox(height: 4.h),
+                                Text(notif['message']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 12.sp, color: context.textSecondaryColor, height: 1.4)),
+                                SizedBox(height: 6.h),
+                                Text(notif['date']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 10.sp, color: context.textSecondaryColor.withValues(alpha: 0.6))),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -276,17 +398,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatsGrid(BuildContext context, DashboardProvider dash) {
-    final overview = dash.overview;
-    final total = overview['totalClaims']?.toString() ?? '16';
-    final active = int.tryParse(overview['active']?.toString() ?? '0') ?? 0;
-    final inProgress = int.tryParse(overview['inProgress']?.toString() ?? '0') ?? 0;
-    final completed = int.tryParse(overview['completed']?.toString() ?? '0') ?? 0;
+    int total = dash.claims.length;
+    int active = 0;
+    int inProgress = 0;
+    int completed = 0;
+
+    for (var claim in dash.claims) {
+      final s = (claim['status']?.toString() ?? '').toLowerCase();
+      if (s == 'active' || s == 'allocated') {
+        active++;
+      } else if (s.contains('progress')) {
+        inProgress++;
+      } else if (s.contains('completed')) {
+        completed++;
+      }
+    }
 
     return Column(
       children: [
         Row(
           children: [
-            _buildStatItem(context, 'Total Claims', total),
+            _buildStatItem(context, 'Total Claims', total.toString()),
             SizedBox(width: 12.w),
             _buildStatItem(context, 'Active', active.toString().padLeft(2, '0')),
             SizedBox(width: 12.w),
@@ -462,71 +594,15 @@ class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: allClaims.take(3).map((claim) {
-            final name = claim['name'] as String? ?? claim['companyName'] as String? ?? 'Unknown';
+            final name = claim['name'] as String? ?? 
+                         (claim['preIpo'] != null ? claim['preIpo']['name'] as String? : null) ?? 
+                         claim['companyName'] as String? ?? 
+                         'Unknown';
             final status = claim['status'] as String? ?? '';
-            final lower = status.toLowerCase();
-            final isActive = lower == 'active';
-            final isPending = lower.contains('pending');
-            final isInProgress = lower.contains('progress');
-            
-            final orbColor = isPending
-                ? const Color(0xFF94A3B8)
-                : isActive
-                    ? AppColors.primary
-                    : isInProgress
-                        ? const Color(0xFFF59E0B)
-                        : const Color(0xFF3B82F6);
-            
-            String initials;
-            if (name.toLowerCase().contains('ola')) initials = 'O';
-            else if (name.toLowerCase().contains('nse')) initials = 'NL';
-            else if (name.toLowerCase().contains('reliance')) initials = 'R';
-            else initials = name.split(' ').take(2).map((w) => w.isNotEmpty ? w[0] : '').join().toUpperCase();
-            
-            return Expanded(
-              child: Column(
-                children: [
-                  Container(
-                    width: 60.w,
-                    height: 60.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    name,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: context.textColor, height: 1.3),
-                  ),
-                  SizedBox(height: 6.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: orbColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Text(
-                      status,
-                      style: GoogleFonts.inter(fontSize: 9.sp, fontWeight: FontWeight.bold, color: orbColor),
-                    ),
-                  ),
-                ],
-              ),
-            );
+            return _buildItemCard(context, name, status);
           }).toList(),
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 24.h),
         GestureDetector(
           onTap: () {
             if (widget.onNavigate != null) {
@@ -539,10 +615,10 @@ class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
             children: [
               Text(
                 'View All',
-                style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
               SizedBox(width: 4.w),
-              Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 16.sp),
+              Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 18.sp),
             ],
           ),
         ),
@@ -558,13 +634,12 @@ class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildServiceIconItem(context, 'IEPF Claim', Icons.assignment_turned_in_outlined),
-            _buildServiceIconItem(context, 'Share Transfer', Icons.swap_horiz_rounded),
-            _buildServiceIconItem(context, 'KYC Update', Icons.fact_check_outlined),
+            _buildItemCard(context, 'IEPF Claim', 'completed'),
+            _buildItemCard(context, 'Share Transfer', 'pending'),
+            _buildItemCard(context, 'KYC Update', 'in-progress'),
           ],
         ),
-        SizedBox(height: 20.h),
-        // More button
+        SizedBox(height: 24.h),
         GestureDetector(
           onTap: () {
             if (widget.onNavigate != null) {
@@ -576,11 +651,11 @@ class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'More',
-                style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
+                'View All',
+                style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
               SizedBox(width: 4.w),
-              Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary, size: 18.sp),
+              Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 18.sp),
             ],
           ),
         ),
@@ -588,27 +663,70 @@ class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
     );
   }
 
-  Widget _buildServiceIconItem(BuildContext context, String title, IconData icon) {
-    return Expanded(
+  Widget _buildItemCard(BuildContext context, String name, String status) {
+    final lower = status.toLowerCase();
+    final isSuccess = lower == 'completed' || lower == 'active';
+    final isPending = lower.contains('pending');
+    final isInProgress = lower.contains('progress');
+    
+    // Status text format
+    String displayStatus = status;
+    if (isSuccess) displayStatus = 'completed';
+    else if (isInProgress) displayStatus = 'in-progress';
+    else if (isPending) displayStatus = 'pending';
+    
+    final orbBgColor = AppColors.primary.withValues(alpha: 0.12);
+    final orbTextColor = AppColors.primary;
+    
+    final pillBgColor = isSuccess ? AppColors.primary.withValues(alpha: 0.15) : const Color(0xFFF1F5F9);
+    final pillTextColor = isSuccess ? AppColors.primary : const Color(0xFF94A3B8);
+
+    String initials;
+    if (name.toLowerCase().contains('ola')) initials = 'O';
+    else if (name.toLowerCase().contains('nse')) initials = 'NL';
+    else if (name.toLowerCase().contains('reliance')) initials = 'R';
+    else initials = name.split(' ').take(2).map((w) => w.isNotEmpty ? w[0] : '').join().toUpperCase();
+    if (initials.isEmpty) initials = 'C';
+
+    return SizedBox(
+      width: 100.w,
       child: Column(
         children: [
           Container(
-            width: 60.w,
-            height: 60.w,
+            width: 72.w,
+            height: 72.w,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: orbBgColor,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
             child: Center(
-              child: Icon(icon, color: AppColors.primary, size: 28.sp),
+              child: Text(
+                initials,
+                style: GoogleFonts.inter(fontSize: 22.sp, fontWeight: FontWeight.w800, color: orbTextColor),
+              ),
             ),
           ),
           SizedBox(height: 12.h),
           Text(
-            title,
+            name,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: context.textColor, height: 1.3),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1E293B)),
+          ),
+          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: pillBgColor,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Text(
+              displayStatus,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.bold, color: pillTextColor),
+            ),
           ),
         ],
       ),
@@ -617,13 +735,19 @@ class _ClaimsAndServicesSectionState extends State<_ClaimsAndServicesSection> {
 }
 
 class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow();
+  final Function(int)? onNavigate;
+  
+  const _QuickActionsRow({this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
     final actions = [
       {'icon': Icons.upload_file_rounded, 'label': 'Upload Docs', 'highlight': false, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadDocumentScreen()))},
-      {'icon': Icons.list_alt_rounded, 'label': 'View Claims', 'highlight': false, 'route': () {}},
+      {'icon': Icons.list_alt_rounded, 'label': 'View Claims', 'highlight': false, 'route': () {
+        if (onNavigate != null) {
+          onNavigate!(1); // Navigate to Claims tab
+        }
+      }},
       {'icon': Icons.add_circle_outline_rounded, 'label': 'New Claim', 'highlight': true, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewClaimScreen()))},
       {'icon': Icons.help_outline_rounded, 'label': 'Support', 'highlight': false, 'route': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()))},
     ];
@@ -733,9 +857,21 @@ class _RecentActivitySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Recent Activity',
-          style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.bold, color: context.textColor),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recent Activity',
+              style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.bold, color: context.textColor),
+            ),
+            GestureDetector(
+              onTap: () => _showAllActivitiesSheet(context),
+              child: Text(
+                'Show All',
+                style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: AppColors.primary),
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 12.h),
         Container(
@@ -746,36 +882,38 @@ class _RecentActivitySection extends StatelessWidget {
             border: Border.all(color: context.borderColor),
           ),
           child: FutureBuilder<Map<String, dynamic>?>(
-            future: ApiService.getNotifications(),
+            future: ApiService.getClientActivities(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: Padding(padding: EdgeInsets.all(16.r), child: CircularProgressIndicator(color: AppColors.primary)));
               }
-              
+
               final data = snapshot.data;
-              var notifications = data != null ? data['data'] as List<dynamic>? : null;
-              
-              if (notifications == null || notifications.isEmpty) {
-                // Fallback Mock Data
-                notifications = [
-                  {'title': 'Claim Initialized', 'message': 'TCS dividend claim processing started', 'date': '2 hours ago'},
-                  {'title': 'Documents Verified', 'message': 'Aadhar and PAN verification successful', 'date': '1 day ago'},
-                  {'title': 'Support Ticket Resolved', 'message': 'Query regarding IEPF forms answered', 'date': '3 days ago'},
-                ];
+              var activities = data != null ? data['data'] as List<dynamic>? : null;
+
+              if (activities == null || activities.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.r),
+                    child: Text(
+                      'No recent activity',
+                      style: GoogleFonts.inter(fontSize: 14.sp, color: context.textSecondaryColor),
+                    ),
+                  ),
+                );
               }
-              
+
               return Column(
-                children: notifications.take(3).map((notif) {
-                  final title = notif['title']?.toString() ?? 'Update';
-                  final message = notif['message']?.toString() ?? '';
-                  final isSuccess = message.toLowerCase().contains('complete') || message.toLowerCase().contains('success');
-                  final icon = isSuccess ? Icons.check_circle_outline_rounded : Icons.notifications_active_outlined;
-                  
-                  return Column(
-                    children: [
-                      _buildActivityItem(context, title, message, 'Recent', icon, isSuccess: isSuccess),
-                      if (notif != notifications!.take(3).last) Divider(color: context.borderColor, height: 1),
-                    ],
+                children: activities.take(3).map((act) {
+                  final title = 'Activity';
+                  final message = act['action']?.toString() ?? 'Action performed';
+                  final createdAt = act['createdAt']?.toString() ?? '';
+                  final time = createdAt.length > 16 ? createdAt.substring(0, 10) : createdAt;
+                  return ListTile(
+                    leading: Icon(Icons.info_rounded, color: AppColors.accent),
+                    title: Text(title, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: context.textColor)),
+                    subtitle: Text(message, style: GoogleFonts.inter(fontSize: 11.sp, color: context.textSecondaryColor)),
+                    trailing: Text(time, style: GoogleFonts.inter(fontSize: 10.sp, color: context.textSecondaryColor)),
                   );
                 }).toList(),
               );
@@ -785,6 +923,68 @@ class _RecentActivitySection extends StatelessWidget {
       ],
     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1);
   }
+
+  void _showAllActivitiesSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          child: Column(
+            children: [
+              SizedBox(height: 16.h),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(99.r))),
+              SizedBox(height: 16.h),
+              Text('All Activity', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w900, color: context.textColor)),
+              SizedBox(height: 16.h),
+              Expanded(
+                child: FutureBuilder<Map<String, dynamic>?>(
+                  future: ApiService.getClientActivities(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                    }
+                    var activities = snapshot.data?['data'] as List<dynamic>?;
+                    if (activities == null || activities.isEmpty) {
+                      return Center(child: Text('No activity found', style: GoogleFonts.inter(fontSize: 14.sp, color: context.textSecondaryColor)));
+                    }
+                    return ListView.separated(
+                      controller: scrollController,
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                      itemCount: activities.length,
+                      separatorBuilder: (_, __) => Divider(color: context.borderColor, height: 16.h),
+                      itemBuilder: (context, index) {
+                        final act = activities[index];
+                        final title = 'Activity';
+                        final message = act['action']?.toString() ?? 'Action performed';
+                        final createdAt = act['createdAt']?.toString() ?? '';
+                        final time = createdAt.length > 16 ? createdAt.substring(0, 10) : createdAt;
+                        return ListTile(
+                          leading: Icon(Icons.info_rounded, color: AppColors.accent),
+                          title: Text(title, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: context.textColor)),
+                          subtitle: Text(message, style: GoogleFonts.inter(fontSize: 11.sp, color: context.textSecondaryColor)),
+                          trailing: Text(time, style: GoogleFonts.inter(fontSize: 10.sp, color: context.textSecondaryColor)),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildActivityItem(BuildContext context, String title, String subtitle, String time, IconData icon, {bool isSuccess = false}) {
     return ListTile(

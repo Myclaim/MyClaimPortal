@@ -69,7 +69,33 @@ class ApiService {
     return null;
   }
 
-  /// GET /api/notifications
+  /// GET /api/activities/client
+  static Future<Map<String, dynamic>?> getClientActivities() async {
+    try {
+      final headers = await _getHeaders();
+      final prefs = await SharedPreferences.getInstance();
+      final userStr = prefs.getString('user');
+      String url = '$baseUrl/activity';
+      if (userStr != null) {
+        final userObj = jsonDecode(userStr);
+        if (userObj['_id'] != null) {
+          url += '?user_id=${userObj['_id']}';
+        }
+      }
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>;
+        return {'data': list};
+      }
+    } catch (e) {
+      // ignore errors
+    }
+    return null;
+  }
+
   static Future<Map<String, dynamic>?> getNotifications() async {
     try {
       final headers = await _getHeaders();
