@@ -10,7 +10,8 @@ import '../providers/biometric_provider.dart';
 import '../utils/constants.dart';
 import 'biometric_lock_screen.dart';
 import 'login_screen.dart';
-import 'main_shell.dart';
+import 'client/client_shell.dart';
+import 'partner/partner_shell.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -84,9 +85,11 @@ class _SplashScreenState extends State<SplashScreen>
         final bio = context.read<BiometricProvider>();
         await bio.refresh();
         if (!mounted) return;
-        next = bio.isEnabled
-            ? const BiometricLockScreen()
-            : const MainShell();
+        final role = auth.userRole;
+        final shell = role == 'partner'
+            ? const PartnerShell()
+            : const ClientShell();
+        next = bio.isEnabled ? const BiometricLockScreen() : shell;
       } else {
         next = const LoginScreen();
       }

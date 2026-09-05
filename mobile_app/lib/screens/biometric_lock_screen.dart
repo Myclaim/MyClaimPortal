@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import '../providers/biometric_provider.dart';
 import '../utils/constants.dart';
 import '../services/biometric_service.dart';
+import '../providers/auth_provider.dart';
 import 'main_shell.dart';
+import 'client/client_shell.dart';
+import 'partner/partner_shell.dart';
 
 class BiometricLockScreen extends StatefulWidget {
   const BiometricLockScreen({super.key});
@@ -81,9 +84,11 @@ class _BiometricLockScreenState extends State<BiometricLockScreen>
   }
 
   void _navigateToApp() {
+    final role = context.read<AuthProvider>().userRole;
+    final shell = role == 'partner' ? const PartnerShell() : const ClientShell();
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const MainShell(),
+        pageBuilder: (_, animation, __) => shell,
         transitionsBuilder: (_, animation, __, child) =>
             FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 500),

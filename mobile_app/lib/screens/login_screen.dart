@@ -6,7 +6,9 @@ import '../providers/auth_provider.dart';
 import '../providers/biometric_provider.dart';
 import '../utils/constants.dart';
 import 'biometric_lock_screen.dart';
-import 'main_shell.dart';
+import 'guest_screen.dart';
+import 'client/client_shell.dart';
+import 'partner/partner_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,9 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (_) => const BiometricLockScreen()),
         );
       } else {
+        final role = context.read<AuthProvider>().userRole;
+        final shell = role == 'partner' ? const PartnerShell() : const ClientShell();
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const MainShell()),
+          MaterialPageRoute(builder: (_) => shell),
         );
       }
     } else if (!success && mounted) {
@@ -252,6 +256,43 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ).animate().slideY(begin: 0.1, delay: 500.ms).fadeIn(),
+
+                            SizedBox(height: 20.h),
+
+                            // ── Continue as Guest ──
+                            GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (_, animation, __) => const GuestScreen(),
+                                  transitionsBuilder: (_, animation, __, child) =>
+                                      FadeTransition(opacity: animation, child: child),
+                                  transitionDuration: const Duration(milliseconds: 400),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Not registered? ',
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      color: context.textSecondaryColor,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Continue as Guest',
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ).animate().fadeIn(delay: 650.ms),
                             
                             SizedBox(height: 32.h),
                           ],

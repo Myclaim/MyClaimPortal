@@ -258,4 +258,89 @@ class ApiService {
       throw Exception(e.toString());
     }
   }
+
+  // ─── PARTNER ENDPOINTS ─────────────────────────────────────────────────────
+
+  /// GET /api/leads — returns only leads where sourceUserId == partnerId
+  static Future<List<dynamic>> getPartnerLeads(String partnerId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(Uri.parse('$baseUrl/leads'), headers: headers);
+      if (response.statusCode == 200) {
+        final all = jsonDecode(response.body) as List<dynamic>;
+        return all.where((l) {
+          final src = l['sourceUserId'];
+          final srcId = src is Map ? src['_id']?.toString() : src?.toString();
+          return srcId == partnerId;
+        }).toList();
+      }
+    } catch (e) {
+      debugPrint('getPartnerLeads error: $e');
+    }
+    return [];
+  }
+
+  /// POST /api/leads — create a new lead
+  static Future<Map<String, dynamic>> createLead(Map<String, dynamic> payload) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/leads'),
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return {'success': true, 'data': data};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Failed to create lead'};
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// GET /api/users — returns only users with role == 'client'
+  static Future<List<dynamic>> getPartnerClients() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(Uri.parse('$baseUrl/users'), headers: headers);
+      if (response.statusCode == 200) {
+        final all = jsonDecode(response.body) as List<dynamic>;
+        return all.where((u) => u['role']?.toString() == 'client').toList();
+      }
+    } catch (e) {
+      debugPrint('getPartnerClients error: $e');
+    }
+    return [];
+  }
+
+  /// GET /api/tickets
+  static Future<List<dynamic>> getPartnerTickets() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(Uri.parse('$baseUrl/tickets'), headers: headers);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as List<dynamic>;
+      }
+    } catch (e) {
+      debugPrint('getPartnerTickets error: $e');
+    }
+    return [];
+  }
+
+  /// GET /api/activity
+  static Future<List<dynamic>> getPartnerActivity() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(Uri.parse('$baseUrl/activity'), headers: headers);
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body is List) return body;
+        if (body is Map && body['data'] is List) return body['data'] as List;
+      }
+    } catch (e) {
+      debugPrint('getPartnerActivity error: $e');
+    }
+    return [];
+  }
 }
