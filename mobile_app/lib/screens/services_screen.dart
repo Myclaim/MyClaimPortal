@@ -56,7 +56,6 @@ class _ServicesScreenState extends State<ServicesScreen> with SingleTickerProvid
                             ],
                           ),
                         ),
-                        _NewTicketBtn(onTap: () => _showNewTicketSheet(context)),
                       ],
                     ),
                     SizedBox(height: 16.h),

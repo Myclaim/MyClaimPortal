@@ -21,7 +21,6 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
-  late PageController _pageController;
 
   late final List<Widget> _screens = [
     HomeScreen(onNavigate: _onNavigate),
@@ -33,26 +32,14 @@ class _MainShellState extends State<MainShell> {
 
   void _onNavigate(int index) {
     setState(() => _currentIndex = index);
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.fastOutSlowIn,
-    );
   }
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().fetchDashboard();
     });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 
   @override
@@ -60,9 +47,8 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       extendBody: true,
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), 
+      body: IndexedStack(
+        index: _currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: _BottomNav(

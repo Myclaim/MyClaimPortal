@@ -16,6 +16,7 @@ import 'quick_actions/referral_screen.dart';
 import 'quick_actions/upload_document_screen.dart';
 import 'claims_screen.dart';
 import 'profile_screen.dart';
+import 'resource_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigate;
@@ -1032,11 +1033,11 @@ class _HelpfulResourcesSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             children: [
-              _buildResourceCard(context, 'Understanding IEPF', 'What you need to know before filing.', Icons.menu_book_rounded),
+              _buildResourceCard(context, 'Understanding IEPF', 'What you need to know before filing.', Icons.menu_book_rounded, 'The Investor Education and Protection Fund (IEPF) is a government initiative to protect investors\' interests. If your shares, dividends, or deposits remain unclaimed for seven consecutive years, the company transfers them to the IEPF authority.\n\nBefore filing a claim, ensure you have:\n- Proof of entitlement (Original share certificates or dividend warrants)\n- Updated KYC documents (Aadhaar, PAN)\n- Active demat account and bank account\n- Client Master List (CML) from your depository participant\n\nThe process involves filing IEPF-5 online and submitting physical documents to the company\'s nodal officer. Our platform tracks this complex process for you.'),
               SizedBox(width: 12.w),
-              _buildResourceCard(context, 'Tax Implications', 'How recovered shares affect your taxes.', Icons.account_balance_rounded),
+              _buildResourceCard(context, 'Tax Implications', 'How recovered shares affect your taxes.', Icons.account_balance_rounded, 'Recovering shares and accumulated dividends from IEPF can have significant tax implications.\n\n1. Dividends:\nDividends recovered are taxable in the year of receipt under "Income from Other Sources". You may need to pay tax at your applicable slab rate.\n\n2. Shares/Capital Gains:\nWhen you recover shares, there is no immediate tax liability. However, when you eventually sell these recovered shares, capital gains tax will apply. The acquisition date for calculating long-term or short-term capital gains remains the original date you acquired the shares, not the date of recovery from IEPF.\n\nWe recommend consulting with your chartered accountant to properly declare these assets and avoid penalties.'),
               SizedBox(width: 12.w),
-              _buildResourceCard(context, 'Legal Heir guide', 'Documentation for inherited shares.', Icons.family_restroom_rounded),
+              _buildResourceCard(context, 'Legal Heir guide', 'Documentation for inherited shares.', Icons.family_restroom_rounded, 'Claiming shares on behalf of a deceased family member (Transmission of Shares) requires specific legal documentation.\n\nKey documents usually required:\n- Notarized copy of the Death Certificate\n- Succession Certificate, Probate of Will, or Letter of Administration\n- Affidavit from all legal heirs\n- No Objection Certificates (NOC) from other legal heirs if shares are to be transmitted to one person\n- Indemnity bond signed by the claimant\n\nIf the value of shares is below a certain threshold (usually ₹5 Lakhs), the process might be simplified by providing a registered indemnity bond and affidavit without needing a Succession Certificate. Ensure the transmission is completed with the company before filing the IEPF claim.'),
             ],
           ),
         ),
@@ -1044,9 +1045,23 @@ class _HelpfulResourcesSection extends StatelessWidget {
     ).animate().fadeIn(duration: 700.ms).slideX(begin: 0.1);
   }
 
-  Widget _buildResourceCard(BuildContext context, String title, String desc, IconData icon) {
-    return Container(
-      width: 220.w,
+  Widget _buildResourceCard(BuildContext context, String title, String desc, IconData icon, String content) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResourceDetailScreen(
+              title: title,
+              description: desc,
+              content: content,
+              icon: icon,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 220.w,
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -1072,6 +1087,7 @@ class _HelpfulResourcesSection extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
       ),
     );
   }
