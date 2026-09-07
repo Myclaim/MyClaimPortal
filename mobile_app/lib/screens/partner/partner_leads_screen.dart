@@ -42,7 +42,7 @@ class _PartnerLeadsScreenState extends State<PartnerLeadsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const _AddLeadSheet(),
+      builder: (_) => const AddLeadSheet(),
     ).then((newLead) {
       if (newLead != null) {
         context.read<PartnerDashboardProvider>().addLeadLocally(newLead);
@@ -453,14 +453,14 @@ class _LeadCard extends StatelessWidget {
 }
 
 // ─── Add Lead Bottom Sheet ─────────────────────────────────────
-class _AddLeadSheet extends StatefulWidget {
-  const _AddLeadSheet();
+class AddLeadSheet extends StatefulWidget {
+  const AddLeadSheet();
 
   @override
-  State<_AddLeadSheet> createState() => _AddLeadSheetState();
+  State<AddLeadSheet> createState() => AddLeadSheetState();
 }
 
-class _AddLeadSheetState extends State<_AddLeadSheet> {
+class AddLeadSheetState extends State<AddLeadSheet> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();

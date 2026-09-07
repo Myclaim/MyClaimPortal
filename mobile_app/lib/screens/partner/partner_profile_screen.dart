@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/constants.dart';
+import '../login_screen.dart';
 
 class PartnerProfileScreen extends StatelessWidget {
   const PartnerProfileScreen({super.key});
@@ -106,14 +107,14 @@ class PartnerProfileScreen extends StatelessWidget {
       padding: EdgeInsets.all(24.r),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF2B837E), Color(0xFF1F6D68)],
+          colors: [Color(0xFF4ADE80), Color(0xFF22C55E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1F6D68).withValues(alpha: 0.3),
+            color: const Color(0xFF22C55E).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
@@ -252,8 +253,13 @@ class PartnerProfileScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              final navigator = Navigator.of(context, rootNavigator: true);
+              Navigator.pop(context); // Close the dialog
               context.read<AuthProvider>().logout();
+              navigator.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,

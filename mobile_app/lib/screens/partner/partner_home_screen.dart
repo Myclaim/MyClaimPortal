@@ -7,8 +7,11 @@ import '../../providers/auth_provider.dart';
 import '../../providers/partner_dashboard_provider.dart';
 import '../../utils/constants.dart';
 
+import 'partner_leads_screen.dart' show AddLeadSheet;
+
 class PartnerHomeScreen extends StatefulWidget {
-  const PartnerHomeScreen({super.key});
+  final ValueChanged<int>? onNavigate;
+  const PartnerHomeScreen({super.key, this.onNavigate});
 
   @override
   State<PartnerHomeScreen> createState() => _PartnerHomeScreenState();
@@ -174,14 +177,14 @@ class _PartnerHomeScreenState extends State<PartnerHomeScreen> {
           padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF2B837E), Color(0xFF1F6D68)], 
+              colors: [Color(0xFF4ADE80), Color(0xFF22C55E)], 
               begin: Alignment.topLeft, 
               end: Alignment.bottomRight
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1F6D68).withValues(alpha: 0.3),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -340,7 +343,26 @@ class _PartnerHomeScreenState extends State<PartnerHomeScreen> {
             final a = actions[i];
             return Expanded(
               child: GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  if (a.label == 'Add Lead') {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const AddLeadSheet(),
+                    ).then((newLead) {
+                      if (newLead != null) {
+                        context.read<PartnerDashboardProvider>().addLeadLocally(newLead);
+                      }
+                    });
+                  } else if (a.label == 'My Clients') {
+                    widget.onNavigate?.call(2);
+                  } else if (a.label == 'My Tickets') {
+                    widget.onNavigate?.call(3);
+                  } else if (a.label == 'My Leads') {
+                    widget.onNavigate?.call(1);
+                  }
+                },
                 child: Container(
                   margin: EdgeInsets.only(
                       right: i < actions.length - 1 ? 10.w : 0),

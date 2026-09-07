@@ -21,8 +21,12 @@ class PartnerShell extends StatefulWidget {
 class _PartnerShellState extends State<PartnerShell> {
   int _currentIndex = 0;
 
+  void _navigate(int index) {
+    setState(() => _currentIndex = index);
+  }
+
   late final List<Widget> _screens = [
-    const PartnerHomeScreen(),
+    PartnerHomeScreen(onNavigate: _navigate),
     const PartnerLeadsScreen(),
     const PartnerClientsScreen(),
     const PartnerTicketsScreen(),

@@ -331,11 +331,11 @@ class _HomeScreenState extends State<HomeScreen> {
           width: double.infinity,
           padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF2B837E), Color(0xFF1F6D68)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            gradient: const LinearGradient(colors: [Color(0xFF4ADE80), Color(0xFF22C55E)], begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1F6D68).withValues(alpha: 0.3),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
