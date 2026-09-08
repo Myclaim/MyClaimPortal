@@ -2083,12 +2083,27 @@ const ClientDashboard = ({ user: propUser }) => {
   const showReferFriend = urlTab === 'refer-friend';
   const showStoreProposals = urlTab === 'store-proposals';
 
-  const [dashboard, setDashboard] = useState(null);
-  const [clientProfile, setClientProfile] = useState(null);
+  const [dashboard, setDashboard] = useState(() => {
+    try {
+      const c = sessionStorage.getItem('myclaim_client_db');
+      return c ? JSON.parse(c) : null;
+    } catch (e) { return null; }
+  });
+  const [clientProfile, setClientProfile] = useState(() => {
+    try {
+      const c = sessionStorage.getItem('myclaim_client_prof');
+      return c ? JSON.parse(c) : null;
+    } catch (e) { return null; }
+  });
   const [familyMembers, setFamilyMembers] = useState([]);
-  const [documents, setDocuments] = useState([]);
+  const [documents, setDocuments] = useState(() => {
+    try {
+      const c = sessionStorage.getItem('myclaim_client_docs');
+      return c ? JSON.parse(c) : [];
+    } catch (e) { return []; }
+  });
   const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !sessionStorage.getItem('myclaim_client_db'));
   const [notifHovered, setNotifHovered] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
@@ -2127,6 +2142,7 @@ const ClientDashboard = ({ user: propUser }) => {
         api.get(`/users?parent_id=${user._id || user.id}`).catch(() => ({ data: [] }))
       ]);
       setClientProfile(profileRes.data);
+      try { sessionStorage.setItem('myclaim_client_prof', JSON.stringify(profileRes.data)); } catch (e) {}
       const embedded = profileRes.data.familyMembers || [];
       const standalone = familyRes.data || [];
       
@@ -2147,6 +2163,7 @@ const ClientDashboard = ({ user: propUser }) => {
     try {
       const { data } = await api.get('/documents');
       setDocuments(data);
+      try { sessionStorage.setItem('myclaim_client_docs', JSON.stringify(data)); } catch (e) {}
     } catch (err) {
       console.error("Error fetching client documents:", err);
     }
@@ -2157,6 +2174,7 @@ const ClientDashboard = ({ user: propUser }) => {
     try {
       const { data } = await api.get('/dashboard/client');
       setDashboard(data);
+      try { sessionStorage.setItem('myclaim_client_db', JSON.stringify(data)); } catch (e) {}
     } catch (err) {
       console.error(err);
     }
@@ -2166,7 +2184,7 @@ const ClientDashboard = ({ user: propUser }) => {
     const initData = async () => {
       if (!user?.token) { setLoading(false); return; }
       try {
-        setLoading(true);
+        if (!dashboard) setLoading(true);
         await Promise.all([
           fetchDashboardData(),
           fetchFamilyData(),

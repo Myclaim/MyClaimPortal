@@ -40,24 +40,35 @@ const authUser = async (req, res) => {
   let user = null;
   let detectedRole = null;
 
-  const clientUser = await Client.findOne(emailQuery);
-  const adminUser = await Admin.findOne(emailQuery);
-  const partnerUser = await Partner.findOne(emailQuery);
-  const employeeUser = await Employee.findOne(emailQuery);
-  const legacyUser = await User.findOne(emailQuery);
-
   if (portalType === 'client') {
-    // Client portal only allows clients
+    // Fast path: Check Client first
+    const clientUser = await Client.findOne(emailQuery);
     if (clientUser) {
       user = clientUser;
       detectedRole = 'client';
-    } else if (adminUser || partnerUser || employeeUser || (legacyUser && legacyUser.role !== 'client')) {
-      return res.status(403).json({
-        message: 'Access Restricted: Administrative and Partner accounts must log in via wealthearth.com.'
-      });
+    } else {
+      const [adminUser, partnerUser, employeeUser, legacyUser] = await Promise.all([
+        Admin.findOne(emailQuery),
+        Partner.findOne(emailQuery),
+        Employee.findOne(emailQuery),
+        User.findOne(emailQuery)
+      ]);
+      if (adminUser || partnerUser || employeeUser || (legacyUser && legacyUser.role !== 'client')) {
+        return res.status(403).json({
+          message: 'Access Restricted: Administrative and Partner accounts must log in via wealtharth.com.'
+        });
+      }
     }
   } else if (portalType === 'management') {
-    // Management portal allows admin, super_admin, employee, partner, super_partner
+    // Parallel query for management portal
+    const [adminUser, partnerUser, employeeUser, clientUser, legacyUser] = await Promise.all([
+      Admin.findOne(emailQuery),
+      Partner.findOne(emailQuery),
+      Employee.findOne(emailQuery),
+      Client.findOne(emailQuery),
+      User.findOne(emailQuery)
+    ]);
+
     if (clientUser && !adminUser && !partnerUser && !employeeUser) {
       return res.status(403).json({
         message: 'Access Restricted: Client accounts must log in via myclaimindia.com.'
@@ -78,20 +89,28 @@ const authUser = async (req, res) => {
       detectedRole = legacyUser.role;
     }
   } else {
-    // Fallback if portal not explicitly set
-    if (adminUser) user = adminUser;
+    // Parallel lookup fallback
+    const [clientUser, adminUser, partnerUser, employeeUser, legacyUser] = await Promise.all([
+      Client.findOne(emailQuery),
+      Admin.findOne(emailQuery),
+      Partner.findOne(emailQuery),
+      Employee.findOne(emailQuery),
+      User.findOne(emailQuery)
+    ]);
+    if (clientUser) user = clientUser;
+    else if (adminUser) user = adminUser;
     else if (partnerUser) user = partnerUser;
-    else if (clientUser) user = clientUser;
     else if (employeeUser) user = employeeUser;
     else if (legacyUser) user = legacyUser;
   }
 
   if (user && (await bcrypt.compare(password, user.password))) {
     const Activity = require('../../models/Activity');
-    await Activity.create({
+    Activity.create({
       action: `User ${user.name || email} logged in (${portalType || 'direct'})`,
       user: user._id,
-    });
+    }).catch(err => console.error('Activity log error:', err.message));
+
     const userData = user.toObject();
     delete userData.password;
     res.json({

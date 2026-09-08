@@ -72,4 +72,8 @@ const documentSchema = mongoose.Schema(
   }
 );
 
+documentSchema.index({ client_id: 1, createdAt: -1 });
+documentSchema.index({ uploaded_by: 1 });
+documentSchema.index({ ticket_id: 1 });
+
 module.exports = mongoose.model('Document', documentSchema);

@@ -59,4 +59,8 @@ const ticketSchema = mongoose.Schema(
   }
 );
 
+ticketSchema.index({ client: 1, hubType: 1 });
+ticketSchema.index({ client: 1, status: 1 });
+ticketSchema.index({ client: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Ticket', ticketSchema);

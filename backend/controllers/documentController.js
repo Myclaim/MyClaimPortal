@@ -85,6 +85,48 @@ const uploadDocument = async (req, res) => {
   }
 };
 
+const populateUploadersBatch = async (documents) => {
+  if (!documents || documents.length === 0) return documents;
+
+  const rawIds = documents.map(d => {
+    if (!d.uploaded_by) return null;
+    if (typeof d.uploaded_by === 'object' && d.uploaded_by._id) return d.uploaded_by._id.toString();
+    if (typeof d.uploaded_by === 'object' && d.uploaded_by.name) return null;
+    return d.uploaded_by.toString();
+  }).filter(Boolean);
+
+  const uniqueIds = [...new Set(rawIds)];
+  if (uniqueIds.length === 0) return documents;
+
+  const [users, clients, admins, partners, employees] = await Promise.all([
+    User.find({ _id: { $in: uniqueIds } }, 'name role').lean(),
+    Client.find({ _id: { $in: uniqueIds } }, 'name role').lean(),
+    Admin.find({ _id: { $in: uniqueIds } }, 'name role').lean(),
+    Partner.find({ _id: { $in: uniqueIds } }, 'name role').lean(),
+    Employee.find({ _id: { $in: uniqueIds } }, 'name role').lean()
+  ]);
+
+  const map = new Map();
+  [...users, ...clients, ...admins, ...partners, ...employees].forEach(u => {
+    if (u && u._id) map.set(u._id.toString(), { _id: u._id, name: u.name, role: u.role });
+  });
+
+  for (let doc of documents) {
+    if (doc.uploaded_by) {
+      const id = (typeof doc.uploaded_by === 'object' && doc.uploaded_by._id)
+        ? doc.uploaded_by._id.toString()
+        : doc.uploaded_by.toString();
+      if (map.has(id)) {
+        doc.uploaded_by = map.get(id);
+      } else if (typeof doc.uploaded_by !== 'object' || !doc.uploaded_by.name) {
+        doc.uploaded_by = null;
+      }
+    }
+  }
+
+  return documents;
+};
+
 // @desc    Get all documents (filtered)
 // @route   GET /api/documents
 // @access  Private
@@ -121,17 +163,8 @@ const getDocuments = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Manually populate uploaded_by because users are split across multiple collections
-    for (let doc of documents) {
-      if (doc.uploaded_by) {
-        let uploader = await User.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Client.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Admin.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Partner.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Employee.findById(doc.uploaded_by).select('name role').lean();
-        doc.uploaded_by = uploader || null;
-      }
-    }
+    // Fast batch resolution of uploaders
+    await populateUploadersBatch(documents);
 
     res.json(documents);
   } catch (error) {
@@ -323,15 +356,8 @@ const getCompanyDocuments = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Manually populate uploaded_by across collections
-    for (let doc of documents) {
-      if (doc.uploaded_by && typeof doc.uploaded_by === 'object' && !doc.uploaded_by.name) {
-        let uploader = await User.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Admin.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Partner.findById(doc.uploaded_by).select('name role').lean();
-        doc.uploaded_by = uploader || null;
-      }
-    }
+    // Fast batch resolution of uploaders
+    await populateUploadersBatch(documents);
 
     res.json(documents);
   } catch (error) {
@@ -348,15 +374,8 @@ const getLegalDocuments = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Populate uploaded_by
-    for (let doc of documents) {
-      if (doc.uploaded_by) {
-        let uploader = await User.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Admin.findById(doc.uploaded_by).select('name role').lean();
-        if (!uploader) uploader = await Partner.findById(doc.uploaded_by).select('name role').lean();
-        doc.uploaded_by = uploader || null;
-      }
-    }
+    // Fast batch resolution of uploaders
+    await populateUploadersBatch(documents);
 
     res.json(documents);
   } catch (error) {
