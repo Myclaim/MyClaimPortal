@@ -5,45 +5,46 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import { ThemeProvider } from './contexts/ThemeContext';
 
-import ClientDashboard from './pages/dashboards/client/ClientDashboard';
 import Login from './pages/auth/Login';
-import Dashboard from './pages/home/Dashboard';
-import Claims from './pages/claims/Claims';
-import ClaimDetail from './pages/claims/ClaimDetail';
-import Leads from './pages/crm/Leads';
-import Catalog from './pages/catalog/Catalog';
-import Users from './pages/hr/Users';
-import Activity from './pages/activity/Activity';
-import Clients from './pages/clients/Clients';
-import ClientProfile from './pages/clients/ClientProfile';
-import ClientForm from './pages/user-lists/ClientForm';
-import Proposals from './pages/crm/Proposals';
-import Employees from './pages/hr/Employees';
-import SuperAdmin from './pages/super-admin/Overview';
-import Tickets from './pages/super-admin/Tickets';
-import MyClaimAI from './pages/super-admin/MyClaimAI';
-import AdminList from './pages/user-lists/AdminList';
-import PartnerList from './pages/user-lists/PartnerList';
-import PartnerProfile from './pages/user-lists/PartnerProfile';
-import SuperPartnerList from './pages/user-lists/SuperPartnerList';
-import SuperPartnerProfile from './pages/user-lists/SuperPartnerProfile';
-import TaskBoard from './pages/tasks/TaskBoard';
-import HubPage from './pages/hubs/HubPage';
-import StoreMarketplace from './pages/store/StoreMarketplace';
-import ClaimStore from './pages/store/ClaimStore';
-import ServiceStore from './pages/store/ServiceStore';
-import PreIpoStore from './pages/store/PreIpoStore';
-import WealthManagementStore from './pages/store/WealthManagementStore';
-import OperationsHub from './pages/operations/OperationsHub';
-import KYCHub from './pages/operations/KYCHub';
-import StubPage from './pages/stubs/StubPage';
-import EnterpriseDashboard from './pages/dashboards/EnterpriseDashboard';
-import UserAddForm from './pages/user-lists/UserAddForm';
-import AdvancedAnalytics from './pages/analytics/AdvancedAnalytics';
-import DepartmentBoard from './pages/departments/DepartmentBoard';
-import AdminTicketManagement from './pages/admin/AdminTicketManagement';
-import AdminDocumentVerification from './pages/admin/AdminDocumentVerification';
-import AdminReports from './pages/admin/AdminReports';
+
+const ClientDashboard = React.lazy(() => import('./pages/dashboards/client/ClientDashboard'));
+const Dashboard = React.lazy(() => import('./pages/home/Dashboard'));
+const Claims = React.lazy(() => import('./pages/claims/Claims'));
+const ClaimDetail = React.lazy(() => import('./pages/claims/ClaimDetail'));
+const Leads = React.lazy(() => import('./pages/crm/Leads'));
+const Catalog = React.lazy(() => import('./pages/catalog/Catalog'));
+const Users = React.lazy(() => import('./pages/hr/Users'));
+const Activity = React.lazy(() => import('./pages/activity/Activity'));
+const Clients = React.lazy(() => import('./pages/clients/Clients'));
+const ClientProfile = React.lazy(() => import('./pages/clients/ClientProfile'));
+const ClientForm = React.lazy(() => import('./pages/user-lists/ClientForm'));
+const Proposals = React.lazy(() => import('./pages/crm/Proposals'));
+const Employees = React.lazy(() => import('./pages/hr/Employees'));
+const SuperAdmin = React.lazy(() => import('./pages/super-admin/Overview'));
+const Tickets = React.lazy(() => import('./pages/super-admin/Tickets'));
+const MyClaimAI = React.lazy(() => import('./pages/super-admin/MyClaimAI'));
+const AdminList = React.lazy(() => import('./pages/user-lists/AdminList'));
+const PartnerList = React.lazy(() => import('./pages/user-lists/PartnerList'));
+const PartnerProfile = React.lazy(() => import('./pages/user-lists/PartnerProfile'));
+const SuperPartnerList = React.lazy(() => import('./pages/user-lists/SuperPartnerList'));
+const SuperPartnerProfile = React.lazy(() => import('./pages/user-lists/SuperPartnerProfile'));
+const TaskBoard = React.lazy(() => import('./pages/tasks/TaskBoard'));
+const HubPage = React.lazy(() => import('./pages/hubs/HubPage'));
+const StoreMarketplace = React.lazy(() => import('./pages/store/StoreMarketplace'));
+const ClaimStore = React.lazy(() => import('./pages/store/ClaimStore'));
+const ServiceStore = React.lazy(() => import('./pages/store/ServiceStore'));
+const PreIpoStore = React.lazy(() => import('./pages/store/PreIpoStore'));
+const WealthManagementStore = React.lazy(() => import('./pages/store/WealthManagementStore'));
+const OperationsHub = React.lazy(() => import('./pages/operations/OperationsHub'));
+const KYCHub = React.lazy(() => import('./pages/operations/KYCHub'));
+const StubPage = React.lazy(() => import('./pages/stubs/StubPage'));
+const EnterpriseDashboard = React.lazy(() => import('./pages/dashboards/EnterpriseDashboard'));
+const UserAddForm = React.lazy(() => import('./pages/user-lists/UserAddForm'));
+const AdvancedAnalytics = React.lazy(() => import('./pages/analytics/AdvancedAnalytics'));
+const DepartmentBoard = React.lazy(() => import('./pages/departments/DepartmentBoard'));
+const AdminTicketManagement = React.lazy(() => import('./pages/admin/AdminTicketManagement'));
+const AdminDocumentVerification = React.lazy(() => import('./pages/admin/AdminDocumentVerification'));
+const AdminReports = React.lazy(() => import('./pages/admin/AdminReports'));
 import { getPortalType, PORTAL_CONFIG } from './utils/portalConfig';
 
 function App() {
@@ -60,8 +61,13 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider>
         <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
+          <React.Suspense fallback={
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d14', color: '#94a3b8', fontSize: '14px', letterSpacing: '0.5px' }}>
+              Loading portal...
+            </div>
+          }>
+            <Routes>
+              <Route path="/login" element={<Login />} />
           
           <Route path="/" element={
             <ProtectedRoute>
@@ -135,6 +141,7 @@ function App() {
 
           </Route>
         </Routes>
+          </React.Suspense>
       </AuthProvider>
     </ThemeProvider>
   </Router>

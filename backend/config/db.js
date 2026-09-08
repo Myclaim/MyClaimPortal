@@ -82,7 +82,8 @@ const connectDB = async () => {
         console.log(`MongoDB Connected: ${conn.connection.host} (${candidate.name})`);
       }
 
-      await migrateTickets();
+      // Run migration asynchronously in background so DB connection returns immediately
+      migrateTickets().catch(err => console.error('[Migration] Error:', err.message));
       return;
     } catch (error) {
       lastError = error;
