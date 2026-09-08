@@ -44,8 +44,17 @@ import DepartmentBoard from './pages/departments/DepartmentBoard';
 import AdminTicketManagement from './pages/admin/AdminTicketManagement';
 import AdminDocumentVerification from './pages/admin/AdminDocumentVerification';
 import AdminReports from './pages/admin/AdminReports';
+import { getPortalType, PORTAL_CONFIG } from './utils/portalConfig';
 
 function App() {
+  React.useEffect(() => {
+    const portal = getPortalType();
+    if (portal === 'client') {
+      document.title = 'MyClaim India Portal';
+    } else {
+      document.title = 'WealthEarth - Management Portal';
+    }
+  }, []);
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
