@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { 
   FileText, Upload, Plus, X, Eye, Edit2, Download, Ticket, 
   Layers, Package, Users, Activity, MessageSquare, GitBranch, 
@@ -7,6 +7,7 @@ import {
   Folder, MoreVertical, Search, Save, Trash2, UserPlus, Share2, Loader,
   CheckSquare, Square, AlertTriangle
 } from 'lucide-react';
+import TasksView from './TasksView';
 import api from '../../services/api';
 import ClientDocumentsHub from '../../components/documents/ClientDocumentsHub';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
@@ -16,10 +17,32 @@ import { COUNTRY_CODES } from '../../utils/countryCodes';
 
 const ClientProfile = ({ idProp, onClose }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { id: urlId } = useParams();
   const id = idProp || urlId;
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
+  
+  const subtabFromUrl = searchParams.get('subtab') || 'profile';
+  const [activeTab, setActiveTabState] = useState(subtabFromUrl);
+
+  useEffect(() => {
+    const currentSubtab = searchParams.get('subtab') || 'profile';
+    setActiveTabState(currentSubtab);
+  }, [searchParams]);
+
+  const handleTabChange = (newTab) => {
+    if (newTab === activeTab) return;
+    setActiveTabState(newTab);
+    const nextParams = new URLSearchParams(searchParams);
+    if (newTab === 'profile') {
+      nextParams.delete('subtab');
+    } else {
+      nextParams.set('subtab', newTab);
+    }
+    const qs = nextParams.toString();
+    navigate(qs ? `?${qs}` : location.pathname);
+  };
   const [client, setClient] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [claims, setClaims] = useState([]);
@@ -102,7 +125,15 @@ const ClientProfile = ({ idProp, onClose }) => {
       {/* 🚀 COMPACT HEADER */}
       <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
         <button 
-          onClick={onClose ? onClose : () => navigate(-1)} 
+          onClick={() => {
+            if (activeTab !== 'profile') {
+              handleTabChange('profile');
+            } else if (onClose) {
+              onClose();
+            } else {
+              navigate(-1);
+            }
+          }} 
           style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569' }}
         >
           ← Back
@@ -164,7 +195,7 @@ const ClientProfile = ({ idProp, onClose }) => {
         {tabs.map(tab => (
           <div 
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             style={{ 
               padding: '16px 20px', 
               fontSize: '13px', 
@@ -198,8 +229,9 @@ const ClientProfile = ({ idProp, onClose }) => {
         {activeTab === 'holders' && <HoldersView members={familyMembers} onAddHolder={() => setIsAddFamilyModalOpen(true)} />}
         {activeTab === 'claims' && <ClaimsView claims={claims} tickets={tickets} onRefresh={fetchData} />}
         {activeTab === 'tickets' && <TicketsView tickets={tickets} />}
+        {activeTab === 'tasks' && <TasksView client={client} />}
         {activeTab === 'activity' && <ActivityView tickets={tickets} client={client} />}
-        {!['profile', 'overview', 'documents', 'family', 'holders', 'claims', 'tickets', 'activity'].includes(activeTab) && (
+        {!['profile', 'overview', 'documents', 'family', 'holders', 'claims', 'tickets', 'tasks', 'activity'].includes(activeTab) && (
           <div style={{ textAlign: 'center', padding: '100px', color: '#94a3b8' }}>
             <Activity size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
             <div style={{ fontSize: '18px', fontWeight: 600 }}>{activeTab.toUpperCase()} View</div>

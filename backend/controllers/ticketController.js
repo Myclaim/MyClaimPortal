@@ -2,6 +2,7 @@ const Ticket = require('../models/Ticket');
 const Activity = require('../models/Activity');
 const Notification = require('../models/Notification');
 const { createActivityAndNotify } = require('../utils/activityHelper');
+const { resolveUserMap } = require('../utils/userResolver');
 
 const getTickets = async (req, res) => {
   try {
@@ -44,11 +45,34 @@ const getTickets = async (req, res) => {
       }
     }
 
-    const tickets = await Ticket.find(query)
+    const rawTickets = await Ticket.find(query)
       .populate({ path: 'client', select: 'name email phone companyName role', model: 'Client' })
-      .populate('assignedTo', 'name email')
       .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const assigneeIds = rawTickets.map(t => t.assignedTo).filter(Boolean);
+    const unpopulatedClientIds = rawTickets
+      .filter(t => !t.client || !t.client.name)
+      .map(t => (t.client?._id || t.client))
+      .filter(Boolean);
+    const userMap = await resolveUserMap([...assigneeIds, ...unpopulatedClientIds]);
+
+    const tickets = rawTickets.map(t => {
+      let client = t.client;
+      if (!client || !client.name) {
+        const idStr = (t.client?._id || t.client)?.toString();
+        if (idStr && userMap[idStr]) {
+          client = userMap[idStr];
+        }
+      }
+      return {
+        ...t,
+        client,
+        assignedTo: t.assignedTo ? (userMap[t.assignedTo.toString()] || t.assignedTo) : null
+      };
+    });
+
     res.json(tickets);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -57,12 +81,19 @@ const getTickets = async (req, res) => {
 
 const getTicketById = async (req, res) => {
   try {
-    const ticket = await Ticket.findById(req.params.id)
+    const rawTicket = await Ticket.findById(req.params.id)
       .populate({ path: 'client', select: 'name email phone companyName role', model: 'Client' })
-      .populate('assignedTo', 'name email')
-      .populate('comments.user', 'name email role');
+      .populate('comments.user', 'name email role')
+      .lean();
       
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+    if (!rawTicket) return res.status(404).json({ message: 'Ticket not found' });
+
+    let assignedToObj = null;
+    if (rawTicket.assignedTo) {
+      const userMap = await resolveUserMap([rawTicket.assignedTo]);
+      assignedToObj = userMap[rawTicket.assignedTo.toString()] || rawTicket.assignedTo;
+    }
+    const ticket = { ...rawTicket, assignedTo: assignedToObj };
 
     if (req.user.role === 'client') {
       if (!ticket.client || String(ticket.client._id) !== String(req.user._id)) {
@@ -335,7 +366,18 @@ const assignTicket = async (req, res) => {
     });
   }
   
-  res.json(updated);
+  const userMap = await resolveUserMap([userId]);
+  const populatedUpdated = {
+    ...updated.toObject(),
+    assignedTo: userMap[userId.toString()] || updated.assignedTo
+  };
+
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('ticket_updated', populatedUpdated);
+  }
+  
+  res.json(populatedUpdated);
 };
 
 const addTicketComment = async (req, res) => {
@@ -397,16 +439,70 @@ const bulkUpdateTickets = async (req, res) => {
     await Ticket.updateMany({ _id: { $in: ticketIds } }, { status: payload.status });
   } else if (action === 'assign') {
     await Ticket.updateMany({ _id: { $in: ticketIds } }, { assignedTo: payload.userId });
+  } else if (action === 'delete') {
+    try {
+      const TicketTask = require('../models/TicketTask');
+      await TicketTask.deleteMany({ ticket: { $in: ticketIds } });
+    } catch (taskErr) {
+      console.error('Error cleaning up tasks in bulk delete:', taskErr);
+    }
+    await Ticket.deleteMany({ _id: { $in: ticketIds } });
   } else {
     return res.status(400).json({ message: 'Invalid bulk action' });
   }
 
   await Activity.create({
-    action: `Bulk updated ${ticketIds.length} tickets (${action}) by ${req.user.name || 'Admin'}`,
+    action: `Bulk ${action === 'delete' ? 'deleted' : 'updated'} ${ticketIds.length} tickets by ${req.user.name || 'Admin'}`,
     user: req.user._id,
   });
 
-  res.json({ message: 'Bulk update successful' });
+  const io = req.app.get('io');
+  if (io && action === 'delete') {
+    io.emit('tickets_bulk_deleted', { ticketIds });
+  }
+
+  res.json({ message: `Bulk ${action === 'delete' ? 'delete' : 'update'} successful` });
+};
+
+// @desc    Delete a ticket
+// @route   DELETE /api/tickets/:id
+// @access  Private (Admin / Super Admin)
+const deleteTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Delete associated ticket tasks
+    try {
+      const TicketTask = require('../models/TicketTask');
+      await TicketTask.deleteMany({ ticket: ticket._id });
+    } catch (taskErr) {
+      console.error('Error cleaning up ticket tasks:', taskErr);
+    }
+
+    await Ticket.findByIdAndDelete(req.params.id);
+
+    try {
+      await Activity.create({
+        action: `Deleted Ticket #${ticket.ticketNo || ticket._id} (${ticket.service || 'Service'}) by ${req.user.name || 'Admin'}`,
+        user: req.user._id,
+      });
+    } catch (actErr) {
+      console.error('Activity log error:', actErr);
+    }
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('ticket_deleted', { ticketId: req.params.id });
+    }
+
+    res.status(200).json({ success: true, message: 'Ticket deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting ticket:', error);
+    res.status(500).json({ message: error.message || 'Failed to delete ticket' });
+  }
 };
 
 const escalateTicket = async (req, res) => {
@@ -569,5 +665,6 @@ module.exports = {
   escalateTicket,
   addTicketAttachment,
   updateTicketStages,
-  updateTicketDetails
+  updateTicketDetails,
+  deleteTicket
 };

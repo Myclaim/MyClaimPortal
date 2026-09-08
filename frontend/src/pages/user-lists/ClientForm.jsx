@@ -4,7 +4,7 @@ import {
   Eye, EyeOff, AlertCircle, CheckCircle,
   ChevronRight, ChevronLeft, X,
   User, Shield, Users, Calendar, MapPin, FileText, Upload, Link as LinkIcon,
-  Search, ChevronDown
+  Search, ChevronDown, Scan
 } from 'lucide-react';
 import api from '../../services/api';
 import { extractAadharDetails, extractPanDetails } from '../../utils/ocrUtils';
@@ -17,7 +17,143 @@ const ClientForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
-  const [isScanning, setIsScanning] = useState({ aadhar: false, pan: false });
+  const [isScanning, setIsScanning] = useState({ aadharFront: false, aadharBack: false, pan: false });
+  const [ocrData, setOcrData] = useState({ aadharFront: null, aadharBack: null, pan: null });
+  const [docMatchStatus, setDocMatchStatus] = useState(null);
+
+  const applyVerifiedDetails = (aadharData, panData) => {
+    const updates = {};
+
+    // 1. Identification Numbers
+    if (aadharData?.aadharNo) updates.aadharNo = aadharData.aadharNo;
+    if (panData?.panNo) updates.panNo = panData.panNo;
+
+    // 2. Name & Split Parts
+    const verifiedName = aadharData?.name || panData?.name || '';
+    if (verifiedName) {
+      updates.name = verifiedName;
+      const parts = verifiedName.split(' ').filter(Boolean);
+      if (parts.length === 1) {
+        updates.firstName = parts[0];
+      } else if (parts.length === 2) {
+        updates.firstName = parts[0];
+        updates.lastName = parts[1];
+      } else if (parts.length > 2) {
+        updates.firstName = parts[0];
+        updates.middleName = parts.slice(1, -1).join(' ');
+        updates.lastName = parts[parts.length - 1];
+      }
+    }
+
+    // 3. Date of Birth
+    const verifiedDob = aadharData?.dob || panData?.dob || '';
+    if (verifiedDob) updates.dob = verifiedDob;
+
+    // 4. Gender (from Aadhar)
+    if (aadharData?.gender) updates.gender = aadharData.gender;
+
+    // 5. Phone (if available in Aadhar)
+    if (aadharData?.phone) updates.phone = aadharData.phone;
+
+    // 6. Address (from Aadhar Back / Front)
+    if (aadharData?.address) updates.permanentAddress = aadharData.address;
+    if (aadharData?.pincode) updates.pincode = aadharData.pincode;
+    if (aadharData?.state) updates.state = aadharData.state;
+    if (aadharData?.city) updates.city = aadharData.city;
+
+    setForm(prev => ({ ...prev, ...updates }));
+  };
+
+  const clearAutoFilledDetails = () => {
+    setForm(prev => ({
+      ...prev,
+      firstName: '',
+      middleName: '',
+      lastName: '',
+      name: '',
+      dob: '',
+      aadharNo: '',
+      panNo: '',
+      permanentAddress: '',
+      city: '',
+      state: '',
+      pincode: '',
+    }));
+  };
+
+  const checkAndSyncDocs = (currentOcr) => {
+    const aFront = currentOcr.aadharFront || {};
+    const aBack = currentOcr.aadharBack || {};
+    const panInfo = currentOcr.pan;
+
+    const aadharInfo = {
+      ...aBack,
+      ...aFront,
+      name: aFront.name || aBack.name || '',
+      dob: aFront.dob || aBack.dob || '',
+      aadharNo: aFront.aadharNo || aBack.aadharNo || '',
+      gender: aFront.gender || aBack.gender || 'Male',
+      phone: aFront.phone || aBack.phone || '',
+      address: aBack.address || aFront.address || '',
+      pincode: aBack.pincode || aFront.pincode || '',
+      state: aBack.state || aFront.state || '',
+      city: aBack.city || aFront.city || '',
+    };
+
+    const hasAadhar = Boolean(aadharInfo.name || aadharInfo.aadharNo || aadharInfo.dob);
+    const hasPan = Boolean(panInfo && (panInfo.name || panInfo.panNo || panInfo.dob));
+
+    if (!hasAadhar && !hasPan) {
+      setDocMatchStatus(null);
+      return;
+    }
+
+    // Only Aadhaar uploaded so far: wait for PAN
+    if (hasAadhar && !hasPan) {
+      setDocMatchStatus('waiting_pan');
+      return;
+    }
+
+    // Only PAN uploaded so far: wait for Aadhaar
+    if (hasPan && !hasAadhar) {
+      setDocMatchStatus('waiting_aadhar');
+      return;
+    }
+
+    // Both are present: cross-validate Name & DOB!
+    const aName = (aadharInfo.name || '').replace(/[^a-zA-Z]/g, '').toLowerCase();
+    const pName = (panInfo.name || '').replace(/[^a-zA-Z]/g, '').toLowerCase();
+    const aDob = aadharInfo.dob;
+    const pDob = panInfo.dob;
+
+    let isMatch = true;
+
+    // Check DOB
+    if (aDob && pDob && aDob !== pDob) {
+      isMatch = false;
+    }
+
+    // Check Name
+    if (aName && pName) {
+      const aWords = aName.split(/\s+/).filter(w => w.length > 2);
+      const pWords = pName.split(/\s+/).filter(w => w.length > 2);
+      const hasCommonWord = aWords.some(w => pName.includes(w)) || pWords.some(w => aName.includes(w));
+
+      if (aName !== pName && !aName.includes(pName) && !pName.includes(aName) && !hasCommonWord) {
+        isMatch = false;
+      }
+    }
+
+    if (isMatch) {
+      setDocMatchStatus('match');
+      // Only auto-fill when matched!
+      applyVerifiedDetails(aadharInfo, panInfo);
+    } else {
+      setDocMatchStatus('mismatch');
+      // Details do not match: do NOT auto-fill and clear any mismatched auto-filled data
+      clearAutoFilledDetails();
+    }
+  };
 
   // ── Live user list for Reference & Relationship dropdowns ──
   const [allUsers, setAllUsers] = useState([]);
@@ -97,7 +233,7 @@ const ClientForm = () => {
     preference: '', status: 'active', notes: '',
     role: 'client',
   });
-  const [files, setFiles] = useState({ aadhar: null, pan: null, passport: null, other: null });
+  const [files, setFiles] = useState({ aadharFront: null, aadharBack: null, pan: null, passport: null, other: null });
 
   const steps = [
     { id: 1, title: 'Basic Details',     icon: <User size={17} /> },
@@ -108,6 +244,7 @@ const ClientForm = () => {
     { id: 6, title: 'Reference',         icon: <LinkIcon size={17} /> },
     { id: 7, title: 'Nominee',           icon: <Users size={17} /> },
     { id: 8, title: 'Finalize',          icon: <Shield size={17} /> },
+    { id: 9, title: 'Review',            icon: <CheckCircle size={17} /> },
   ];
   const totalSteps = steps.length;
 
@@ -131,18 +268,26 @@ const ClientForm = () => {
     if (!file) return;
     setFiles(prev => ({ ...prev, [fieldName]: file }));
 
-    if (fieldName === 'aadhar') {
-      setIsScanning(p => ({ ...p, aadhar: true }));
+    if (fieldName === 'aadharFront' || fieldName === 'aadharBack' || fieldName === 'aadhar') {
+      setIsScanning(p => ({ ...p, [fieldName]: true }));
       const result = await extractAadharDetails(file);
-      if (result && result.aadharNo) {
-        setForm(prev => ({ ...prev, aadharNo: result.aadharNo }));
+      if (result) {
+        setOcrData(prev => {
+          const updated = { ...prev, [fieldName]: result };
+          checkAndSyncDocs(updated);
+          return updated;
+        });
       }
-      setIsScanning(p => ({ ...p, aadhar: false }));
+      setIsScanning(p => ({ ...p, [fieldName]: false }));
     } else if (fieldName === 'pan') {
       setIsScanning(p => ({ ...p, pan: true }));
       const result = await extractPanDetails(file);
-      if (result && result.panNo) {
-        setForm(prev => ({ ...prev, panNo: result.panNo }));
+      if (result) {
+        setOcrData(prev => {
+          const updated = { ...prev, pan: result };
+          checkAndSyncDocs(updated);
+          return updated;
+        });
       }
       setIsScanning(p => ({ ...p, pan: false }));
     }
@@ -153,12 +298,13 @@ const ClientForm = () => {
     formData.append('userId', userId);
     formData.append('formName', 'Client Registration Form');
 
-    if (files.aadhar) { formData.append('files', files.aadhar); formData.append('docType', 'aadharCard'); }
+    if (files.aadharFront) { formData.append('files', files.aadharFront); formData.append('docType', 'aadharCard'); }
+    if (files.aadharBack) { formData.append('files', files.aadharBack); formData.append('docType', 'aadharCard'); }
     if (files.pan) { formData.append('files', files.pan); formData.append('docType', 'panCard'); }
     if (files.passport) { formData.append('files', files.passport); formData.append('docType', 'passport'); }
     if (files.other) { formData.append('files', files.other); formData.append('docType', 'otherDocs'); }
 
-    if (files.aadhar || files.pan || files.passport || files.other) {
+    if (files.aadharFront || files.aadharBack || files.pan || files.passport || files.other) {
       await api.post('/users/kyc-upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -331,6 +477,108 @@ const ClientForm = () => {
               {/* STEP 1 — Basic Details */}
               {stepId === 1 && (
                 <>
+                  {/* OCR QUICK FILL BANNER */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(6,182,212,0.1) 100%)',
+                    border: '1px solid rgba(16,185,129,0.2)',
+                    borderRadius: 16, padding: '20px', marginBottom: 32,
+                    display: 'flex', flexDirection: 'column', gap: 16
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(16,185,129,0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Scan size={18} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Quick Auto-fill with ID Cards</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Upload Aadhar or PAN to automatically extract and fill details below using AI OCR.</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                      <label style={{
+                        flex: '1 1 auto', minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(16,185,129,0.3)', borderRadius: 12, padding: '14px 20px',
+                        cursor: isScanning.aadharFront ? 'wait' : 'pointer', transition: '0.2s', position: 'relative', overflow: 'hidden'
+                      }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                        <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'aadharFront')} disabled={isScanning.aadharFront} />
+                        {isScanning.aadharFront ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10b981', fontSize: 13, fontWeight: 700 }}><div className="loader-spinner" style={{width: 14, height: 14, border: '2px solid #10b981', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite'}} /> Scanning Front...</div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)', fontSize: 13, fontWeight: 700 }}><Upload size={16} color="#10b981" /> Aadhar Front</div>
+                        )}
+                        {files.aadharFront && !isScanning.aadharFront && <div style={{ position: 'absolute', top: 4, right: 4, background: '#10b981', borderRadius: '50%', padding: 2 }}><CheckCircle size={10} color="#fff" /></div>}
+                      </label>
+                      
+                      <label style={{
+                        flex: '1 1 auto', minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(16,185,129,0.3)', borderRadius: 12, padding: '14px 20px',
+                        cursor: isScanning.aadharBack ? 'wait' : 'pointer', transition: '0.2s', position: 'relative', overflow: 'hidden'
+                      }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                        <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'aadharBack')} disabled={isScanning.aadharBack} />
+                        {isScanning.aadharBack ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10b981', fontSize: 13, fontWeight: 700 }}><div className="loader-spinner" style={{width: 14, height: 14, border: '2px solid #10b981', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite'}} /> Scanning Back...</div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)', fontSize: 13, fontWeight: 700 }}><Upload size={16} color="#10b981" /> Aadhar Back</div>
+                        )}
+                        {files.aadharBack && !isScanning.aadharBack && <div style={{ position: 'absolute', top: 4, right: 4, background: '#10b981', borderRadius: '50%', padding: 2 }}><CheckCircle size={10} color="#fff" /></div>}
+                      </label>
+
+                      <label style={{
+                        flex: '1 1 auto', minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(6,182,212,0.3)', borderRadius: 12, padding: '14px 20px',
+                        cursor: isScanning.pan ? 'wait' : 'pointer', transition: '0.2s', position: 'relative', overflow: 'hidden'
+                      }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                        <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'pan')} disabled={isScanning.pan} />
+                        {isScanning.pan ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#06b6d4', fontSize: 13, fontWeight: 700 }}><div className="loader-spinner" style={{width: 14, height: 14, border: '2px solid #06b6d4', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite'}} /> Scanning PAN...</div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)', fontSize: 13, fontWeight: 700 }}><Upload size={16} color="#06b6d4" /> Upload PAN Card</div>
+                        )}
+                        {files.pan && !isScanning.pan && <div style={{ position: 'absolute', top: 4, right: 4, background: '#06b6d4', borderRadius: '50%', padding: 2 }}><CheckCircle size={10} color="#fff" /></div>}
+                      </label>
+                    </div>
+
+                    {/* Document Match Validation UI */}
+                    {docMatchStatus && (
+                      <div style={{
+                        marginTop: 4, padding: '12px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10,
+                        background: docMatchStatus === 'match' 
+                          ? 'rgba(16,185,129,0.1)' 
+                          : docMatchStatus === 'mismatch' 
+                            ? 'rgba(244,63,94,0.1)' 
+                            : 'rgba(245,158,11,0.1)',
+                        border: `1px solid ${
+                          docMatchStatus === 'match' 
+                            ? 'rgba(16,185,129,0.3)' 
+                            : docMatchStatus === 'mismatch' 
+                              ? 'rgba(244,63,94,0.3)' 
+                              : 'rgba(245,158,11,0.3)'
+                        }`,
+                      }}>
+                        {docMatchStatus === 'match' ? (
+                          <CheckCircle size={18} color="#10b981" />
+                        ) : docMatchStatus === 'mismatch' ? (
+                          <AlertCircle size={18} color="#f43f5e" />
+                        ) : (
+                          <Scan size={18} color="#f59e0b" />
+                        )}
+                        <div style={{
+                          fontSize: 13, 
+                          fontWeight: 700, 
+                          color: docMatchStatus === 'match' 
+                            ? '#10b981' 
+                            : docMatchStatus === 'mismatch' 
+                              ? '#f43f5e' 
+                              : '#f59e0b'
+                        }}>
+                          {docMatchStatus === 'match' && 'Documents Verified: Aadhar and PAN details match! All details have been auto-filled below.'}
+                          {docMatchStatus === 'mismatch' && 'Document info not matched: Name or DOB mismatch between Aadhar and PAN. Details will not be auto-filled until documents match.'}
+                          {docMatchStatus === 'waiting_pan' && 'Aadhar uploaded. Please upload PAN Card to cross-verify — details will be auto-filled once both documents match.'}
+                          {docMatchStatus === 'waiting_aadhar' && 'PAN Card uploaded. Please upload Aadhar Card to cross-verify — details will be auto-filled once both documents match.'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="cf-section">STEP 1: LOGIN CREDENTIALS</div>
                   <div className="cf-grid">
                     <div className="cf-group"><label className="cf-label">First Name <span>*</span></label><input name="firstName" className="cf-input" placeholder="John" value={form.firstName} onChange={handleChange} /></div>
@@ -433,8 +681,6 @@ const ClientForm = () => {
                       )}
                     </div>
                     {[
-                      { label: 'Aadhar Card', field: 'aadhar', docType: 'aadharCard' },
-                      { label: 'PAN Card', field: 'pan', docType: 'panCard' },
                       { label: 'Passport', field: 'passport', docType: 'passport' }
                     ].map((doc) => (
                       <div className="cf-group" key={doc.field}>
@@ -822,6 +1068,66 @@ const ClientForm = () => {
                     <div className="cf-group"><label className="cf-label">Communication Preference</label><select name="preference" className="cf-select" value={form.preference} onChange={handleChange}><option value="">Select</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Call">Phone Call</option></select></div>
                     <div className="cf-group"><label className="cf-label">Status</label><select name="status" className="cf-select" value={form.status} onChange={handleChange}><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                     <div className="cf-group" style={{ gridColumn: 'span 2' }}><label className="cf-label">Staff Notes</label><textarea name="notes" className="cf-input" style={{ minHeight: 80 }} placeholder="Internal notes…" value={form.notes} onChange={handleChange}></textarea></div>
+                  </div>
+                </>
+              )}
+
+              {/* STEP 9 — Review */}
+              {stepId === 9 && (
+                <>
+                  <div className="cf-section">STEP 9: FULL FORM REVIEW</div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: 20 }}>
+                     <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20, lineHeight: '1.5' }}>
+                        Please review all details below before completing the enrollment. Ensure that ID card details match the uploaded documents.
+                     </div>
+                     
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                       
+                       {/* Basic & Personal */}
+                       <div>
+                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Basic & Personal</h4>
+                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Full Name</strong> <span style={{ color: 'var(--text)' }}>{form.firstName} {form.middleName} {form.lastName}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Username</strong> <span style={{ color: 'var(--text)' }}>{form.username || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Date of Birth</strong> <span style={{ color: 'var(--text)' }}>{form.dob || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Gender</strong> <span style={{ color: 'var(--text)' }}>{form.gender}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Marital Status</strong> <span style={{ color: 'var(--text)' }}>{form.maritalStatus || 'N/A'}</span></div>
+                         </div>
+                       </div>
+
+                       {/* Contact & Address */}
+                       <div>
+                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Contact & Address</h4>
+                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Mobile</strong> <span style={{ color: 'var(--text)' }}>{form.phoneCountryCode} {form.phone || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Email</strong> <span style={{ color: 'var(--text)' }}>{form.email || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Permanent Address</strong> <span style={{ color: 'var(--text)' }}>{form.permanentAddress || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>City, State, Pincode</strong> <span style={{ color: 'var(--text)' }}>{form.city ? `${form.city}, ${form.state} - ${form.pincode}` : 'N/A'}</span></div>
+                         </div>
+                       </div>
+
+                       {/* Identification */}
+                       <div>
+                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Identification</h4>
+                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Aadhar Number</strong> <span style={{ color: 'var(--text)' }}>{form.aadharNo || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>PAN Number</strong> <span style={{ color: 'var(--text)' }}>{form.panNo || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Other Documents</strong> <span style={{ color: 'var(--text)' }}>{form.otherDocsDesc || 'N/A'}</span></div>
+                         </div>
+                       </div>
+
+                       {/* Relationship & Reference */}
+                       <div>
+                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Relationship & Reference</h4>
+                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Relation with Holder</strong> <span style={{ color: 'var(--text)' }}>{form.relationWithHolder || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Reference Name</strong> <span style={{ color: 'var(--text)' }}>{form.referenceName || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Internal Referral ID</strong> <span style={{ color: 'var(--text)' }}>{form.referredById || 'N/A'}</span></div>
+                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Nominee</strong> <span style={{ color: 'var(--text)' }}>{form.nomineeName ? `${form.nomineeName} (${form.nomineeRelation})` : 'N/A'}</span></div>
+                         </div>
+                       </div>
+
+                     </div>
                   </div>
                 </>
               )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Eye, Edit2, Trash2, ArrowLeft, X, Check, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 
 const DEFAULT_CLAIM_SERVICES = [
@@ -38,6 +38,10 @@ const SERVICE_CATEGORIES = ['All Categories', 'Licenses & Registrations', 'Trade
 const STORE_CATEGORIES = ['All Categories', 'Pre-IPO Equity'];
 
 const DepartmentBoard = ({ initialTab = 'claim' }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [activeTab, setActiveTab] = useState(initialTab);
   
   const [claimServices, setClaimServices] = useState([]);
@@ -105,14 +109,24 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [statusFilter, setStatusFilter] = useState('All Status');
 
+  const serviceIdFromUrl = searchParams.get('serviceId');
+
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
 
   useEffect(() => {
     setCategoryFilter('All Categories');
-    setActiveService(null);
   }, [activeTab]);
+
+  useEffect(() => {
+    if (serviceIdFromUrl && services.length > 0) {
+      const found = services.find(s => String(s._id || s.id) === String(serviceIdFromUrl));
+      if (found) setActiveService(found);
+    } else if (!serviceIdFromUrl && activeService) {
+      setActiveService(null);
+    }
+  }, [serviceIdFromUrl, services]);
 
   const categories = activeTab === 'store' ? STORE_CATEGORIES : activeTab === 'service' ? SERVICE_CATEGORIES : CLAIM_CATEGORIES;
 
@@ -146,10 +160,16 @@ const DepartmentBoard = ({ initialTab = 'claim' }) => {
 
   const openView = (service) => {
     setActiveService(service);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('serviceId', service._id || service.id);
+    navigate(`?${nextParams.toString()}`);
   };
 
   const closeView = () => {
     setActiveService(null);
+    if (searchParams.get('serviceId')) {
+      navigate(-1);
+    }
   };
 
   const openEdit = (service) => {

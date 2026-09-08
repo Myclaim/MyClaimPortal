@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, UploadCloud, MessageSquare, FileText, User, Briefcase, Clock, Paperclip } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 
 const EmployeeTicketDetail = ({ ticketId }) => {

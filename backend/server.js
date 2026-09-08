@@ -43,6 +43,7 @@ app.use('/api/referral', require('./routes/referralRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
 app.use('/api/wealth', require('./routes/wealthRoutes'));
 app.use('/api/pre-ipo', require('./routes/preIpoRoutes'));
+app.use('/api/ticket-tasks', require('./routes/ticketTaskRoutes'));
 
 // Basic route
 app.get('/', (req, res) => {

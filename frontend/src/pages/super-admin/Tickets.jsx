@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../hooks/useSocket';
@@ -6,19 +7,51 @@ import {
   Briefcase, Search, FileText, Download, Plus, Filter, 
   ChevronDown, MoreHorizontal, Eye, Clock, CheckCircle2, 
   AlertCircle, Activity, LayoutGrid, ClipboardList, 
-  ShoppingBag, LifeBuoy
+  ShoppingBag, LifeBuoy, Trash2
 } from 'lucide-react';
 import TicketDetailsModal from '../../components/documents/TicketDetailsModal';
 import CreateTicketModal from '../../components/forms/CreateTicketModal';
 import { downloadCSV } from '../../utils/exportUtils';
 
+const TAB_SLUG = {
+  'All Tickets': 'all',
+  'Claim Hub':   'claim',
+  'Service Hub': 'service',
+  'Store':       'store',
+  'Support':     'support',
+};
+const SLUG_TAB = Object.fromEntries(Object.entries(TAB_SLUG).map(([k,v]) => [v,k]));
+
 const Tickets = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const tabSlug = searchParams.get('tab') || 'all';
+
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('All Tickets');
+  const [activeTab, setActiveTabState] = useState(SLUG_TAB[tabSlug] || 'All Tickets');
   const [activeSourceTab, setActiveSourceTab] = useState('All Sources');
   const [activeStatusTab, setActiveStatusTab] = useState('All');
+
+  useEffect(() => {
+    const slug = searchParams.get('tab') || 'all';
+    setActiveTabState(SLUG_TAB[slug] || 'All Tickets');
+  }, [searchParams]);
+
+  const setActiveTab = (newTab) => {
+    setActiveTabState(newTab);
+    const slug = TAB_SLUG[newTab] || 'all';
+    const nextParams = new URLSearchParams(searchParams);
+    if (slug === 'all') {
+      nextParams.delete('tab');
+    } else {
+      nextParams.set('tab', slug);
+    }
+    const qs = nextParams.toString();
+    navigate(qs ? `?${qs}` : location.pathname);
+  };
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState('table');
@@ -26,6 +59,7 @@ const Tickets = () => {
   const [bulkAssignTo, setBulkAssignTo] = useState('');
   const [bulkStatus, setBulkStatus] = useState('');
 
+  const [ticketTasks, setTicketTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [clients, setClients] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -34,13 +68,15 @@ const Tickets = () => {
   const load = async () => {
     try {
       setLoading(true);
-      const [ticketsRes, usersRes] = await Promise.all([
+      const [ticketsRes, usersRes, tasksRes] = await Promise.all([
         api.get('/tickets'),
-        api.get('/users')
+        api.get('/users'),
+        api.get('/ticket-tasks').catch(() => ({ data: [] }))
       ]);
       setTickets(ticketsRes.data);
       setClients(usersRes.data.filter(u => u.role === 'client'));
       setTeamMembers(usersRes.data.filter(u => u.role !== 'client'));
+      setTicketTasks(tasksRes.data || []);
     } catch (err) {
       console.error('Failed to load tickets/clients:', err);
     } finally {
@@ -60,10 +96,34 @@ const Tickets = () => {
       setTickets(prev => prev.map(t => t._id === updatedTicket._id ? updatedTicket : t));
     });
 
+    socket.on('ticket_task_created', (newTask) => {
+      setTicketTasks(prev => [newTask, ...prev.filter(t => t._id !== newTask._id)]);
+    });
+
+    socket.on('ticket_task_updated', (updatedTask) => {
+      setTicketTasks(prev => prev.map(t => t._id === updatedTask._id ? updatedTask : t));
+    });
+
+    socket.on('ticket_task_deleted', (deletedId) => {
+      setTicketTasks(prev => prev.filter(t => t._id !== deletedId));
+    });
+
     return () => {
       socket.disconnect();
     };
   }, []);
+
+  const tasksByTicketId = useMemo(() => {
+    const map = {};
+    (ticketTasks || []).forEach(tk => {
+      const tId = tk.ticket?._id || tk.ticket;
+      if (tId) {
+        if (!map[tId]) map[tId] = [];
+        map[tId].push(tk);
+      }
+    });
+    return map;
+  }, [ticketTasks]);
 
   const handleCreateTicket = async () => {
     if (!form.clientId || !form.service) {
@@ -136,6 +196,40 @@ const Tickets = () => {
     } catch (err) {
       console.error(err);
       alert('Failed to process bulk action');
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId, ticketNo) => {
+    const msg = ticketNo 
+      ? `Are you sure you want to delete ticket #${ticketNo}? This will also remove any linked tasks.` 
+      : 'Are you sure you want to delete this ticket?';
+    if (!window.confirm(msg)) return;
+
+    try {
+      await api.delete(`/tickets/${ticketId}`);
+      setSelectedTickets(prev => prev.filter(id => id !== ticketId));
+      if (selectedTicket?._id === ticketId) {
+        setIsDocsModalOpen(false);
+        setSelectedTicket(null);
+      }
+      load();
+    } catch (err) {
+      console.error('Failed to delete ticket:', err);
+      alert(err.response?.data?.message || 'Failed to delete ticket');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const count = selectedTickets.length;
+    if (!window.confirm(`Are you sure you want to delete ${count} selected ticket${count > 1 ? 's' : ''}? This will also remove any linked tasks.`)) return;
+
+    try {
+      await api.patch('/tickets/bulk', { ticketIds: selectedTickets, action: 'delete' });
+      setSelectedTickets([]);
+      load();
+    } catch (err) {
+      console.error('Failed to bulk delete tickets:', err);
+      alert(err.response?.data?.message || 'Failed to bulk delete tickets');
     }
   };
 
@@ -548,6 +642,27 @@ const Tickets = () => {
               <button onClick={() => handleBulkAction('assign')} style={{ padding: '8px 16px', background: 'var(--accent-green, #10b981)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Assign</button>
             </div>
 
+            <div style={{ width: '1px', height: '24px', background: 'var(--border)' }}></div>
+
+            <button 
+              onClick={handleBulkDelete}
+              style={{ 
+                padding: '8px 16px', 
+                background: '#dc2626', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: '8px', 
+                fontSize: '13px', 
+                fontWeight: 700, 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Trash2 size={14} /> Delete Selected
+            </button>
+
             <button onClick={() => setSelectedTickets([])} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>Clear Selection</button>
           </div>
         )}
@@ -568,6 +683,7 @@ const Tickets = () => {
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Category → Service</th>
+                <th>Tasks (Assignee → Client)</th>
                 <th>Dept. Admin</th>
                 <th>Created By</th>
                 <th>Super Partner</th>
@@ -578,7 +694,7 @@ const Tickets = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="13" style={{ textAlign: 'center', padding: '64px' }}>
+                <tr><td colSpan="14" style={{ textAlign: 'center', padding: '64px' }}>
                   <div className="spin" style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTopColor: 'var(--blue)', borderRadius: '50%', margin: '0 auto' }}></div>
                   <div style={{ marginTop: '16px', color: 'var(--text-light)' }}>Syncing Activity logs...</div>
                 </td></tr>
@@ -671,6 +787,92 @@ const Tickets = () => {
                     <div style={{ fontSize: '14px', marginTop: '4px', fontWeight: 600 }}>{t.service}</div>
                   </td>
                   <td>
+                    {(() => {
+                      const tTasks = tasksByTicketId[t._id] || [];
+                      if (tTasks.length === 0) {
+                        return (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDocs(t);
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: '1px dashed var(--border)',
+                              borderRadius: '8px',
+                              padding: '4px 8px',
+                              fontSize: '11px',
+                              color: 'var(--text-muted)',
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              whiteSpace: 'nowrap'
+                            }}
+                            title="Click to add task for this ticket"
+                          >
+                            + Add Task
+                          </button>
+                        );
+                      }
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '170px', maxWidth: '230px' }}>
+                          {tTasks.slice(0, 2).map(tk => (
+                            <div 
+                              key={tk._id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDocs(t);
+                              }}
+                              style={{
+                                background: 'var(--bg)',
+                                border: '1px solid var(--border)',
+                                borderRadius: '8px',
+                                padding: '5px 8px',
+                                cursor: 'pointer'
+                              }}
+                              title="Click to view ticket tasks"
+                            >
+                              <div style={{ fontWeight: 800, fontSize: '11px', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {tk.mainHeading || tk.description || 'Task'}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', marginTop: '3px', fontSize: '10px' }}>
+                                <div>
+                                  <span style={{ color: 'var(--blue)', fontWeight: 800 }}>👤 Assigned To: </span>
+                                  <span style={{ fontWeight: 700, color: 'var(--text)' }}>{tk.assignedTo?.name || 'Unassigned'}</span>
+                                </div>
+                                <div>
+                                  <span style={{ color: '#059669', fontWeight: 800 }}>🏢 For Client: </span>
+                                  <span style={{ fontWeight: 700, color: 'var(--text)' }}>{tk.client?.name || t.client?.name || 'Client'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {tTasks.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDocs(t);
+                              }}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--blue)',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                padding: 0
+                              }}
+                            >
+                              +{tTasks.length - 2} more tasks...
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </td>
+                  <td>
                     <div style={{ fontWeight: 700 }}>{t.assignedTo?.name || 'Unassigned'}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-light)' }}>{t.assignedTo?.role ? t.assignedTo.role.replace('_', ' ') : 'Pending Assignment'}</div>
                   </td>
@@ -688,18 +890,29 @@ const Tickets = () => {
                     <div style={{ fontSize: '11px', color: slaColor, background: slaBg, padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginTop: '4px', fontWeight: 800 }}>{slaText}</div>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button style={{ padding: '8px', borderRadius: '10px', background: 'var(--blue-light)', border: '1px solid var(--border)', color: 'var(--blue)', cursor: 'pointer' }} onClick={() => openDocs(t)}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button 
+                        style={{ padding: '8px', borderRadius: '10px', background: 'var(--blue-light)', border: '1px solid var(--border)', color: 'var(--blue)', cursor: 'pointer' }} 
+                        onClick={() => openDocs(t)}
+                        title="View Ticket Details"
+                      >
                         <Eye size={18} />
                       </button>
-                      <button style={{ padding: '8px', borderRadius: '10px', background: 'transparent', border: 'none', color: 'var(--text-light)', cursor: 'pointer' }}>
-                        <MoreHorizontal size={18} />
+                      <button 
+                        style={{ padding: '8px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', cursor: 'pointer' }} 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTicket(t._id, t.ticketNo);
+                        }}
+                        title="Delete Ticket"
+                      >
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </td>
                 </tr>
               )}) : (
-                <tr><td colSpan="13" style={{ textAlign: 'center', padding: '64px', color: 'var(--text-light)' }}>No tickets found matching your filters.</td></tr>
+                <tr><td colSpan="14" style={{ textAlign: 'center', padding: '64px', color: 'var(--text-light)' }}>No tickets found matching your filters.</td></tr>
               )}
             </tbody>
           </table>
@@ -730,7 +943,9 @@ const Tickets = () => {
                 </div>
                 
                 <div style={{ padding: '16px', flex: 1, overflowY: 'auto' }}>
-                  {filteredTickets.filter(t => t.status === col.id).map(t => (
+                  {filteredTickets.filter(t => t.status === col.id).map(t => {
+                    const tTasks = tasksByTicketId[t._id] || [];
+                    return (
                     <div 
                       key={t._id} 
                       className="board-card"
@@ -738,13 +953,47 @@ const Tickets = () => {
                       onDragStart={e => e.dataTransfer.setData('ticketId', t._id)}
                       onClick={() => openDocs(t)}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>#{t.ticketNo || new Date(t.createdAt).getTime()}</span>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-light)', background: 'var(--bg)', padding: '2px 8px', borderRadius: '6px' }}>{t.priority}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-light)', background: 'var(--bg)', padding: '2px 8px', borderRadius: '6px' }}>{t.priority}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTicket(t._id, t.ticketNo);
+                            }}
+                            title="Delete Ticket"
+                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{t.client?.name || 'Unknown Client'}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>{t.service}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t.service}</div>
                       
+                      {/* Linked Tasks Summary */}
+                      {tTasks.length > 0 && (
+                        <div style={{ marginBottom: '12px', padding: '8px', background: 'var(--bg)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-light)', marginBottom: '4px', textTransform: 'uppercase' }}>
+                            Tasks ({tTasks.length})
+                          </div>
+                          {tTasks.slice(0, 2).map(tk => (
+                            <div key={tk._id} style={{ fontSize: '10px', marginBottom: '3px' }}>
+                              <div style={{ fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {tk.mainHeading || 'Task'}
+                              </div>
+                              <div style={{ display: 'flex', gap: '4px', marginTop: '1px' }}>
+                                <span style={{ color: 'var(--blue)', fontWeight: 700 }}>👤 {tk.assignedTo?.name?.split(' ')[0] || 'Unassigned'}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>→</span>
+                                <span style={{ color: '#059669', fontWeight: 700 }}>🏢 {tk.client?.name?.split(' ')[0] || t.client?.name?.split(' ')[0] || 'Client'}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--sidebar-active)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 800, color: 'white' }}>
@@ -760,7 +1009,8 @@ const Tickets = () => {
                         )}
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               </div>
             ))}
@@ -772,6 +1022,7 @@ const Tickets = () => {
         isOpen={isDocsModalOpen}
         onClose={() => setIsDocsModalOpen(false)}
         ticket={selectedTicket}
+        onDelete={handleDeleteTicket}
       />
 
       {showModal && (

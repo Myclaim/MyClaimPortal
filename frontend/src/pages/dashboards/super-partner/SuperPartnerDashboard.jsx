@@ -11,7 +11,7 @@ import {
   FileText, Folder, GitMerge, Calculator, Monitor, BookOpen, Box, ArrowRight, ArrowLeft, Scale, Upload,
   Phone, Mail, Layers, TreeDeciduous, HelpCircle, Gift, Sun, Moon
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import StatCard from '../../../components/ui/StatCard';
 import useAuth from '../../../hooks/useAuth';
@@ -4397,11 +4397,49 @@ const PartnerProfileView = ({ user }) => {
 };
 
 export default function SuperPartnerDashboard() {
-  const [page, setPage] = useState(() => sessionStorage.getItem('MyClaim_PartnerTab') || 'overview');
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const [selectedPartnerForClients, setSelectedPartnerForClients] = useState(null);
-  const { user, logout } = useAuth();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+  const clientFromUrl = searchParams.get('clientId') || null;
+  const partnerFromUrl = searchParams.get('partnerId') || null;
+
+  const [page, setPageState] = useState(tabFromUrl);
+  const [selectedClientId, setSelectedClientId] = useState(clientFromUrl);
+  const [selectedPartnerForClients, setSelectedPartnerForClients] = useState(partnerFromUrl);
+
+  React.useEffect(() => {
+    const currentTab = searchParams.get('tab') || 'overview';
+    setPageState(currentTab);
+    setSelectedClientId(searchParams.get('clientId') || null);
+    setSelectedPartnerForClients(searchParams.get('partnerId') || null);
+  }, [searchParams]);
+
+  const setPage = (newPage, clientId = null, partnerId = null) => {
+    if (newPage === page && clientId === selectedClientId && partnerId === selectedPartnerForClients) return;
+    const nextParams = new URLSearchParams(searchParams);
+    if (newPage === 'overview') {
+      nextParams.delete('tab');
+    } else {
+      nextParams.set('tab', newPage);
+    }
+    if (clientId) {
+      nextParams.set('clientId', clientId);
+    } else {
+      nextParams.delete('clientId');
+    }
+    if (partnerId) {
+      nextParams.set('partnerId', partnerId);
+    } else if (newPage !== 'clients') {
+      nextParams.delete('partnerId');
+    }
+    setPageState(newPage);
+    if (clientId !== undefined) setSelectedClientId(clientId);
+    if (partnerId !== undefined) setSelectedPartnerForClients(partnerId);
+    const qs = nextParams.toString();
+    navigate(qs ? `?${qs}` : '?tab=overview');
+  };
 
   const [dbData, setDbData] = useState({
     leads: [],
@@ -4411,10 +4449,6 @@ export default function SuperPartnerDashboard() {
     users: [],
     loading: true
   });
-
-  React.useEffect(() => {
-    sessionStorage.setItem('MyClaim_PartnerTab', page);
-  }, [page]);
 
   React.useEffect(() => {
     const fetchAllData = async () => {
@@ -4517,10 +4551,10 @@ export default function SuperPartnerDashboard() {
       case 'profile': return <PartnerProfileView user={user} />;
       case 'overview': return <OverviewTab onNavigate={setPage} stats={dashboardStats} recentLeads={recentLeadsFormatted} clients={dbData.clients} />;
       case 'leads': return <LeadsTab />;
-      case 'clients': return <ClientsTab onNavigateToClient={(id) => { setSelectedClientId(id); setPage('client_profile'); }} partners={dbData.users.filter(u => u.role === 'partner' || u.role === 'super_partner')} selectedPartnerId={selectedPartnerForClients} onClearPartnerFilter={() => setSelectedPartnerForClients(null)} onPartnerFilterChange={setSelectedPartnerForClients} />;
-      case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => setPage('clients')} />;
+      case 'clients': return <ClientsTab onNavigateToClient={(id) => setPage('client_profile', id)} partners={dbData.users.filter(u => u.role === 'partner' || u.role === 'super_partner')} selectedPartnerId={selectedPartnerForClients} onClearPartnerFilter={() => setSelectedPartnerForClients(null)} onPartnerFilterChange={setSelectedPartnerForClients} />;
+      case 'client_profile': return <ClientProfile idProp={selectedClientId} onClose={() => navigate(-1)} />;
       case 'employees': return <EmployeesTab clients={dbData.clients} />;
-      case 'partners': return <PartnersTab partners={dbData.users.filter(u => u.role === 'partner')} onViewClients={(id) => { setSelectedPartnerForClients(id); setPage('clients'); }} />;
+      case 'partners': return <PartnersTab partners={dbData.users.filter(u => u.role === 'partner')} onViewClients={(id) => setPage('clients', null, id)} />;
       case 'store': return <WealthManagementStore />;
       case 'marketplace': return <StoreTab clients={dbData.clients} partners={dbData.users} />;
       case 'task': return <TaskTab />;

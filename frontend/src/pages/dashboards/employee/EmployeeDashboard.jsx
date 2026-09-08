@@ -29,6 +29,9 @@ const EmployeeDashboard = () => {
   const searchParams = new URLSearchParams(location.search);
   const currentTab = searchParams.get('tab');
 
+  // Helper – navigate to a tab while pushing a history entry
+  const goTab = (tab) => navigate(tab ? `?tab=${tab}` : '?', { replace: false });
+
   useEffect(() => {
     const fetchEmployeeStats = async () => {
       try {
@@ -111,8 +114,8 @@ const EmployeeDashboard = () => {
             Focus on your assigned tasks, upload required documents, and keep your progress updated for your admin and clients.
           </p>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button className="topbar-btn" onClick={() => navigate('/?tab=tasks')} style={{ padding: '12px 24px' }}>View My Tasks</button>
-            <button className="topbar-btn secondary" onClick={() => navigate('/?tab=docs')} style={{ background: 'var(--banner-btn-secondary)', borderColor: 'var(--banner-border)', color: 'var(--banner-btn-text)', padding: '12px 24px' }}>Upload Documents</button>
+            <button className="topbar-btn" onClick={() => goTab('tasks')} style={{ padding: '12px 24px' }}>View My Tasks</button>
+            <button className="topbar-btn secondary" onClick={() => goTab('docs')} style={{ background: 'var(--banner-btn-secondary)', borderColor: 'var(--banner-border)', color: 'var(--banner-btn-text)', padding: '12px 24px' }}>Upload Documents</button>
           </div>
         </div>
         <div style={{ position: 'absolute', right: '40px', bottom: '40px', width: '300px', height: '150px', opacity: 0.25, background: 'linear-gradient(to top, var(--green) 0%, transparent 80%)', clipPath: 'polygon(0 100%, 10% 80%, 20% 90%, 30% 60%, 40% 75%, 50% 40%, 60% 55%, 70% 20%, 80% 45%, 90% 10%, 100% 30%, 100% 100%)' }}></div>
@@ -124,31 +127,31 @@ const EmployeeDashboard = () => {
           <Zap size={18} color="#eab308" /> Quick Actions
         </div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button className="topbar-btn secondary" onClick={() => navigate('/?tab=tasks')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+          <button className="topbar-btn secondary" onClick={() => goTab('tasks')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Clock size={20} color="#3b82f6" />
             </div>
             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Pending Tasks</span>
           </button>
-          <button className="topbar-btn secondary" onClick={() => navigate('/?tab=docs')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+          <button className="topbar-btn secondary" onClick={() => goTab('docs')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Upload size={20} color="#8b5cf6" />
             </div>
             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Upload Document</span>
           </button>
-          <button className="topbar-btn secondary" onClick={() => navigate('/?tab=tickets')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+          <button className="topbar-btn secondary" onClick={() => goTab('tickets')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ClipboardList size={20} color="#10b981" />
             </div>
             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Assigned Tickets</span>
           </button>
-          <button className="topbar-btn secondary" onClick={() => navigate('/?tab=notifications')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+          <button className="topbar-btn secondary" onClick={() => goTab('notifications')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Bell size={20} color="#f59e0b" />
             </div>
             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Notifications</span>
           </button>
-          <button className="topbar-btn secondary" onClick={() => navigate('/?tab=calendar')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+          <button className="topbar-btn secondary" onClick={() => goTab('calendar')} style={{ flex: 1, minWidth: '150px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(236,72,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CalendarIcon size={20} color="#ec4899" />
             </div>
