@@ -20,6 +20,8 @@ app.use(express.json());
 const allowedOrigins = [
   'https://wealthearth.com',
   'https://www.wealthearth.com',
+  'https://wealtharth.com',
+  'https://www.wealtharth.com',
   'https://myclaimindia.com',
   'https://www.myclaimindia.com',
   'http://localhost:5173',
