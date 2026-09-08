@@ -3,7 +3,7 @@ import { Download, Plus, CheckCircle2, FileVideo, Eye, Edit2, Search, X, Loader,
 import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 
-const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://myclaimportal.onrender.com/api');
+const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://api.wealtharth.com/api');
 
 // Module-level SWR cache — persists across navigations
 let _proposalsCache = null;

@@ -42,7 +42,7 @@ const VERTICAL_STYLES = {
 const getFullDocUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://myclaimportal.onrender.com/api');
+  const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005/api' : 'https://api.wealtharth.com/api');
   const origin = apiBase.replace(/\/api\/?$/, '');
   const cleanPath = path.replace(/\\/g, '/');
   return `${origin}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
@@ -1676,7 +1676,7 @@ function DocumentTab() {
   }, []);
 
   const filteredDocs = documents.filter(doc => doc.folder === activeFolderTab);
-  const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005' : 'https://myclaimportal.onrender.com');
+  const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5005' : 'https://api.wealtharth.com');
 
   const AGREEMENTS = [
     { title: 'NDA', desc: 'Protect confidential info' },
