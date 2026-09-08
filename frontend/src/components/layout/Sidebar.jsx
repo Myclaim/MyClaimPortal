@@ -31,6 +31,7 @@ import {
   Moon,
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { isClientPortal, getPortalType, PORTAL_CONFIG } from '../../utils/portalConfig';
 
 
 // Sidebar config (strict final structure)
@@ -737,9 +738,11 @@ const Sidebar = ({ isOpen = false, onClose }) => {
           <img src="/logo.png" alt="MyClaim India" style={{ width: '160px', height: 'auto', maxHeight: '72px', objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '17px', letterSpacing: '-0.02em' }}>MyClaim India</div>
-          <div className="sidebar-logo-sub" style={{ color: 'var(--accent-green)', fontWeight: 800, fontSize: '10px', letterSpacing: '0.12em', marginTop: '4px' }}>
-            {user?.role === 'client' ? 'CLIENT PORTAL' : `${user?.role?.replace('_', ' ').toUpperCase()} PORTAL`}
+          <div className="sidebar-logo-text" style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '17px', letterSpacing: '-0.02em' }}>
+            {isClientPortal() ? 'MyClaim India' : 'WealthEarth'}
+          </div>
+          <div className="sidebar-logo-sub" style={{ color: isClientPortal() ? '#0ea5e9' : 'var(--accent-green)', fontWeight: 800, fontSize: '10px', letterSpacing: '0.12em', marginTop: '4px' }}>
+            {isClientPortal() ? 'CLIENT PORTAL' : `${user?.role?.replace('_', ' ').toUpperCase()} PORTAL`}
           </div>
         </div>
       </div>

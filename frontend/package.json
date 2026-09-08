@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:wealthearth": "vite --mode wealthearth",
+    "dev:myclaim": "vite --mode myclaim",
     "build": "vite build",
+    "build:wealthearth": "vite build --mode wealthearth",
+    "build:myclaim": "vite build --mode myclaim",
     "lint": "eslint .",
     "preview": "vite preview"
   },

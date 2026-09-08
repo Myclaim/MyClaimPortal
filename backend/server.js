@@ -16,7 +16,31 @@ const app = express();
 // Middleware
 // Trigger nodemon restart 1
 app.use(express.json());
-app.use(cors());
+
+const allowedOrigins = [
+  'https://wealthearth.com',
+  'https://www.wealthearth.com',
+  'https://myclaimindia.com',
+  'https://www.myclaimindia.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5005'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive fallback for staging subdomains
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'portal']
+}));
+
 app.use('/uploads', require('express').static(require('path').join(__dirname, 'uploads')));
 
 

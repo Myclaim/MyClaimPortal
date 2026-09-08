@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { getPortalType } from '../utils/portalConfig';
 
 export const AuthContext = createContext();
 
@@ -18,7 +19,8 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (identifier, password) => {
-    const { data } = await api.post('/auth/login', { email: identifier, password });
+    const portal = getPortalType();
+    const { data } = await api.post('/auth/login', { email: identifier, password, portal });
     localStorage.setItem('user', JSON.stringify(data));
     localStorage.setItem('token', data.token);
     setUser(data);
