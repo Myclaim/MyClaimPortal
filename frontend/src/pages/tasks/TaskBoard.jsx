@@ -808,6 +808,17 @@ const TaskBoard = () => {
     }
   };
 
+  const getStatusLabel = (status) => {
+    switch (String(status || '').toLowerCase()) {
+      case 'in_process': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'closed': return 'Closed';
+      case 'pending': return 'Pending';
+      case 'active': return 'Pending';
+      default: return status || 'Pending';
+    }
+  };
+
   // Calendar Days Calculations
   const calendarDays = useMemo(() => {
     return Array.from({ length: weekDaysCount }).map((_, i) => addDays(weekStart, i));
@@ -1312,8 +1323,16 @@ const TaskBoard = () => {
               switch (colId) {
                 case 'title':
                   return (
-                    <div className={`font-medium truncate pr-3 group-hover:text-blue-400 transition-colors ${isCompleted ? 'text-[#8c919c] line-through' : 'text-[#f1f3f7]'}`}>
-                      {task.mainHeading || task.description || task.ticket?.subject || 'Untitled task'}
+                    <div className={`flex items-center gap-2 font-medium truncate pr-3 group-hover:text-blue-400 transition-colors ${isCompleted ? 'text-[#8c919c] line-through' : 'text-[#f1f3f7]'}`}>
+                      <span className="truncate">{task.mainHeading || task.description || task.ticket?.subject || 'Untitled task'}</span>
+                      {Array.isArray(task.attachments) && task.attachments.length > 0 && (
+                        <Paperclip
+                          size={13}
+                          className="shrink-0 text-blue-400"
+                          title={`${task.attachments.length} attachment${task.attachments.length === 1 ? '' : 's'}`}
+                          aria-label={`${task.attachments.length} attachment${task.attachments.length === 1 ? '' : 's'}`}
+                        />
+                      )}
                     </div>
                   );
                 case 'status':
@@ -1933,6 +1952,9 @@ const TaskBoard = () => {
                                               className={`mb-2 p-2.5 rounded-lg border border-[#282a32] bg-[#1c1d22] text-[#f1f3f7] shadow-sm cursor-pointer transition-all hover:border-blue-500/60 ${snapshot.isDragging ? 'shadow-2xl rotate-1 scale-105 z-50 border-blue-500' : ''}`}
                                             >
                                               <div className="flex items-center justify-between mb-1">
+                                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${getStatusBadge(getStatusLabel(task.status))}`}>
+                                                  {getStatusLabel(task.status)}
+                                                </span>
                                                 <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${getTypeBadge(task.type)}`}>
                                                   {task.type || 'Service'}
                                                 </span>
@@ -1992,6 +2014,7 @@ const TaskBoard = () => {
                             <div className="space-y-1 overflow-y-auto">
                               {dayTasks.slice(0, 2).map(tk => (
                                 <div key={tk._id} onClick={() => openDrawer(tk)} className="p-1 rounded bg-[#202227] text-[10px] truncate border border-[#282a32] cursor-pointer">
+                                  <span className="mr-1 rounded px-1 text-[8px] font-bold text-emerald-400">{getStatusLabel(tk.status)}</span>
                                   <span className="text-blue-400 font-bold">{tk.mainHeading || 'Task'}</span>
                                 </div>
                               ))}
@@ -2012,7 +2035,10 @@ const TaskBoard = () => {
                     <div className="space-y-2">
                       {tasks.filter(t => (t.dueDate && toLocalDateStr(t.dueDate) === toLocalDateStr(currentCalendarDate)) || (t.dateInitiated && toLocalDateStr(t.dateInitiated) === toLocalDateStr(currentCalendarDate))).map(task => (
                         <div key={task._id} onClick={() => openDrawer(task)} className="p-3.5 rounded-xl border border-[#25272e] bg-[#18191d] flex items-center justify-between cursor-pointer hover:border-blue-500">
-                          <div className="font-bold text-[#f1f3f7] text-xs">{task.mainHeading || 'Task'}</div>
+                          <div>
+                            <div className="mb-1 text-[9px] font-bold uppercase text-emerald-400">{getStatusLabel(task.status)}</div>
+                            <div className="font-bold text-[#f1f3f7] text-xs">{task.mainHeading || 'Task'}</div>
+                          </div>
                           <div className="text-xs text-blue-400">👤 {task.assignedTo?.name || 'Unassigned'}</div>
                         </div>
                       ))}

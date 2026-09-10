@@ -16,6 +16,7 @@ const clientSchema = mongoose.Schema({
   oldName: { type: String },
   newName: { type: String },
   citizenship: { type: String },
+  fatherName: { type: String },
   
   // Contact Info
   state: { type: String },

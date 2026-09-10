@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, CheckCircle2, ChevronRight, Check } from 'lucide-react';
+import { Plus, CheckCircle2, LayoutGrid, List } from 'lucide-react';
 import api from '../../services/api';
 import TaskDrawer from '../../components/modals/TaskDrawer';
 
@@ -8,6 +8,7 @@ export default function TasksView({ client }) {
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [view, setView] = useState('kanban');
 
   const fetchTasks = async () => {
     try {
@@ -60,12 +61,34 @@ export default function TasksView({ client }) {
           <h2 className="text-lg font-bold text-[#f1f3f7] m-0">Client Tasks</h2>
           <p className="text-xs text-[#8c919c] mt-1 m-0">Manage operational tasks assigned for this client</p>
         </div>
-        <button 
-          onClick={() => handleOpenDrawer(null)}
-          className="bg-[#1d72f2] hover:bg-[#1a64d4] text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-transform active:scale-95"
-        >
-          <Plus size={16} /> Add Task
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 rounded-lg border border-[#282a32] bg-[#141518] p-1">
+            <button
+              type="button"
+              title="Kanban view"
+              aria-label="Kanban view"
+              onClick={() => setView('kanban')}
+              className={`p-1.5 rounded-md transition-colors ${view === 'kanban' ? 'bg-[#25272e] text-white' : 'text-[#737885] hover:text-white'}`}
+            >
+              <LayoutGrid size={15} />
+            </button>
+            <button
+              type="button"
+              title="Table view"
+              aria-label="Table view"
+              onClick={() => setView('table')}
+              className={`p-1.5 rounded-md transition-colors ${view === 'table' ? 'bg-[#25272e] text-white' : 'text-[#737885] hover:text-white'}`}
+            >
+              <List size={15} />
+            </button>
+          </div>
+          <button 
+            onClick={() => handleOpenDrawer(null)}
+            className="bg-[#1d72f2] hover:bg-[#1a64d4] text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-transform active:scale-95"
+          >
+            <Plus size={16} /> Add Task
+          </button>
+        </div>
       </div>
 
       <div className="p-6 overflow-x-auto">
@@ -78,6 +101,50 @@ export default function TasksView({ client }) {
             <div>Create a task to get started tracking work for this client.</div>
           </div>
         ) : (
+          view === 'table' ? (
+            <div className="w-full overflow-x-auto rounded-2xl border border-[#202226] bg-[#16171a]">
+              <table className="w-full min-w-[760px] text-left text-xs">
+                <thead className="border-b border-[#282a32] text-[10px] uppercase tracking-wider text-[#8c919c]">
+                  <tr>
+                    <th className="px-4 py-3 font-bold">Task</th>
+                    <th className="px-4 py-3 font-bold">Status</th>
+                    <th className="px-4 py-3 font-bold">Type</th>
+                    <th className="px-4 py-3 font-bold">Assigned To</th>
+                    <th className="px-4 py-3 font-bold">Ticket</th>
+                    <th className="px-4 py-3 font-bold">Initiated</th>
+                    <th className="px-4 py-3 font-bold">Completed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((task) => (
+                    <tr
+                      key={task._id}
+                      onClick={() => handleOpenDrawer(task)}
+                      className="cursor-pointer border-b border-[#24262e] text-[#e1e4ea] transition-colors last:border-b-0 hover:bg-[#1c1d22]"
+                    >
+                      <td className="max-w-[260px] px-4 py-3 font-bold text-[#f1f3f7]">
+                        <div className="truncate">{task.mainHeading || task.description || task.ticket?.subject || 'Task'}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="rounded-full bg-[#25272e] px-2 py-1 text-[10px] font-bold text-[#cbd0da]">
+                          {task.boardColumn || task.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded px-2 py-1 text-[9px] font-bold ${getTypeBadge(task.type)}`}>
+                          {task.type || 'Service'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-semibold">{task.assignedTo?.name || 'Unassigned'}</td>
+                      <td className="px-4 py-3 font-mono text-blue-400">{task.ticket?.ticketNo ? `#${task.ticket.ticketNo}` : '-'}</td>
+                      <td className="px-4 py-3 text-[#8c919c]">{task.dateInitiated ? new Date(task.dateInitiated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+                      <td className="px-4 py-3 text-emerald-400">{task.dateCompleted ? new Date(task.dateCompleted).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
           <div className="flex gap-5 min-w-max">
             {columns.map((column) => {
               const columnTasks = getTasksByColumn(column.id);
@@ -145,6 +212,7 @@ export default function TasksView({ client }) {
               );
             })}
           </div>
+          )
         )}
       </div>
 

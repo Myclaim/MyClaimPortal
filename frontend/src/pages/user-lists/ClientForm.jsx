@@ -4,8 +4,10 @@ import {
   Eye, EyeOff, AlertCircle, CheckCircle,
   ChevronRight, ChevronLeft, X,
   User, Shield, Users, Calendar, MapPin, FileText, Upload, Link as LinkIcon,
-  Search, ChevronDown, Scan
+  Search, ChevronDown, Scan, Download
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import api from '../../services/api';
 import { extractAadharDetails, extractPanDetails } from '../../utils/ocrUtils';
 import { COUNTRY_CODES } from '../../utils/countryCodes';
@@ -52,6 +54,10 @@ const ClientForm = () => {
     // 4. Gender (from Aadhar)
     if (aadharData?.gender) updates.gender = aadharData.gender;
 
+    // 4b. Father's Name (from PAN or Aadhar)
+    const verifiedFather = panData?.fatherName || aadharData?.fatherName || '';
+    if (verifiedFather) updates.fatherName = verifiedFather;
+
     // 5. Phone (if available in Aadhar)
     if (aadharData?.phone) updates.phone = aadharData.phone;
 
@@ -72,6 +78,7 @@ const ClientForm = () => {
       lastName: '',
       name: '',
       dob: '',
+      fatherName: '',
       aadharNo: '',
       panNo: '',
       permanentAddress: '',
@@ -90,6 +97,7 @@ const ClientForm = () => {
       ...aBack,
       ...aFront,
       name: aFront.name || aBack.name || '',
+      fatherName: aBack.fatherName || aFront.fatherName || '',
       dob: aFront.dob || aBack.dob || '',
       aadharNo: aFront.aadharNo || aBack.aadharNo || '',
       gender: aFront.gender || aBack.gender || 'Male',
@@ -215,7 +223,7 @@ const ClientForm = () => {
     // Step 1
     firstName: '', middleName: '', lastName: '', username: '', password: '',
     // Step 2
-    name: '', dob: '', gender: 'Male', maritalStatus: '', oldName: '', citizenship: 'Indian',
+    name: '', dob: '', gender: 'Male', maritalStatus: '', oldName: '', citizenship: 'Indian', fatherName: '',
     // Step 3
     phone: '', phoneCountryCode: '+91', alternatePhone: '', alternatePhoneCountryCode: '+91', email: '', myClaimEmail: '',
     country: 'India', state: '', city: '', pincode: '', permanentAddress: '', temporaryAddress: '',
@@ -258,6 +266,19 @@ const ClientForm = () => {
 
     if (name === 'panNo') {
       value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+    }
+
+    if (name === 'nomineeDob') {
+      const nomineeBirthDate = new Date(`${value}T00:00:00`);
+      const today = new Date();
+      let nomineeAge = today.getFullYear() - nomineeBirthDate.getFullYear();
+      const birthdayThisYear = new Date(today.getFullYear(), nomineeBirthDate.getMonth(), nomineeBirthDate.getDate());
+
+      if (today < birthdayThisYear) nomineeAge -= 1;
+      if (!value || Number.isNaN(nomineeBirthDate.getTime()) || nomineeAge < 0) nomineeAge = '';
+
+      setForm(prev => ({ ...prev, nomineeDob: value, nomineeAge: String(nomineeAge) }));
+      return;
     }
 
     setForm(prev => ({ ...prev, [name]: value }));
@@ -389,6 +410,66 @@ const ClientForm = () => {
     }
   };
 
+  const reviewRef = useRef(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!reviewRef.current) return;
+    setDownloadingPdf(true);
+    try {
+      const element = reviewRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#0a0f1d',
+        windowWidth: 1200
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // First page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      // Multi-page handling
+      while (heightLeft > 0) {
+        position -= pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      const clientName = form.name || [form.firstName, form.lastName].filter(Boolean).join('_') || 'Client';
+      pdf.save(`Client_Enrolment_${clientName.replace(/\s+/g, '_')}.pdf`);
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+      alert('Could not generate PDF. Please check console and try again.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  const renderVal = (v) => {
+    if (v === null || v === undefined) {
+      return <span style={{ color: '#64748b', fontStyle: 'italic', fontWeight: 600 }}>NA</span>;
+    }
+    const str = String(v).trim();
+    if (!str) {
+      return <span style={{ color: '#64748b', fontStyle: 'italic', fontWeight: 600 }}>NA</span>;
+    }
+    return <span style={{ color: '#f8fafc', fontWeight: 600, wordBreak: 'break-word' }}>{str}</span>;
+  };
+
   const stepId = steps[currentStep - 1].id;
 
   return (
@@ -437,6 +518,68 @@ const ClientForm = () => {
         .cf-counter { font-size: 13px; font-weight: 700; color: var(--text-muted); }
         .cf-fade { animation: cfFade 0.3s ease; }
         @keyframes cfFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .cf-review-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 12px;
+          padding: 18px 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .cf-review-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+          padding-bottom: 10px;
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #10b981;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+        }
+        .cf-review-icon {
+          width: 26px;
+          height: 26px;
+          border-radius: 8px;
+          background: rgba(16, 185, 129, 0.15);
+          color: #10b981;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .cf-review-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+        }
+        .cf-review-item {
+          background: rgba(255, 255, 255, 0.025);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 9px;
+          padding: 10px 14px;
+          display: flex;
+          flex-direction: column;
+          justifyContent: center;
+        }
+        .cf-review-label {
+          font-size: 10px;
+          font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          margin-bottom: 4px;
+        }
+        .cf-review-val {
+          font-size: 13px;
+          min-height: 18px;
+          display: flex;
+          align-items: center;
+          word-break: break-word;
+        }
       `}</style>
 
       <div className="cf-wrap">
@@ -462,7 +605,7 @@ const ClientForm = () => {
               <div
                 key={s.id}
                 className={`cf-step ${currentStep === idx + 1 ? 'active' : ''} ${currentStep > idx + 1 ? 'done' : ''}`}
-                onClick={() => currentStep > idx + 1 && setCurrentStep(idx + 1)}
+                onClick={() => setCurrentStep(idx + 1)}
               >
                 <div className="cf-num">{currentStep > idx + 1 ? '✓' : idx + 1}</div>
                 {s.title}
@@ -584,7 +727,25 @@ const ClientForm = () => {
                     <div className="cf-group"><label className="cf-label">First Name <span>*</span></label><input name="firstName" className="cf-input" placeholder="John" value={form.firstName} onChange={handleChange} /></div>
                     <div className="cf-group"><label className="cf-label">Middle Name</label><input name="middleName" className="cf-input" placeholder="M." value={form.middleName} onChange={handleChange} /></div>
                     <div className="cf-group"><label className="cf-label">Last Name <span>*</span></label><input name="lastName" className="cf-input" placeholder="Doe" value={form.lastName} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Username <span>*</span></label><input name="username" className="cf-input" placeholder="johndoe123" value={form.username} onChange={handleChange} /></div>
+                    <div className="cf-group">
+                      <label className="cf-label">Username <span>*</span></label>
+                      <input
+                        name="username"
+                        className="cf-input"
+                        placeholder="Phone (9876543210) or Email (john@email.com)"
+                        value={form.username}
+                        onChange={handleChange}
+                      />
+                      {form.username && (() => {
+                        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.username);
+                        const isPhone = /^[0-9]{10}$/.test(form.username.replace(/\s/g, ''));
+                        if (!isEmail && !isPhone) {
+                          return <span style={{ fontSize: 11, color: '#f43f5e', marginTop: 4, display: 'block' }}>Enter a valid 10-digit phone number or email address.</span>;
+                        }
+                        return <span style={{ fontSize: 11, color: '#10b981', marginTop: 4, display: 'block' }}>✓ Valid {isEmail ? 'email' : 'phone number'} username</span>;
+                      })()}
+                      <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, display: 'block' }}>Accepted formats: Phone number or Email address</span>
+                    </div>
                     <div className="cf-group">
                       <label className="cf-label">Password <span>*</span></label>
                       <div style={{ position: 'relative' }}>
@@ -601,7 +762,7 @@ const ClientForm = () => {
               {/* STEP 2 — Personal Info */}
               {stepId === 2 && (
                 <>
-                  <div className="cf-section">STEP 2: PERSONAL INFORMATION</div>
+                  <div className="cf-section">STEP 2: PERSONAL INFORMATION (as per PAN)</div>
                   <div className="cf-grid">
                     <div className="cf-group"><label className="cf-label">Full Display Name</label><input name="name" className="cf-input" placeholder="John M. Doe" value={form.name} onChange={handleChange} /></div>
                     <div className="cf-group"><label className="cf-label">Date of Birth</label><input name="dob" type="date" className="cf-input" value={form.dob} onChange={handleChange} /></div>
@@ -613,9 +774,10 @@ const ClientForm = () => {
                         ))}
                       </div>
                     </div>
-                    <div className="cf-group"><label className="cf-label">Marital Status</label><select name="maritalStatus" className="cf-select" value={form.maritalStatus} onChange={handleChange}><option value="">Select</option><option>Single</option><option>Married</option><option>Divorced</option></select></div>
-                    <div className="cf-group"><label className="cf-label">Citizenship</label><select name="citizenship" className="cf-select" value={form.citizenship} onChange={handleChange}><option value="Indian">Indian</option><option value="NRI">NRI</option><option value="OCI">OCI</option></select></div>
-                    <div className="cf-group"><label className="cf-label">Old Name (if any)</label><input name="oldName" className="cf-input" placeholder="Previous name" value={form.oldName} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Marital Status <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><select name="maritalStatus" className="cf-select" value={form.maritalStatus} onChange={handleChange}><option value="">Select</option><option>Single</option><option>Married</option><option>Divorced</option></select></div>
+                    <div className="cf-group"><label className="cf-label">Citizenship <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><select name="citizenship" className="cf-select" value={form.citizenship} onChange={handleChange}><option value="Indian">Indian</option><option value="NRI">NRI</option><option value="OCI">OCI</option></select></div>
+                    <div className="cf-group"><label className="cf-label">Father's Name</label><input name="fatherName" className="cf-input" placeholder="Auto-filled from PAN" value={form.fatherName} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Old Name (if any) <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><input name="oldName" className="cf-input" placeholder="Previous name" value={form.oldName} onChange={handleChange} /></div>
                   </div>
                 </>
               )}
@@ -623,10 +785,10 @@ const ClientForm = () => {
               {/* STEP 3 — Contact & Address */}
               {stepId === 3 && (
                 <>
-                  <div className="cf-section">STEP 3: CONTACT & ADDRESS</div>
+                  <div className="cf-section">STEP 3: CONTACT &amp; ADDRESS (as per Aadhar)</div>
                   <div className="cf-grid">
                     <div className="cf-group">
-                      <label className="cf-label">Phone <span>*</span></label>
+                      <label className="cf-label">Phone <span>*</span> <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <select name="phoneCountryCode" className="cf-select" style={{ width: '90px', padding: '11px 8px', flexShrink: 0 }} value={form.phoneCountryCode} onChange={handleChange}>
                           {COUNTRY_CODES.map(c => (
@@ -636,9 +798,9 @@ const ClientForm = () => {
                         <input name="phone" className="cf-input" placeholder="98765 43210" value={form.phone} onChange={handleChange} style={{ flex: 1 }} />
                       </div>
                     </div>
-                    <div className="cf-group"><label className="cf-label">Email <span>*</span></label><input name="email" type="email" className="cf-input" placeholder="john@email.com" value={form.email} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Email <span>*</span> <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><input name="email" type="email" className="cf-input" placeholder="john@email.com" value={form.email} onChange={handleChange} /></div>
                     <div className="cf-group">
-                      <label className="cf-label">Alternate Phone</label>
+                      <label className="cf-label">Alternate Phone <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <select name="alternatePhoneCountryCode" className="cf-select" style={{ width: '90px', padding: '11px 8px', flexShrink: 0 }} value={form.alternatePhoneCountryCode} onChange={handleChange}>
                           {COUNTRY_CODES.map(c => (
@@ -648,15 +810,15 @@ const ClientForm = () => {
                         <input name="alternatePhone" className="cf-input" placeholder="98765 43210" value={form.alternatePhone} onChange={handleChange} style={{ flex: 1 }} />
                       </div>
                     </div>
-                    <div className="cf-group"><label className="cf-label">MyClaim Email</label><input name="myClaimEmail" type="email" className="cf-input" value={form.myClaimEmail} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">MyClaim Email <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><input name="myClaimEmail" type="email" className="cf-input" value={form.myClaimEmail} onChange={handleChange} /></div>
                     <div className="cf-group" style={{ gridColumn: 'span 2' }}><label className="cf-label">Permanent Address</label><textarea name="permanentAddress" className="cf-input" style={{ minHeight: 68 }} value={form.permanentAddress} onChange={handleChange}></textarea></div>
                     <div className="cf-group"><label className="cf-label">City</label><input name="city" className="cf-input" value={form.city} onChange={handleChange} /></div>
                     <div className="cf-group"><label className="cf-label">State</label><input name="state" className="cf-input" value={form.state} onChange={handleChange} /></div>
                     <div className="cf-group"><label className="cf-label">Pincode</label><input name="pincode" className="cf-input" value={form.pincode} onChange={handleChange} /></div>
-                    <div className="cf-group" style={{ gridColumn: 'span 2' }}><label className="cf-label">Old Address</label><textarea name="oldAddress" className="cf-input" style={{ minHeight: 68 }} value={form.oldAddress} onChange={handleChange}></textarea></div>
-                    <div className="cf-group"><label className="cf-label">Old City</label><input name="cityOld" className="cf-input" value={form.cityOld} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Old State</label><input name="stateOld" className="cf-input" value={form.stateOld} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Old Pincode</label><input name="pincodeOld" className="cf-input" value={form.pincodeOld} onChange={handleChange} /></div>
+                    <div className="cf-group" style={{ gridColumn: 'span 2' }}><label className="cf-label">Old Address <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><textarea name="oldAddress" className="cf-input" style={{ minHeight: 68 }} value={form.oldAddress} onChange={handleChange}></textarea></div>
+                    <div className="cf-group"><label className="cf-label">Old City <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><input name="cityOld" className="cf-input" value={form.cityOld} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Old State <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><input name="stateOld" className="cf-input" value={form.stateOld} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Old Pincode <span style={{fontSize:10,color:'#f59e0b',fontWeight:600,marginLeft:4}}>(Enter manually)</span></label><input name="pincodeOld" className="cf-input" value={form.pincodeOld} onChange={handleChange} /></div>
                   </div>
                 </>
               )}
@@ -1033,7 +1195,7 @@ const ClientForm = () => {
                   <div className="cf-section">STEP 7: NOMINEE DETAILS</div>
                   <div className="cf-grid">
                     <div className="cf-group"><label className="cf-label">Nominee Name</label><input name="nomineeName" className="cf-input" value={form.nomineeName} onChange={handleChange} /></div>
-                    <div className="cf-group"><label className="cf-label">Nominee Age</label><input name="nomineeAge" type="number" className="cf-input" value={form.nomineeAge} onChange={handleChange} /></div>
+                    <div className="cf-group"><label className="cf-label">Nominee Age</label><input name="nomineeAge" type="number" className="cf-input" value={form.nomineeAge} readOnly placeholder="Auto-calculated" /></div>
                     <div className="cf-group">
                       <label className="cf-label">Nominee Relation</label>
                       <select name="nomineeRelation" className="cf-select" value={form.nomineeRelation} onChange={handleChange}>
@@ -1075,59 +1237,357 @@ const ClientForm = () => {
               {/* STEP 9 — Review */}
               {stepId === 9 && (
                 <>
-                  <div className="cf-section">STEP 9: FULL FORM REVIEW</div>
-                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: 20 }}>
-                     <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20, lineHeight: '1.5' }}>
-                        Please review all details below before completing the enrollment. Ensure that ID card details match the uploaded documents.
-                     </div>
-                     
-                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                       
-                       {/* Basic & Personal */}
-                       <div>
-                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Basic & Personal</h4>
-                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Full Name</strong> <span style={{ color: 'var(--text)' }}>{form.firstName} {form.middleName} {form.lastName}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Username</strong> <span style={{ color: 'var(--text)' }}>{form.username || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Date of Birth</strong> <span style={{ color: 'var(--text)' }}>{form.dob || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Gender</strong> <span style={{ color: 'var(--text)' }}>{form.gender}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Marital Status</strong> <span style={{ color: 'var(--text)' }}>{form.maritalStatus || 'N/A'}</span></div>
-                         </div>
-                       </div>
+                  {/* Top Bar with Section Title and Download Button */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 14 }}>
+                    <div>
+                      <div className="cf-section" style={{ margin: 0, border: 'none', padding: 0 }}>STEP 9: FULL FORM REVIEW</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
+                        Please review all details from all 8 pages before completing enrolment. Unfilled fields are marked as <strong style={{ color: '#94a3b8' }}>NA</strong>.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleDownloadPDF}
+                      disabled={downloadingPdf}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '11px 20px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 12,
+                        fontWeight: 700,
+                        fontSize: 13.5,
+                        cursor: downloadingPdf ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 16px rgba(16, 185, 129, 0.35)',
+                        transition: 'all 0.2s ease',
+                        opacity: downloadingPdf ? 0.75 : 1
+                      }}
+                    >
+                      <Download size={17} />
+                      {downloadingPdf ? 'Generating PDF…' : 'Download Form (PDF)'}
+                    </button>
+                  </div>
 
-                       {/* Contact & Address */}
-                       <div>
-                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Contact & Address</h4>
-                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Mobile</strong> <span style={{ color: 'var(--text)' }}>{form.phoneCountryCode} {form.phone || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Email</strong> <span style={{ color: 'var(--text)' }}>{form.email || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Permanent Address</strong> <span style={{ color: 'var(--text)' }}>{form.permanentAddress || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>City, State, Pincode</strong> <span style={{ color: 'var(--text)' }}>{form.city ? `${form.city}, ${form.state} - ${form.pincode}` : 'N/A'}</span></div>
-                         </div>
-                       </div>
+                  {/* Printable/Exportable Review Container */}
+                  <div ref={reviewRef} style={{ display: 'flex', flexDirection: 'column', gap: 18, background: '#0a0f1d', borderRadius: 16, border: '1px solid rgba(255,255,255,0.08)', padding: 22 }}>
+                    
+                    {/* Official Document Header */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '16px 20px',
+                      background: 'rgba(16, 185, 129, 0.08)',
+                      border: '1px solid rgba(16, 185, 129, 0.25)',
+                      borderRadius: 12,
+                      flexWrap: 'wrap',
+                      gap: 12
+                    }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 900, color: '#ffffff', letterSpacing: 0.5 }}>
+                          CLIENT ONBOARDING ENROLMENT FORM
+                        </div>
+                        <div style={{ fontSize: 11, color: '#10b981', marginTop: 3, fontWeight: 700, letterSpacing: 0.5 }}>
+                          MYCLAIM PORTAL · VERIFIED ENROLMENT DOSSIER
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#f8fafc' }}>
+                          {form.name || [form.firstName, form.lastName].filter(Boolean).join(' ') || 'Client Enrolment'}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                          Date: {new Date().toLocaleDateString('en-GB')} · Status: <span style={{ color: '#10b981', fontWeight: 700, textTransform: 'uppercase' }}>{form.status || 'Active'}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                       {/* Identification */}
-                       <div>
-                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Identification</h4>
-                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Aadhar Number</strong> <span style={{ color: 'var(--text)' }}>{form.aadharNo || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>PAN Number</strong> <span style={{ color: 'var(--text)' }}>{form.panNo || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Other Documents</strong> <span style={{ color: 'var(--text)' }}>{form.otherDocsDesc || 'N/A'}</span></div>
-                         </div>
-                       </div>
+                    {/* ── STEP 1: Basic Details & Login Credentials ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><User size={15} /></div>
+                        <span>STEP 1: LOGIN CREDENTIALS &amp; BASIC DETAILS</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">First Name</div>
+                          <div className="cf-review-val">{renderVal(form.firstName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Middle Name</div>
+                          <div className="cf-review-val">{renderVal(form.middleName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Last Name</div>
+                          <div className="cf-review-val">{renderVal(form.lastName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Username / Login ID</div>
+                          <div className="cf-review-val">{renderVal(form.username)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Password</div>
+                          <div className="cf-review-val">{renderVal(form.password ? '••••••••' : '')}</div>
+                        </div>
+                      </div>
+                    </div>
 
-                       {/* Relationship & Reference */}
-                       <div>
-                         <h4 style={{ fontSize: 12, color: '#10b981', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid rgba(16,185,129,0.2)', paddingBottom: 6 }}>Relationship & Reference</h4>
-                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px 24px', fontSize: 13 }}>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Relation with Holder</strong> <span style={{ color: 'var(--text)' }}>{form.relationWithHolder || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Reference Name</strong> <span style={{ color: 'var(--text)' }}>{form.referenceName || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Internal Referral ID</strong> <span style={{ color: 'var(--text)' }}>{form.referredById || 'N/A'}</span></div>
-                           <div><strong style={{ color: '#94a3b8', display: 'block', fontSize: 11, marginBottom: 2 }}>Nominee</strong> <span style={{ color: 'var(--text)' }}>{form.nomineeName ? `${form.nomineeName} (${form.nomineeRelation})` : 'N/A'}</span></div>
-                         </div>
-                       </div>
+                    {/* ── STEP 2: Personal Information (as per PAN) ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><Calendar size={15} /></div>
+                        <span>STEP 2: PERSONAL INFORMATION (AS PER PAN)</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Full Display Name</div>
+                          <div className="cf-review-val">{renderVal(form.name)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Father's Name</div>
+                          <div className="cf-review-val">{renderVal(form.fatherName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Date of Birth</div>
+                          <div className="cf-review-val">{renderVal(form.dob)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Gender</div>
+                          <div className="cf-review-val">{renderVal(form.gender)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Marital Status</div>
+                          <div className="cf-review-val">{renderVal(form.maritalStatus)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Citizenship</div>
+                          <div className="cf-review-val">{renderVal(form.citizenship)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Old Name (if any)</div>
+                          <div className="cf-review-val">{renderVal(form.oldName)}</div>
+                        </div>
+                      </div>
+                    </div>
 
-                     </div>
+                    {/* ── STEP 3: Contact & Address (as per Aadhar) ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><MapPin size={15} /></div>
+                        <span>STEP 3: CONTACT &amp; ADDRESS (AS PER AADHAR)</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Primary Mobile</div>
+                          <div className="cf-review-val">{renderVal(form.phone ? `${form.phoneCountryCode || '+91'} ${form.phone}` : '')}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Alternate Mobile</div>
+                          <div className="cf-review-val">{renderVal(form.alternatePhone ? `${form.alternatePhoneCountryCode || '+91'} ${form.alternatePhone}` : '')}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Primary Email</div>
+                          <div className="cf-review-val">{renderVal(form.email)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">MyClaim Email</div>
+                          <div className="cf-review-val">{renderVal(form.myClaimEmail)}</div>
+                        </div>
+                        <div className="cf-review-item" style={{ gridColumn: 'span 2' }}>
+                          <div className="cf-review-label">Permanent Address</div>
+                          <div className="cf-review-val">{renderVal(form.permanentAddress)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">City</div>
+                          <div className="cf-review-val">{renderVal(form.city)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">State</div>
+                          <div className="cf-review-val">{renderVal(form.state)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Pincode</div>
+                          <div className="cf-review-val">{renderVal(form.pincode)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Country</div>
+                          <div className="cf-review-val">{renderVal(form.country)}</div>
+                        </div>
+                        <div className="cf-review-item" style={{ gridColumn: 'span 2' }}>
+                          <div className="cf-review-label">Old Address (if any)</div>
+                          <div className="cf-review-val">{renderVal(form.oldAddress)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Old City</div>
+                          <div className="cf-review-val">{renderVal(form.cityOld)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Old State</div>
+                          <div className="cf-review-val">{renderVal(form.stateOld)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Old Pincode</div>
+                          <div className="cf-review-val">{renderVal(form.pincodeOld)}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── STEP 4: Identification & Documents ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><FileText size={15} /></div>
+                        <span>STEP 4: IDENTIFICATION DOCUMENTS</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Aadhar Number</div>
+                          <div className="cf-review-val">{renderVal(form.aadharNo)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">PAN Number</div>
+                          <div className="cf-review-val">{renderVal(form.panNo)}</div>
+                        </div>
+                        <div className="cf-review-item" style={{ gridColumn: 'span 2' }}>
+                          <div className="cf-review-label">Other Documents Description</div>
+                          <div className="cf-review-val">{renderVal(form.otherDocsDesc)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Aadhar Card (Front)</div>
+                          <div className="cf-review-val">{files.aadharFront?.name ? <span style={{ color: '#10b981', fontWeight: 700 }}>📎 {files.aadharFront.name}</span> : renderVal('')}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Aadhar Card (Back)</div>
+                          <div className="cf-review-val">{files.aadharBack?.name ? <span style={{ color: '#10b981', fontWeight: 700 }}>📎 {files.aadharBack.name}</span> : renderVal('')}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">PAN Card File</div>
+                          <div className="cf-review-val">{files.pan?.name ? <span style={{ color: '#10b981', fontWeight: 700 }}>📎 {files.pan.name}</span> : renderVal('')}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Passport File</div>
+                          <div className="cf-review-val">{files.passport?.name ? <span style={{ color: '#10b981', fontWeight: 700 }}>📎 {files.passport.name}</span> : renderVal('')}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Other File</div>
+                          <div className="cf-review-val">{files.other?.name ? <span style={{ color: '#10b981', fontWeight: 700 }}>📎 {files.other.name}</span> : renderVal('')}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── STEP 5: Relationship Details ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><Users size={15} /></div>
+                        <span>STEP 5: RELATIONSHIP DETAILS</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Relation Type</div>
+                          <div className="cf-review-val">{renderVal(form.relation)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Relation with Holder</div>
+                          <div className="cf-review-val">{renderVal(form.relationWithHolder)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Specified Other Relation</div>
+                          <div className="cf-review-val">{renderVal(form.relationWithHolderOther)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Assigned Partner Name</div>
+                          <div className="cf-review-val">{renderVal(form.referenceName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Assigned Partner Referral ID</div>
+                          <div className="cf-review-val">{renderVal(form.referredById)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Assigned Partner Database ID (parent_id)</div>
+                          <div className="cf-review-val">{renderVal(form.parent_id)}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── STEP 6: Reference Details ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><LinkIcon size={15} /></div>
+                        <span>STEP 6: REFERENCE DETAILS</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Reference Type</div>
+                          <div className="cf-review-val">{renderVal(form.reference)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Reference Person Name</div>
+                          <div className="cf-review-val">{renderVal(form.referenceName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Reference Mobile</div>
+                          <div className="cf-review-val">{renderVal(form.referenceMobileNo)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Internal Referral ID</div>
+                          <div className="cf-review-val">{renderVal(form.referredById)}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── STEP 7: Nominee Details ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><Shield size={15} /></div>
+                        <span>STEP 7: NOMINEE DETAILS</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Nominee Name</div>
+                          <div className="cf-review-val">{renderVal(form.nomineeName)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Nominee Age</div>
+                          <div className="cf-review-val">{renderVal(form.nomineeAge)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Nominee Relation</div>
+                          <div className="cf-review-val">{renderVal(form.nomineeRelation)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Specified Other Nominee Relation</div>
+                          <div className="cf-review-val">{renderVal(form.nomineeRelationOther)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Nominee Date of Birth</div>
+                          <div className="cf-review-val">{renderVal(form.nomineeDob)}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── STEP 8: Finalize & Preferences ── */}
+                    <div className="cf-review-card">
+                      <div className="cf-review-header">
+                        <div className="cf-review-icon"><CheckCircle size={15} /></div>
+                        <span>STEP 8: FINALIZE &amp; PREFERENCES</span>
+                      </div>
+                      <div className="cf-review-grid">
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Communication Preference</div>
+                          <div className="cf-review-val">{renderVal(form.preference)}</div>
+                        </div>
+                        <div className="cf-review-item">
+                          <div className="cf-review-label">Account Status</div>
+                          <div className="cf-review-val">{renderVal(form.status)}</div>
+                        </div>
+                        <div className="cf-review-item" style={{ gridColumn: 'span 2' }}>
+                          <div className="cf-review-label">Staff / Internal Notes</div>
+                          <div className="cf-review-val">{renderVal(form.notes)}</div>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </>
               )}

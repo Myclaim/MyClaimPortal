@@ -41,6 +41,21 @@ const formatDate = (dateStr) => {
   return '';
 };
 
+// Helper to crop the left portion of an image (canvas or file) to remove QR code noise
+const cropLeftPortion = async (input, ratio = 0.55) => {
+  let bitmap = await createImageBitmap(input);
+  const cropWidth = Math.floor(bitmap.width * ratio);
+  const canvas = document.createElement('canvas');
+  canvas.width = cropWidth;
+  canvas.height = bitmap.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, cropWidth, bitmap.height, 0, 0, cropWidth, bitmap.height);
+  bitmap.close();
+  return canvas;
+};
+
+const cropLeftHalf = (input) => cropLeftPortion(input, 0.55);
+
 export const extractAadharDetails = async (imageFile) => {
   try {
     let ocrInput = imageFile;
@@ -48,21 +63,45 @@ export const extractAadharDetails = async (imageFile) => {
       ocrInput = await convertPdfToCanvas(imageFile);
     }
 
+    // Run OCR on the FULL image for name / DOB / gender / Aadhaar number
     const { data: { text } } = await Tesseract.recognize(ocrInput, 'eng', {
       logger: (m) => console.log(m),
     });
 
-    console.log('Extracted Text (Aadhar):', text);
+    console.log('Extracted Text (Aadhar - full):', text);
+
+    // Run OCR on left-55% crop to get a clean address (eliminates QR-code noise on the right)
+    let textForAddress = text; // fallback: use full text
+    try {
+      const croppedInput = await cropLeftHalf(ocrInput);
+      const { data: { text: croppedText } } = await Tesseract.recognize(croppedInput, 'eng', {
+        logger: (m) => console.log(m),
+      });
+      console.log('Extracted Text (Aadhar - left crop):', croppedText);
+      textForAddress = croppedText;
+    } catch (_) {
+      // Crop failed — fall back to full text for address too
+    }
 
     const result = {
       aadharNo: '',
       name: '',
+      fatherName: '',
       dob: '',
       gender: 'Male',
       phone: '',
       address: '',
       rawText: text
     };
+
+    // Care of / Son of / Daughter of / Father's Name from Aadhaar
+    const careOfMatch = text.match(/(?:S\/O|D\/O|C\/O|Care of|Father['’]?s?\s*Name)[:\s]+([A-Za-z\s]{3,})/i);
+    if (careOfMatch) {
+      const cand = careOfMatch[1].split(/,|\n/)[0].replace(/[^A-Za-z\s]/g, '').trim();
+      if (cand.length >= 3) {
+        result.fatherName = cand;
+      }
+    }
 
     // Aadhar Regex
     const aadharRegex = /(?:\d[ -]*?){12}/;
@@ -95,55 +134,105 @@ export const extractAadharDetails = async (imageFile) => {
       result.phone = phoneMatch[1];
     }
 
-    // Address extraction (Look for Address: or S/O, W/O, D/O, C/O)
-    const addressMatch = text.match(/(?:Address|Add)[^\w]*([\s\S]*?)(?=\d{6}|$)/i);
-    if (addressMatch) {
-      // capture up to 6 digit pincode
-      const pincodeMatch = text.match(/\b(\d{6})\b/);
-      let addr = addressMatch[1].replace(/\n/g, ', ').replace(/\s+/g, ' ').trim();
-      if (pincodeMatch) {
-        result.pincode = pincodeMatch[1];
-        if (!addr.includes(pincodeMatch[1])) {
-          addr += ' ' + pincodeMatch[1];
-        }
-      }
-      
-      // Extract State
-      const indianStates = ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Jammu and Kashmir", "Ladakh", "Puducherry", "Chandigarh"];
+    // ── Address extraction ────────────────────────────────────────────────
+    const indianStates = [
+      "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+      "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
+      "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+      "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim",
+      "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand",
+      "West Bengal", "Delhi", "Jammu and Kashmir", "Ladakh", "Puducherry",
+      "Chandigarh"
+    ];
+
+    const alphaRatio = (s) => {
+      const letters = (s.match(/[a-zA-Z]/g) || []).length;
+      return s.length > 0 ? letters / s.length : 0;
+    };
+
+    const isAddressLine = (line) => {
+      const trimmed = line.trim();
+      if (trimmed.length < 2) return false;
+      if (/^\d{6}$/.test(trimmed)) return true;
+      return alphaRatio(trimmed) >= 0.4;
+    };
+
+    const allLines = textForAddress.split('\n');
+    const addrLabelIdx = allLines.findIndex(l => /(?:Address|Add)[^a-zA-Z]/i.test(l));
+
+    if (addrLabelIdx !== -1) {
+      const addrRawLines = allLines.slice(addrLabelIdx, addrLabelIdx + 9);
+      addrRawLines[0] = addrRawLines[0].replace(/.*(?:Address|Add)[^a-zA-Z]*/i, '');
+
+      const cleanLines = addrRawLines
+        .map(l => {
+          let stripped = l
+            .replace(/^[^a-zA-Z0-9]+/, '')
+            .replace(/[^a-zA-Z0-9]+$/, '')
+            .trim();
+
+          const parts = stripped.split(/,\s*/);
+          const cleanParts = parts
+            .map(part => {
+              const words = part.trim().split(/\s+/);
+              const goodWords = words.filter(w => {
+                if (w.length < 2) return false;
+                const letters = (w.match(/[a-zA-Z]/g) || []).length;
+                return letters / w.length >= 0.5;
+              });
+              return goodWords.join(' ').trim();
+            })
+            .filter(p => p.length >= 2);
+
+          return cleanParts.join(', ');
+        })
+        .filter(isAddressLine);
+
+      const addrFull = cleanLines.join(', ').replace(/,\s*,/g, ',').replace(/\s+/g, ' ').trim();
+
+      const pincodeMatch = addrFull.match(/\b(\d{6})\b/) || textForAddress.match(/\b(\d{6})\b/) || text.match(/\b(\d{6})\b/);
+      if (pincodeMatch) result.pincode = pincodeMatch[1];
+
       const stateRegex = new RegExp(`\\b(${indianStates.join('|')})\\b`, 'i');
-      const stateMatch = addr.match(stateRegex);
+      const stateMatch = addrFull.match(stateRegex);
       if (stateMatch) {
-        // Find correct case from array
-        result.state = indianStates.find(s => s.toLowerCase() === stateMatch[1].toLowerCase()) || stateMatch[1];
+        result.state = indianStates.find(
+          s => s.toLowerCase() === stateMatch[1].toLowerCase()
+        ) || stateMatch[1];
       }
 
-      // Extract City (rough estimation: the word before the state or pincode)
       if (result.state || result.pincode) {
-        const target = result.state || result.pincode;
-        // Match word characters preceding the state or pincode, optionally separated by comma/space
-        const cityRegex = new RegExp(`([a-zA-Z]+)[\\s,]+${target}`, 'i');
-        const cityMatch = addr.match(cityRegex);
+        const pivot = result.state || result.pincode;
+        const cityRegex = new RegExp(`([A-Z][a-zA-Z]+(?:\\s+[A-Z][a-zA-Z]+){0,2})[\\s,]+${pivot}`, 'i');
+        const cityMatch = addrFull.match(cityRegex);
         if (cityMatch) {
-           result.city = cityMatch[1].charAt(0).toUpperCase() + cityMatch[1].slice(1).toLowerCase();
+          result.city = cityMatch[1].trim()
+            .split(/\s+/)
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(' ');
         }
       }
 
-      // Remove any trailing commas or non-alphanumeric chars
-      result.address = addr.replace(/^[^\w]+|[^\w]+$/g, '');
+      let finalAddr = addrFull.replace(/^[\s,\-–]+/, '').replace(/[\s,]+$/, '');
+      if (result.pincode && !finalAddr.includes(result.pincode)) {
+        finalAddr = `${finalAddr} - ${result.pincode}`;
+      }
+
+      const pincodeIdx = finalAddr.indexOf(result.pincode);
+      if (pincodeIdx !== -1 && result.pincode) {
+        finalAddr = finalAddr.substring(0, pincodeIdx + result.pincode.length);
+      }
+
+      result.address = finalAddr.replace(/^[\s,\-–]+/, '').replace(/[\s,]+$/, '');
     }
 
-    // Name Extraction: usually on the line directly above DOB, filtering out common header strings
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-    let nameFound = false;
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].match(/(DOB|Year of Birth|YOB|Date of Birth|\d{2}[\/\-]\d{2}[\/\-]\d{4})/i)) {
-        // Look at the line above
         if (i > 0) {
           const candidate = lines[i - 1];
-          // Filter out header stuff
           if (!candidate.match(/(GOVERNMENT OF INDIA|GOVT OF INDIA|MALE|FEMALE)/i)) {
             result.name = candidate.replace(/[^A-Za-z\s]/g, '').trim();
-            nameFound = true;
           }
         }
         break;
@@ -164,9 +253,29 @@ export const extractPanDetails = async (imageFile) => {
       ocrInput = await convertPdfToCanvas(imageFile);
     }
 
-    const { data: { text } } = await Tesseract.recognize(ocrInput, 'eng', {
-      logger: (m) => console.log(m),
-    });
+    // Modern Indian PAN cards feature a prominent QR code taking up the right 30-35% of the card.
+    // Tesseract's page segmenter groups text horizontally across into the QR code blocks,
+    // which mangles Father's Name and applicant name. Cropping the left 70% isolates all text cleanly.
+    let text = '';
+    try {
+      const croppedInput = await cropLeftPortion(ocrInput, 0.70);
+      const { data: { text: croppedText } } = await Tesseract.recognize(croppedInput, 'eng', {
+        logger: (m) => console.log(m),
+      });
+      text = croppedText;
+    } catch (cropErr) {
+      console.warn('PAN card crop failed, falling back to full image:', cropErr);
+    }
+
+    // Fallback to the full image if the crop misses the PAN number, even when
+    // it still contains enough unrelated text to pass the length check.
+    const croppedPanCandidate = text.replace(/\s+/g, '').toUpperCase().match(/[A-Z]{5}[0-9]{4}[A-Z]/);
+    if (!text || text.trim().length < 20 || !croppedPanCandidate) {
+      const { data: { text: fullText } } = await Tesseract.recognize(ocrInput, 'eng', {
+        logger: (m) => console.log(m),
+      });
+      text = `${text}\n${fullText}`;
+    }
 
     console.log('Extracted Text (PAN):', text);
 
@@ -178,49 +287,120 @@ export const extractPanDetails = async (imageFile) => {
       rawText: text
     };
 
-    // PAN Regex
-    // Tesseract often adds spaces, so we search in the text without spaces
+    // 1. PAN Regex
     const cleanedText = text.replace(/\s+/g, '').toUpperCase();
-    
-    // First try strict match on cleaned text
     let panMatch = cleanedText.match(/[A-Z]{5}[0-9]{4}[A-Z]{1}/);
-    
-    // If no strict match, try a looser match (sometimes 0/O or 1/I/L get confused)
-    // PAN format: 5 letters, 4 digits, 1 letter. We look for 10 chars that are roughly in that shape.
     if (!panMatch) {
-      // Find any 10 character alphanumeric string that looks like a PAN
       const looseMatch = cleanedText.match(/[A-Z0-9]{10}/g);
       if (looseMatch) {
         for (let candidate of looseMatch) {
-           // Basic check: starts with letters, ends with letter
-           if (candidate.match(/^[A-Z]{3,5}[0-9]{2,5}[A-Z]{1,2}$/)) {
-             panMatch = [candidate];
-             break;
-           }
+          if (candidate.match(/^[A-Z]{3,5}[0-9]{2,5}[A-Z]{1,2}$/)) {
+            panMatch = [candidate];
+            break;
+          }
         }
       }
     }
-
     if (panMatch) {
       result.panNo = panMatch[0].toUpperCase();
     }
 
-    // DOB Regex
-    const dobRegex = /(\d{2}[\/\-]\d{2}[\/\-]\d{4})/;
-    const dobMatch = text.match(dobRegex);
+    // 2. DOB Regex
+    const dobRegex = /(?:dob|date\s*of\s*birth|birth|जन्म)?[\s:]*(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4})/i;
+    const dobMatch = text.match(dobRegex) || text.match(/(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
     if (dobMatch) {
       result.dob = formatDate(dobMatch[1]);
     }
 
-    // Name and Father's Name extraction
-    // Usually PAN structure is:
-    // INCOME TAX DEPARTMENT
-    // GOVT OF INDIA
-    // JOHN DOE  <-- Name
-    // FATHER NAME <-- Father's name
-    // 01/01/1990 <-- DOB
-    
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+    // 3. Name and Father's Name extraction
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length >= 2);
+
+    const isHeaderOrNoise = (l) => {
+      return /(income\s*tax|department|govt|government|india|permanent\s*account|number\s*card|signature|हस्ताक्षर|तारीख|date\s*of\s*birth)/i.test(l);
+    };
+
+    const isPureLabel = (str) => {
+      const stripped = str
+        .replace(/(?:father(?:['’]?s)?\s*name|\bF[\/\.]O\b|\bS[\/\.]O\b|पिता\s*(?:का\s*)?नाम|नाम|name|date\s*of\s*birth|जन्म\s*(?:की\s*)?तारीख)/gi, '')
+        .replace(/[^A-Za-z]/g, '')
+        .trim();
+      return stripped.length < 3;
+    };
+
+    const cleanName = (str) => {
+      if (!str) return '';
+      return str
+        .replace(/\b\d{4,}\b/g, '') // remove 4+ digit numbers like years / issue dates
+        .replace(/[^A-Za-z\s]/g, ' ') // keep only letters and spaces
+        .split(/\s+/)
+        .filter(w => {
+          if (w.length <= 1) return false;
+          // Filter stray lowercase OCR noise (e.g. 'van', 'ee', 're') since PAN cards are in uppercase
+          if (w === w.toLowerCase() && w.length <= 3) return false;
+          return true;
+        })
+        .join(' ')
+        .trim();
+    };
+
+    const fatherLabelRegex = /(?:father(?:['’]?s)?\s*name|\bF[\/\.]O\b|\bS[\/\.]O\b|पिता)/i;
+    const nameLabelRegex = /(?:^|[\s\/|])name(?:[\s\/|]|$)|नाम/i;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Father's name check
+      if (fatherLabelRegex.test(line) && !result.fatherName) {
+        const parts = line.split(fatherLabelRegex);
+        const after = cleanName(parts[parts.length - 1] || '');
+        if (after.length >= 3 && !isHeaderOrNoise(after)) {
+          // Value is on the same line after label
+          result.fatherName = after;
+        } else {
+          // Value is on the next line(s)
+          for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) {
+            const nextClean = cleanName(lines[j]);
+            if (nextClean.length >= 3 && !isHeaderOrNoise(lines[j]) && !isPureLabel(lines[j])) {
+              result.fatherName = nextClean;
+              break;
+            }
+          }
+        }
+      }
+
+      // Name check
+      if (nameLabelRegex.test(line) && !result.name && !fatherLabelRegex.test(line)) {
+        const parts = line.split(nameLabelRegex);
+        const after = cleanName(parts[parts.length - 1] || '');
+        if (after.length >= 3 && !isHeaderOrNoise(after)) {
+          result.name = after;
+        } else {
+          for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) {
+            const nextClean = cleanName(lines[j]);
+            if (nextClean.length >= 3 && !isHeaderOrNoise(lines[j]) && !isPureLabel(lines[j])) {
+              result.name = nextClean;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback: If name was not found by label, look above father's name
+    if (!result.name && result.fatherName) {
+      let fatherIdx = lines.findIndex(l => l.includes(result.fatherName) || fatherLabelRegex.test(l));
+      if (fatherIdx > 0) {
+        for (let k = fatherIdx - 1; k >= Math.max(0, fatherIdx - 4); k--) {
+          const cand = cleanName(lines[k]);
+          if (cand.length >= 3 && !isHeaderOrNoise(lines[k]) && !isPureLabel(lines[k])) {
+            result.name = cand;
+            break;
+          }
+        }
+      }
+    }
+
+    // Fallback: If neither was found by labels (older unlabelled cards), scan upwards from DOB
     let dobIndex = -1;
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].match(/\d{2}[\/\-]\d{2}[\/\-]\d{4}/)) {
@@ -229,18 +409,22 @@ export const extractPanDetails = async (imageFile) => {
       }
     }
 
-    if (dobIndex >= 2) {
-      // Assuming name is 2 lines above DOB, and father name is 1 line above DOB
-      // Though sometimes "FATHER'S NAME" literal text might be present
-      
-      const candidateFather = lines[dobIndex - 1].replace(/[^A-Za-z\s]/g, '').trim();
-      const candidateName = lines[dobIndex - 2].replace(/[^A-Za-z\s]/g, '').trim();
+    if (dobIndex >= 1) {
+      let fatherFound = !!result.fatherName;
+      let nameFound = !!result.name;
 
-      if (!candidateFather.match(/(FATHER|NAME|GOVT|INDIA)/i)) {
-        result.fatherName = candidateFather;
-      }
-      if (!candidateName.match(/(INCOME|TAX|DEPARTMENT|GOVT|INDIA)/i)) {
-        result.name = candidateName;
+      for (let i = dobIndex - 1; i >= Math.max(0, dobIndex - 6); i--) {
+        const clean = cleanName(lines[i]);
+        if (!clean || clean.length < 3 || isHeaderOrNoise(lines[i]) || isPureLabel(lines[i])) continue;
+
+        if (!fatherFound) {
+          result.fatherName = clean;
+          fatherFound = true;
+        } else if (!nameFound) {
+          result.name = clean;
+          nameFound = true;
+          break;
+        }
       }
     }
 
