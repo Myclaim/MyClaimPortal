@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -395,6 +394,42 @@ class ApiService {
           'city': city,
           'state': state,
           'about': about ?? '',
+        }),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 201) {
+        return {'success': true, 'message': body['message']};
+      }
+      return {'success': false, 'message': body['message'] ?? 'Something went wrong'};
+    } catch (e) {
+      return {'success': false, 'message': 'Could not connect to server.'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitClientRequest({
+    required String fullName,
+    required String email,
+    required String phone,
+    required String service,
+    required String city,
+    required String state,
+    String? companyOrFolio,
+    String? details,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/client-requests'),
+        headers: headers,
+        body: jsonEncode({
+          'fullName': fullName,
+          'email': email,
+          'phone': phone,
+          'service': service,
+          'city': city,
+          'state': state,
+          'companyOrFolio': companyOrFolio ?? '',
+          'details': details ?? '',
         }),
       );
       final body = jsonDecode(response.body);

@@ -7,6 +7,7 @@ import '../utils/constants.dart';
 import 'login_screen.dart';
 import 'client/quick_actions/become_partner_screen.dart';
 import 'client/quick_actions/free_iepf_report_screen.dart';
+import 'client/quick_actions/new_client_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────
 // Guest Screen — Entry point for non-registered users
@@ -88,13 +89,10 @@ class _GuestScreenState extends State<GuestScreen>
                           eyebrow: 'Get Started Today',
                           title: 'New Client',
                           subtitle: 'Register to track claims, upload documents & get expert support — all from your phone.',
-                          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('New Client registration — coming soon!', style: GoogleFonts.inter(color: Colors.white)),
-                              backgroundColor: AppColors.primary,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              margin: EdgeInsets.all(16.w),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NewClientScreen(),
                             ),
                           ),
                         ),

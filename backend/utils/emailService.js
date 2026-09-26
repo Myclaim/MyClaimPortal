@@ -147,7 +147,67 @@ const sendOtpEmail = async (email, otp) => {
   }
 };
 
+const sendClientRequestAckEmail = async (email, fullName, service) => {
+  try {
+    let transporter;
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT, 10) || 465,
+        secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+    } else {
+      return { success: false, error: 'No SMTP configured' };
+    }
+
+    const mailOptions = {
+      from: `"My Claim India" <${process.env.SMTP_USER || 'support@myclaimindia.com'}>`,
+      to: email,
+      subject: `Claim Request Received: ${service} - My Claim India`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #065f46; margin: 0; font-size: 24px; font-weight: 800;">My Claim India</h2>
+            <p style="color: #64748b; font-size: 13px; margin: 4px 0 0;">Trusted Wealth & Claim Recovery Partner</p>
+          </div>
+          <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+            <p style="color: #1e293b; font-size: 16px; margin: 0 0 12px; font-weight: 600;">Dear ${fullName},</p>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0 0 16px;">
+              Thank you for reaching out to <strong>My Claim India</strong>. We have successfully received your inquiry for:
+            </p>
+            <div style="background: #f8fafc; border-left: 4px solid #10b981; padding: 14px 18px; border-radius: 6px; margin: 16px 0;">
+              <p style="margin: 0; color: #0f172a; font-weight: 700; font-size: 15px;">${service}</p>
+            </div>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 16px 0;">
+              Our dedicated claim recovery specialists are reviewing your request. We will reach out to you within <strong>24 business hours</strong> to guide you through the next steps and documentation.
+            </p>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 16px 0;">
+              In the meantime, feel free to reply directly to this email if you have any questions or additional details to share.
+            </p>
+          </div>
+          <div style="border-top: 1px solid #f1f5f9; margin-top: 24px; padding-top: 16px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} My Claim India · Wealtharth. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Nodemailer] Client request ack email sent to ${email} (MessageId: ${info.messageId})`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('[Nodemailer] Error sending client ack email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendOtpEmail,
+  sendClientRequestAckEmail,
 };
+
