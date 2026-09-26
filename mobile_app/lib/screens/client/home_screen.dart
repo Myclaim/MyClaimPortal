@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().fetchDashboard();
+      NotificationService().requestPermissions();
       _loadNotifications(isInitial: true);
     });
     _notifTimer = Timer.periodic(const Duration(seconds: 15), (_) {
@@ -43,11 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _notifTimer?.cancel();
-    super.dispose();
-  }
 
   Future<void> _loadNotifications({bool isInitial = false}) async {
     try {
@@ -56,14 +53,24 @@ class _HomeScreenState extends State<HomeScreen> {
         final notifs = (res['data'] ?? res['notifications']) as List<dynamic>? ?? [];
         final unread = res['unreadCount'] as int? ?? notifs.where((n) => n['isRead'] == false).length;
 
-        if (!isInitial && notifs.isNotEmpty) {
-          final newItems = notifs.where((n) => n['isRead'] == false && !_seenNotifIds.contains(n['_id'])).toList();
+        if (notifs.isNotEmpty) {
+          final unreadItems = notifs.where((n) => n['isRead'] == false).toList();
+          final newItems = unreadItems.where((n) => !_seenNotifIds.contains(n['_id'])).toList();
           if (newItems.isNotEmpty) {
             final latest = newItems.first;
-            _showPushNotificationBanner(
-              latest['title']?.toString() ?? 'New Notification',
-              latest['message']?.toString() ?? '',
+            final title = latest['title']?.toString() ?? 'Action Alert';
+            final message = latest['message']?.toString() ?? 'Update received from your advisor.';
+
+            // 1. Native device phone push notification
+            NotificationService().showNotification(
+              id: (latest['_id'] ?? 'alert').hashCode,
+              title: title,
+              body: message,
+              payload: latest['_id']?.toString(),
             );
+
+            // 2. In-app floating alert banner
+            _showPushNotificationBanner(title, message);
           }
         }
 
@@ -79,105 +86,44 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  OverlayEntry? _bannerOverlay;
+
+  @override
+  void dispose() {
+    _bannerOverlay?.remove();
+    _bannerOverlay = null;
+    _notifTimer?.cancel();
+    super.dispose();
+  }
+
   void _showPushNotificationBanner(String title, String message) {
     HapticFeedback.heavyImpact();
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        elevation: 8,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height - 180.h,
-          left: 16.w,
-          right: 16.w,
-        ),
-        backgroundColor: Colors.transparent,
-        padding: EdgeInsets.zero,
-        duration: const Duration(seconds: 5),
-        content: GestureDetector(
-          onTap: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            _showNotificationsSheet(context);
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(8.r),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.notifications_active_rounded, color: AppColors.primary, size: 20.sp),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'MY CLAIM · NOW',
-                            style: GoogleFonts.inter(
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                          Icon(Icons.touch_app_outlined, size: 12.sp, color: Colors.white54),
-                        ],
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        message,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.sp,
-                          color: const Color(0xFFCBD5E1),
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+    _bannerOverlay?.remove();
+    _bannerOverlay = null;
+
+    final overlayState = Overlay.of(context, rootOverlay: true);
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    _bannerOverlay = OverlayEntry(
+      builder: (ctx) => _TopPushBannerWidget(
+        title: title,
+        message: message,
+        topPadding: topPadding,
+        onTap: () {
+          _bannerOverlay?.remove();
+          _bannerOverlay = null;
+          _showNotificationsSheet(context);
+        },
+        onDismiss: () {
+          _bannerOverlay?.remove();
+          _bannerOverlay = null;
+        },
       ),
     );
+
+    overlayState.insert(_bannerOverlay!);
   }
 
   @override
@@ -415,14 +361,33 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ],
                     ),
-                    if (_unreadCount > 0)
-                      TextButton(
-                        onPressed: () async {
-                          await _markAllRead();
-                          setSheetState(() {});
-                        },
-                        child: Text('Mark all read', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13.sp)),
-                      ),
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: 'Test Push Alert',
+                          icon: Icon(Icons.send_to_mobile_rounded, color: AppColors.primary, size: 20.sp),
+                          onPressed: () {
+                            NotificationService().showNotification(
+                              id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                              title: '🔔 Advisor Update: Claim Approved',
+                              body: 'Superadmin has approved your IEPF Claim documents.',
+                            );
+                            _showPushNotificationBanner(
+                              '🔔 Advisor Update: Claim Approved',
+                              'Superadmin has approved your IEPF Claim documents.',
+                            );
+                          },
+                        ),
+                        if (_unreadCount > 0)
+                          TextButton(
+                            onPressed: () async {
+                              await _markAllRead();
+                              setSheetState(() {});
+                            },
+                            child: Text('Mark all read', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13.sp)),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -1638,3 +1603,174 @@ class _NeedHelpCard extends StatelessWidget {
     ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1);
   }
 }
+
+class _TopPushBannerWidget extends StatefulWidget {
+  final String title;
+  final String message;
+  final double topPadding;
+  final VoidCallback onTap;
+  final VoidCallback onDismiss;
+
+  const _TopPushBannerWidget({
+    required this.title,
+    required this.message,
+    required this.topPadding,
+    required this.onTap,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_TopPushBannerWidget> createState() => _TopPushBannerWidgetState();
+}
+
+class _TopPushBannerWidgetState extends State<_TopPushBannerWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<Offset> _offsetAnim;
+  late Animation<double> _fadeAnim;
+  Timer? _dismissTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _offsetAnim = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutBack));
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeIn);
+
+    _animController.forward();
+
+    _dismissTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        _animController.reverse().then((_) {
+          widget.onDismiss();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _dismissTimer?.cancel();
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _dismissNow() {
+    _dismissTimer?.cancel();
+    _animController.reverse().then((_) {
+      widget.onDismiss();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: widget.topPadding + 10.h,
+      left: 16.w,
+      right: 16.w,
+      child: Material(
+        color: Colors.transparent,
+        child: SlideTransition(
+          position: _offsetAnim,
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: GestureDetector(
+              onTap: () {
+                _dismissTimer?.cancel();
+                widget.onTap();
+              },
+              onVerticalDragUpdate: (details) {
+                if (details.primaryDelta != null && details.primaryDelta! < -5) {
+                  _dismissNow();
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8.r),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.notifications_active_rounded, color: AppColors.primary, size: 20.sp),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'MY CLAIM · NOW',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: _dismissNow,
+                                child: Icon(Icons.close_rounded, size: 14.sp, color: Colors.white54),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            widget.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            widget.message,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.sp,
+                              color: const Color(0xFFCBD5E1),
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
