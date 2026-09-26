@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,6 +15,8 @@ import 'quick_actions/iepf_search_screen.dart';
 import 'quick_actions/family_tree_screen.dart';
 import 'quick_actions/referral_screen.dart';
 import 'quick_actions/upload_document_screen.dart';
+import 'quick_actions/become_partner_screen.dart';
+import 'quick_actions/free_iepf_report_screen.dart';
 import 'claims_screen.dart';
 import 'profile_screen.dart';
 import 'resource_detail_screen.dart';
@@ -57,19 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 1. Top App Bar
-                      _buildAppBar(context),
-                      SizedBox(height: 24.h),
+                      // 1. Hero Header (AppBar + Welcome combined)
+                      _buildHeroHeader(context, firstName, dash),
+                      SizedBox(height: 20.h),
 
-                      // 2. Welcome Message & Est Recovery
-                      _buildWelcomeSection(firstName, dash),
-                      SizedBox(height: 16.h),
-
-                      // 3. Stats Dashboard
-                      _buildStatsGrid(context, dash),
+                      // 3. Category Section
+                      const _CategorySection(),
                       SizedBox(height: 28.h),
 
-                      // NEW WIDGET: Claims & Services
+                      // 6. Claims & Services
                       _ClaimsAndServicesSection(onNavigate: widget.onNavigate),
                       SizedBox(height: 28.h),
 
@@ -106,69 +105,120 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildHeroHeader(BuildContext context, String firstName, DashboardProvider dash) {
+    final hour = DateTime.now().hour;
+    final greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+    final greetIcon = hour < 12 ? '🌤️' : hour < 17 ? '☀️' : '🌙';
+
+    int total = dash.claims.length;
+    int active = 0, completed = 0;
+    for (var c in dash.claims) {
+      final s = (c['status']?.toString() ?? '').toLowerCase();
+      if (s == 'active' || s == 'allocated') active++;
+      if (s.contains('completed')) completed++;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── Top bar row ──────────────────────────────────────────────
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Icons.shield_outlined, color: AppColors.primary, size: 28.sp),
-            SizedBox(width: 8.w),
-            Text(
-              'MyClaim',
-              style: GoogleFonts.inter(fontSize: 20.sp, fontWeight: FontWeight.bold, color: context.textColor),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
+            Row(
               children: [
-                IconButton(
-                  icon: Icon(Icons.notifications_none_rounded, color: context.textColor),
-                  onPressed: () => _showNotificationsSheet(context),
+                Container(
+                  width: 36.w, height: 36.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(Icons.shield_rounded, color: AppColors.primary, size: 20.sp),
                 ),
-                Positioned(
-                  top: 8.h,
-                  right: 8.w,
-                  child: Container(
-                    padding: EdgeInsets.all(4.r),
-                    decoration: const BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
+                SizedBox(width: 8.w),
+                Text(
+                  'MyClaim',
+                  style: GoogleFonts.inter(fontSize: 20.sp, fontWeight: FontWeight.w800, color: context.textColor),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 40.w, height: 40.w,
+                      decoration: BoxDecoration(
+                        color: context.surfaceColor,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: context.borderColor),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.notifications_none_rounded, color: context.textColor, size: 20.sp),
+                        onPressed: () => _showNotificationsSheet(context),
+                      ),
                     ),
-                    child: Text(
-                      '5',
-                      style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.bold),
+                    Positioned(
+                      top: -2, right: -2,
+                      child: Container(
+                        width: 16.w, height: 16.w,
+                        decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                        child: Center(
+                          child: Text('5', style: TextStyle(color: Colors.white, fontSize: 9.sp, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 8.w),
+                GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+                  child: Container(
+                    width: 40.w, height: 40.w,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.greenGradient,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U',
+                        style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w800, color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(width: 4.w),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                );
-              },
-              child: Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(Icons.person_outline_rounded, color: context.backgroundColor, size: 20.sp),
-                ),
-              ),
-            ),
           ],
         ),
+        SizedBox(height: 16.h),
+
+        // ── Promo Banner Carousel (top) ──────────────────────────────
+        const _PromoBannerCarousel(),
+        SizedBox(height: 22.h),
+
       ],
+    ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.04);
+  }
+
+  Widget _statChip(BuildContext context, String value, String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(value, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w800, color: color)),
+          SizedBox(width: 4.w),
+          Text(label, style: GoogleFonts.inter(fontSize: 11.sp, color: context.textSecondaryColor, fontWeight: FontWeight.w500)),
+        ],
+      ),
     );
   }
 
@@ -239,12 +289,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: EdgeInsets.all(10.r),
                             decoration: BoxDecoration(
-                              color: AppColors.success.withValues(alpha: 0.1),
+                              color: AppColors.primary.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               isComment ? Icons.chat_bubble_outline_rounded : Icons.trending_up_rounded, 
-                              color: AppColors.success, 
+                              color: AppColors.primary, 
                               size: 20.sp
                             ),
                           ),
@@ -274,198 +324,339 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWelcomeSection(String name, DashboardProvider dash) {
-    double parseEstValue(String valueStr) {
-      if (valueStr.isEmpty || valueStr.toLowerCase() == 'n/a' || valueStr == '---') return 0;
-      try {
-        var cleanStr = valueStr.replaceAll('₹', '').replaceAll(',', '').trim();
-        double multiplier = 1.0;
-        if (cleanStr.toUpperCase().endsWith('L')) {
-          multiplier = 100000.0;
-          cleanStr = cleanStr.substring(0, cleanStr.length - 1).trim();
-        } else if (cleanStr.toUpperCase().endsWith('K')) {
-          multiplier = 1000.0;
-          cleanStr = cleanStr.substring(0, cleanStr.length - 1).trim();
-        } else if (cleanStr.toUpperCase().endsWith('CR')) {
-          multiplier = 10000000.0;
-          cleanStr = cleanStr.substring(0, cleanStr.length - 2).trim();
-        }
-        return double.parse(cleanStr) * multiplier;
-      } catch (e) {
-        return 0;
-      }
-    }
+}
 
-    String formatEstValueShort(double val) {
-      if (val == 0) return '₹0';
-      if (val >= 10000000) return '₹${(val / 10000000).toStringAsFixed(2)}Cr';
-      if (val >= 100000) return '₹${(val / 100000).toStringAsFixed(2)}L';
-      if (val >= 1000) return '₹${(val / 1000).toStringAsFixed(1)}K';
-      return '₹${val.toStringAsFixed(0)}';
-    }
 
-    int totalShares = 0;
-    double totalEstimatedVal = 0.0;
+// ─── Promo Banner Carousel ─────────────────────────────────────────────────
 
-    for (var ticket in dash.claims) {
-      final s = ticket['shares']?.toString() ?? '0';
-      totalShares += int.tryParse(s.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-      totalEstimatedVal += parseEstValue(ticket['estValue']?.toString() ?? '');
-    }
+class _PromoBannerCarousel extends StatefulWidget {
+  const _PromoBannerCarousel();
 
+  @override
+  State<_PromoBannerCarousel> createState() => _PromoBannerCarouselState();
+}
+
+class _PromoBannerCarouselState extends State<_PromoBannerCarousel> {
+  final PageController _controller = PageController();
+  int _currentPage = 0;
+  Timer? _timer;
+
+  static const _banners = [
+    {
+      'title': 'Recover Your\nLost Shares',
+      'subtitle': 'Fast, Hassle-Free IEPF Claims',
+      'tag': 'Get Started Today',
+      'gradient': [Color(0xFF00E676), Color(0xFF22C55E)],
+      'icon': Icons.account_balance_rounded,
+    },
+    {
+      'title': 'Share Transfer\n& Transmission',
+      'subtitle': 'Claim Inherited Assets Easily',
+      'tag': 'Expert Guidance',
+      'gradient': [Color(0xFF10B981), Color(0xFF059669)],
+      'icon': Icons.swap_horiz_rounded,
+    },
+    {
+      'title': 'KYC &\nName Update',
+      'subtitle': 'Hassle-Free Document Services',
+      'tag': 'Quick Assistance',
+      'gradient': [Color(0xFFEC4899), Color(0xFFBE185D)],
+      'icon': Icons.manage_accounts_rounded,
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      final next = (_currentPage + 1) % _banners.length;
+      _controller.animateToPage(next,
+          duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 180.h,
+          child: PageView.builder(
+            controller: _controller,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemCount: _banners.length,
+            itemBuilder: (context, index) {
+              final b = _banners[index];
+              final colors = b['gradient'] as List<Color>;
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 2.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: colors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.first.withValues(alpha: 0.35),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Decorative circle
+                    Positioned(
+                      right: -20,
+                      bottom: -20,
+                      child: Container(
+                        width: 120.w,
+                        height: 120.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 16,
+                      top: 16,
+                      child: Container(
+                        width: 80.w,
+                        height: 80.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.12),
+                        ),
+                        child: Icon(b['icon'] as IconData, color: Colors.white.withValues(alpha: 0.9), size: 36.sp),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(20.r),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            b['title'] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.2,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            b['subtitle'] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.22),
+                              borderRadius: BorderRadius.circular(20.r),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                            ),
+                            child: Text(
+                              b['tag'] as String,
+                              style: GoogleFonts.inter(
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        SizedBox(height: 10.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_banners.length, (i) {
+            final isActive = i == _currentPage;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: EdgeInsets.symmetric(horizontal: 3.w),
+              width: isActive ? 20.w : 6.w,
+              height: 6.h,
+              decoration: BoxDecoration(
+                color: isActive ? AppColors.primary : AppColors.primary.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(3.r),
+              ),
+            );
+          }),
+        ),
+      ],
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05);
+  }
+}
+
+// ─── Category Section ───────────────────────────────────────────────────────
+
+class _CategorySection extends StatelessWidget {
+  const _CategorySection();
+
+  static final _categories = [
+    {
+      'name': 'IEPF\nClaims',
+      'icon': Icons.account_balance_rounded,
+      'bg': const Color(0xFFEDFDF5),
+      'bgDark': const Color(0xFF0D2118),
+      'iconColor': AppColors.primary,
+    },
+    {
+      'name': 'Share\nTransfer',
+      'icon': Icons.swap_horiz_rounded,
+      'bg': const Color(0xFFECFDF5),
+      'bgDark': const Color(0xFF0D2016),
+      'iconColor': AppColors.success,
+    },
+    {
+      'name': 'Duplicate\nCertificate',
+      'icon': Icons.file_copy_rounded,
+      'bg': const Color(0xFFFFF7ED),
+      'bgDark': const Color(0xFF1F1508),
+      'iconColor': AppColors.warning,
+    },
+    {
+      'name': 'KYC &\nName Update',
+      'icon': Icons.manage_accounts_rounded,
+      'bg': const Color(0xFFFDF2F8),
+      'bgDark': const Color(0xFF1F0A14),
+      'iconColor': AppColors.secondary,
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = context.isDark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome back,\n$name 👋',
-          style: GoogleFonts.inter(fontSize: 28.sp, fontWeight: FontWeight.w800, color: AppColors.primary, height: 1.2),
+          'Category',
+          style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: context.textColor),
         ),
-        SizedBox(height: 8.h),
-        Text(
-          'Let\'s get started on recovering your unclaimed\nassets.',
-          style: GoogleFonts.inter(fontSize: 14.sp, color: AppColors.textSecondary, height: 1.4),
-        ),
-        SizedBox(height: 20.h),
-        // Premium Teal Dashboard Card
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(20.r),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF4ADE80), Color(0xFF22C55E)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF22C55E).withValues(alpha: 0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'ESTIMATED PORTFOLIO VALUE',
-                style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.white70, letterSpacing: 0.5),
-              ),
-              SizedBox(height: 12.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        formatEstValueShort(totalEstimatedVal),
-                        style: GoogleFonts.inter(fontSize: 32.sp, fontWeight: FontWeight.bold, color: Colors.white, height: 1),
-                      ),
-                      SizedBox(width: 8.w),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                        margin: EdgeInsets.only(bottom: 4.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Text(
-                          '${dash.claims.length} Claims',
-                          style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(10.r),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.15),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
-                    ),
-                    child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 24.sp),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                'Total projected value across ${dash.claims.length} active assets.',
-                style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.white.withValues(alpha: 0.8)),
-              ),
-            ],
-          ),
-        ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05),
-      ],
-    );
-  }
-
-  Widget _buildStatsGrid(BuildContext context, DashboardProvider dash) {
-    int total = dash.claims.length;
-    int active = 0;
-    int inProgress = 0;
-    int completed = 0;
-
-    for (var claim in dash.claims) {
-      final s = (claim['status']?.toString() ?? '').toLowerCase();
-      if (s == 'active' || s == 'allocated') {
-        active++;
-      } else if (s.contains('progress')) {
-        inProgress++;
-      } else if (s.contains('completed')) {
-        completed++;
-      }
-    }
-
-    return Column(
-      children: [
+        SizedBox(height: 14.h),
         Row(
           children: [
-            _buildStatItem(context, 'Total Claims', total.toString()),
+            Expanded(child: _buildCard(context, _categories[0], isDark)),
             SizedBox(width: 12.w),
-            _buildStatItem(context, 'Active', active.toString().padLeft(2, '0')),
+            Expanded(child: _buildCard(context, _categories[1], isDark)),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Expanded(child: _buildCard(context, _categories[2], isDark)),
             SizedBox(width: 12.w),
-            _buildStatItem(context, 'In Progress', inProgress.toString().padLeft(2, '0')),
-            SizedBox(width: 12.w),
-            _buildStatItem(context, 'Completed', completed.toString().padLeft(2, '0'), isHighlight: true),
+            Expanded(child: _buildCard(context, _categories[3], isDark)),
           ],
         ),
       ],
-    ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.05);
+    ).animate().fadeIn(duration: 400.ms, delay: 120.ms).slideY(begin: 0.08);
   }
 
-  Widget _buildStatItem(BuildContext context, String label, String value, {bool isHighlight = false}) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: context.borderColor, width: 1),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(fontSize: 10.sp, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 18.sp, 
-                fontWeight: FontWeight.bold, 
-                color: isHighlight ? AppColors.primary : context.textColor,
+  Widget _buildCard(BuildContext context, Map<String, dynamic> cat, bool isDark) {
+    final bg = isDark ? cat['bgDark'] as Color : cat['bg'] as Color;
+    final iconColor = cat['iconColor'] as Color;
+    final icon = cat['icon'] as IconData;
+    final name = cat['name'] as String;
+
+    return GestureDetector(
+      onTap: () {
+        if (name.contains('IEPF')) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeIepfReportScreen()));
+        }
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18.r),
+        child: Container(
+          height: 130.h,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(color: iconColor.withValues(alpha: isDark ? 0.18 : 0.1)),
+          ),
+          child: Stack(
+            children: [
+              // Ghost large icon – bottom-right (illustration effect)
+              Positioned(
+                right: -8,
+                bottom: -8,
+                child: Icon(icon, size: 88.sp, color: iconColor.withValues(alpha: 0.15)),
               ),
-            ),
-          ],
+              // Smaller coloured badge icon bottom-right
+              Positioned(
+                right: 12,
+                bottom: 12,
+                child: Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: isDark ? 0.2 : 0.15),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 20.sp),
+                ),
+              ),
+              // Name top-left, "More →" bottom-left
+              Padding(
+                padding: EdgeInsets.all(14.r),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: context.textColor,
+                        height: 1.3,
+                      ),
+                    ),
+                    Text(
+                      'More →',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: iconColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-
 }
+
+// ─── Claims & Services ──────────────────────────────────────────────────────
 
 class _ClaimsAndServicesSection extends StatefulWidget {
   final ValueChanged<int>? onNavigate;
@@ -800,52 +991,128 @@ class _ReferralBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen())),
-      child: Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.r),
-      decoration: BoxDecoration(
-        gradient: AppColors.greenGradient,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Refer & Earn ₹500',
-                  style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+    return Column(
+      children: [
+        // ── Become a Partner ──────────────────────────────────────────
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BecomePartnerScreen())),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20.r),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [const Color(0xFF7C3AED), const Color(0xFF5B21B6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF7C3AED).withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Invite friends to recover their lost shares and get processing fee waivers.',
-                  style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.9)),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Text('★ PARTNER PROGRAM', style: GoogleFonts.inter(fontSize: 9.sp, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.6)),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Become a Partner',
+                        style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.w900, color: Colors.white),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Earn ₹25K+ monthly by helping investors reclaim their wealth.',
+                        style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.88)),
+                      ),
+                      SizedBox(height: 10.h),
+                      Row(
+                        children: [
+                          Text('Apply Now', style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                          SizedBox(width: 4.w),
+                          Icon(Icons.arrow_forward_rounded, size: 14.sp, color: AppColors.primary),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Container(
+                  padding: EdgeInsets.all(14.r),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.handshake_rounded, color: Colors.white, size: 28.sp),
                 ),
               ],
             ),
           ),
-          SizedBox(width: 16.w),
-          Container(
-            padding: EdgeInsets.all(12.r),
+        ),
+        SizedBox(height: 12.h),
+        // ── Refer & Earn ──────────────────────────────────────────────
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen())),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20.r),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+              gradient: AppColors.greenGradient,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            child: Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 28.sp),
-          )
-        ],
-      ),
-    )).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1);
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Refer & Earn ₹500',
+                        style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Invite friends to recover their lost shares and earn rewards.',
+                        style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.9)),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Container(
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 28.sp),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1);
   }
 }
 

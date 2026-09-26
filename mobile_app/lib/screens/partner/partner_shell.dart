@@ -29,6 +29,7 @@ class _PartnerShellState extends State<PartnerShell> {
     PartnerHomeScreen(onNavigate: _navigate),
     const PartnerLeadsScreen(),
     const PartnerClientsScreen(),
+    
     const PartnerTicketsScreen(),
     const PartnerProfileScreen(),
   ];

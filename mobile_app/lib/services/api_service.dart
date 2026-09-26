@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Hosted backend on Render (same backend as the website)
-  static const String baseUrl = 'https://myclaimportal.onrender.com/api';
+  // Hosted backend on Wealtharth
+  static const String baseUrl = 'https://api.wealtharth.com/api';
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -328,6 +328,33 @@ class ApiService {
     return [];
   }
 
+  /// GET /api/catalog — returns distinct mainCategories for the home screen
+  static Future<List<String>> getCategories() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/catalog'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>;
+        final seen = <String>{};
+        final cats = <String>[];
+        for (final item in list) {
+          final cat = item['mainCategory']?.toString();
+          if (cat != null && cat.isNotEmpty && seen.add(cat)) {
+            cats.add(cat);
+          }
+        }
+        if (cats.isNotEmpty) return cats;
+      }
+    } catch (e) {
+      debugPrint('getCategories error: $e');
+    }
+    // Fallback categories
+    return ['IEPF Claims', 'Share Transfer', 'KYC Update', 'Legal Heir', 'Dividend Recovery', 'Mutual Funds'];
+  }
+
   /// GET /api/activity
   static Future<List<dynamic>> getPartnerActivity() async {
     try {
@@ -343,4 +370,119 @@ class ApiService {
     }
     return [];
   }
+
+  static Future<Map<String, dynamic>> submitPartnerRequest({
+    required String fullName,
+    required String email,
+    required String phone,
+    required String profession,
+    String? regNo,
+    required String city,
+    required String state,
+    String? about,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/partner-requests'),
+        headers: headers,
+        body: jsonEncode({
+          'fullName': fullName,
+          'email': email,
+          'phone': phone,
+          'profession': profession,
+          'regNo': regNo ?? '',
+          'city': city,
+          'state': state,
+          'about': about ?? '',
+        }),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 201) {
+        return {'success': true, 'message': body['message']};
+      }
+      return {'success': false, 'message': body['message'] ?? 'Something went wrong'};
+    } catch (e) {
+      return {'success': false, 'message': 'Could not connect to server.'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> sendIepfOtp({
+    required String target,
+    required String type, // 'email' or 'mobile'
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/iepf-reports/send-otp'),
+        headers: headers,
+        body: jsonEncode({'target': target, 'type': type}),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200 && body['success'] == true) {
+        return {'success': true, 'message': body['message']};
+      }
+      return {'success': false, 'message': body['message'] ?? 'Failed to send OTP.'};
+    } catch (_) {
+      return {'success': false, 'message': 'Could not connect to server. Please try again.'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> verifyIepfOtp({
+    required String target,
+    required String otp,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/iepf-reports/verify-otp'),
+        headers: headers,
+        body: jsonEncode({'target': target, 'otp': otp}),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200 && body['success'] == true) {
+        return {'success': true, 'message': body['message']};
+      }
+      return {'success': false, 'message': body['message'] ?? 'Invalid OTP code.'};
+    } catch (_) {
+      return {'success': false, 'message': 'Could not connect to verification server.'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitIepfReportRequest({
+    required String fullName,
+    required String panNumber,
+    required String email,
+    required String mobile,
+    String? folioOrDpId,
+    String? companyName,
+    String? oldAddressProofName,
+    List<String>? shareDocsNames,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/iepf-reports'),
+        headers: headers,
+        body: jsonEncode({
+          'fullName': fullName,
+          'panNumber': panNumber,
+          'email': email,
+          'mobile': mobile,
+          'folioOrDpId': folioOrDpId ?? '',
+          'companyName': companyName ?? '',
+          'oldAddressProofName': oldAddressProofName ?? '',
+          'shareDocsNames': shareDocsNames ?? [],
+        }),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 201) {
+        return {'success': true, 'message': body['message']};
+      }
+      return {'success': false, 'message': body['message'] ?? 'Submission failed.'};
+    } catch (e) {
+      return {'success': false, 'message': 'Could not connect to server.'};
+    }
+  }
 }
+

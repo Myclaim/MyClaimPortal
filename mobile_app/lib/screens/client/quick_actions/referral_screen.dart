@@ -133,19 +133,23 @@ class _ReferralScreenState extends State<ReferralScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        _referralCode,
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                          letterSpacing: 2.0,
+                      Flexible(
+                        child: Text(
+                          _referralCode,
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primary,
+                            letterSpacing: 1.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      SizedBox(width: 16.w),
+                      SizedBox(width: 8.w),
                       IconButton(
                         onPressed: _copyCode,
-                        icon: Icon(Icons.copy_rounded, color: AppColors.primary),
+                        icon: const Icon(Icons.copy_rounded, color: AppColors.primary),
                         tooltip: 'Copy Code',
                       ),
                     ],

@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
+import 'client/quick_actions/become_partner_screen.dart';
+import 'client/quick_actions/free_iepf_report_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────
 // Guest Screen — Entry point for non-registered users
@@ -105,32 +107,26 @@ class _GuestScreenState extends State<GuestScreen>
                           eyebrow: 'Earn Without Limits',
                           title: 'Become a Partner',
                           subtitle: 'Join our associate network. Refer clients, earn commissions & grow your business effortlessly.',
-                          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Partner registration — coming soon!', style: GoogleFonts.inter(color: Colors.white)),
-                              backgroundColor: AppColors.secondary,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              margin: EdgeInsets.all(16.w),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const BecomePartnerScreen(),
                             ),
                           ),
                         ),
                         SizedBox(height: 16.h),
                         _GuestCard(
                           delay: 800,
-                          badgeColor: AppColors.blue,
-                          badgeColorLight: const Color(0xFFEFF6FF),
-                          icon: Icons.menu_book_rounded,
-                          eyebrow: 'Learn & Discover',
-                          title: 'Explore Resources',
-                          subtitle: 'Browse guides, claim tips, IEPF insights & insurance know-how — no account needed.',
-                          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Resources — coming soon!', style: GoogleFonts.inter(color: Colors.white)),
-                              backgroundColor: AppColors.blue,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              margin: EdgeInsets.all(16.w),
+                          badgeColor: const Color(0xFF10B981),
+                          badgeColorLight: const Color(0xFFDCFCE7),
+                          icon: Icons.manage_search_rounded,
+                          eyebrow: '100% Free · No Hidden Charges',
+                          title: 'Free IEPF Report',
+                          subtitle: 'Discover unclaimed shares, dividends & get a comprehensive IEPF recovery report.',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const FreeIepfReportScreen(),
                             ),
                           ),
                         ),
