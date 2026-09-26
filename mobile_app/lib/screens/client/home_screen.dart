@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import '../../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,17 +9,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../utils/constants.dart';
-import 'folder_documents_screen.dart';
 import 'quick_actions/new_claim_screen.dart';
 import 'quick_actions/support_screen.dart';
-import 'quick_actions/iepf_search_screen.dart';
-import 'quick_actions/family_tree_screen.dart';
 import 'quick_actions/referral_screen.dart';
 import 'quick_actions/upload_document_screen.dart';
-import 'quick_actions/become_partner_screen.dart';
-import 'quick_actions/free_iepf_report_screen.dart';
 import 'quick_actions/category_detail_screen.dart';
-import 'claims_screen.dart';
 import 'profile_screen.dart';
 import 'resource_detail_screen.dart';
 
@@ -31,12 +26,158 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _unreadCount = 0;
+  List<dynamic> _notifications = [];
+  Timer? _notifTimer;
+  Set<String> _seenNotifIds = {};
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().fetchDashboard();
+      _loadNotifications(isInitial: true);
     });
+    _notifTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) _loadNotifications(isInitial: false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _notifTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadNotifications({bool isInitial = false}) async {
+    try {
+      final res = await ApiService.getNotifications();
+      if (res != null && mounted) {
+        final notifs = (res['data'] ?? res['notifications']) as List<dynamic>? ?? [];
+        final unread = res['unreadCount'] as int? ?? notifs.where((n) => n['isRead'] == false).length;
+
+        if (!isInitial && notifs.isNotEmpty) {
+          final newItems = notifs.where((n) => n['isRead'] == false && !_seenNotifIds.contains(n['_id'])).toList();
+          if (newItems.isNotEmpty) {
+            final latest = newItems.first;
+            _showPushNotificationBanner(
+              latest['title']?.toString() ?? 'New Notification',
+              latest['message']?.toString() ?? '',
+            );
+          }
+        }
+
+        _seenNotifIds = notifs.map((n) => n['_id']?.toString() ?? '').toSet();
+
+        setState(() {
+          _notifications = notifs;
+          _unreadCount = unread;
+        });
+      }
+    } catch (e) {
+      debugPrint('[loadNotifications] Error: $e');
+    }
+  }
+
+  void _showPushNotificationBanner(String title, String message) {
+    HapticFeedback.heavyImpact();
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        elevation: 8,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 180.h,
+          left: 16.w,
+          right: 16.w,
+        ),
+        backgroundColor: Colors.transparent,
+        padding: EdgeInsets.zero,
+        duration: const Duration(seconds: 5),
+        content: GestureDetector(
+          onTap: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            _showNotificationsSheet(context);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.notifications_active_rounded, color: AppColors.primary, size: 20.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'MY CLAIM · NOW',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          Icon(Icons.touch_app_outlined, size: 12.sp, color: Colors.white54),
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          color: const Color(0xFFCBD5E1),
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -107,17 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeroHeader(BuildContext context, String firstName, DashboardProvider dash) {
-    final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
-    final greetIcon = hour < 12 ? '🌤️' : hour < 17 ? '☀️' : '🌙';
 
-    int total = dash.claims.length;
-    int active = 0, completed = 0;
-    for (var c in dash.claims) {
-      final s = (c['status']?.toString() ?? '').toLowerCase();
-      if (s == 'active' || s == 'allocated') active++;
-      if (s.contains('completed')) completed++;
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,16 +292,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () => _showNotificationsSheet(context),
                       ),
                     ),
-                    Positioned(
-                      top: -2, right: -2,
-                      child: Container(
-                        width: 16.w, height: 16.w,
-                        decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
-                        child: Center(
-                          child: Text('5', style: TextStyle(color: Colors.white, fontSize: 9.sp, fontWeight: FontWeight.bold)),
+                    if (_unreadCount > 0)
+                      Positioned(
+                        top: -3, right: -3,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                          constraints: BoxConstraints(minWidth: 16.w, minHeight: 16.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(color: context.backgroundColor, width: 1.5),
+                          ),
+                          child: Center(
+                            child: Text(
+                              _unreadCount > 9 ? '9+' : '$_unreadCount',
+                              style: TextStyle(color: Colors.white, fontSize: 9.sp, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 SizedBox(width: 8.w),
@@ -204,122 +344,232 @@ class _HomeScreenState extends State<HomeScreen> {
     ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.04);
   }
 
-  Widget _statChip(BuildContext context, String value, String label, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(value, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w800, color: color)),
-          SizedBox(width: 4.w),
-          Text(label, style: GoogleFonts.inter(fontSize: 11.sp, color: context.textSecondaryColor, fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
+  String _formatNotifTime(dynamic createdAt) {
+    if (createdAt == null) return '';
+    try {
+      final dt = DateTime.parse(createdAt.toString());
+      final diff = DateTime.now().difference(dt);
+      if (diff.inSeconds < 60) return 'Just now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      if (diff.inHours < 24) return '${diff.inHours}h ago';
+      if (diff.inDays < 7) return '${diff.inDays}d ago';
+      return '${dt.day}/${dt.month}/${dt.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Future<void> _markAllRead() async {
+    final success = await ApiService.markAllNotificationsRead();
+    if (success && mounted) {
+      setState(() {
+        _unreadCount = 0;
+        for (var n in _notifications) {
+          n['isRead'] = true;
+        }
+      });
+    }
   }
 
   void _showNotificationsSheet(BuildContext context) {
+    // Refresh notifications when sheet is opened
+    _loadNotifications(isInitial: true);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: context.surfaceColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (_, scrollController) => Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(color: context.borderColor, borderRadius: BorderRadius.circular(2.r)),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Notifications', style: GoogleFonts.inter(fontSize: 20.sp, fontWeight: FontWeight.bold, color: context.textColor)),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Mark all read', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
-                  ),
-                ],
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => DraggableScrollableSheet(
+          initialChildSize: 0.65,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          expand: false,
+          builder: (_, scrollController) => Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(color: context.borderColor, borderRadius: BorderRadius.circular(2.r)),
               ),
-            ),
-            Expanded(
-              child: FutureBuilder<Map<String, dynamic>?>(
-                future: ApiService.getNotifications(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.primary));
-                  }
-                  var notifications = snapshot.data?['data'] as List<dynamic>?;
-                  
-                  if (notifications == null || notifications.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20.r),
-                        child: Text(
-                          'No new notifications',
-                          style: GoogleFonts.inter(fontSize: 14.sp, color: context.textSecondaryColor),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    controller: scrollController,
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                    itemCount: notifications.length,
-                    separatorBuilder: (_, __) => Divider(color: context.borderColor, height: 16.h),
-                    itemBuilder: (context, index) {
-                      final notif = notifications![index];
-                      final isComment = notif['type'] == 'comment' || notif['title'].toString().contains('Comment');
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text('Notifications', style: GoogleFonts.inter(fontSize: 20.sp, fontWeight: FontWeight.w800, color: context.textColor)),
+                        if (_unreadCount > 0) ...[
+                          SizedBox(width: 8.w),
                           Container(
-                            padding: EdgeInsets.all(10.r),
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
+                              color: AppColors.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10.r),
                             ),
-                            child: Icon(
-                              isComment ? Icons.chat_bubble_outline_rounded : Icons.trending_up_rounded, 
-                              color: AppColors.primary, 
-                              size: 20.sp
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(notif['title']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: context.textColor)),
-                                SizedBox(height: 4.h),
-                                Text(notif['message']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 12.sp, color: context.textSecondaryColor, height: 1.4)),
-                                SizedBox(height: 6.h),
-                                Text(notif['date']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 10.sp, color: context.textSecondaryColor.withValues(alpha: 0.6))),
-                              ],
-                            ),
+                            child: Text('$_unreadCount new', style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w700, color: AppColors.primary)),
                           ),
                         ],
-                      );
-                    },
-                  );
-                },
+                      ],
+                    ),
+                    if (_unreadCount > 0)
+                      TextButton(
+                        onPressed: () async {
+                          await _markAllRead();
+                          setSheetState(() {});
+                        },
+                        child: Text('Mark all read', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13.sp)),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Divider(color: context.borderColor, height: 1),
+              Expanded(
+                child: _notifications.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24.r),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 56.w, height: 56.w,
+                                decoration: BoxDecoration(
+                                  color: context.surfaceColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: context.borderColor),
+                                ),
+                                child: Icon(Icons.notifications_none_rounded, color: context.textSecondaryColor, size: 28.sp),
+                              ),
+                              SizedBox(height: 12.h),
+                              Text('No notifications yet', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: context.textColor)),
+                              SizedBox(height: 4.h),
+                              Text(
+                                "Updates from Superadmin, Partner & claims will appear here.",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(fontSize: 12.sp, color: context.textSecondaryColor, height: 1.4),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: scrollController,
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        itemCount: _notifications.length,
+                        separatorBuilder: (_, __) => Divider(color: context.borderColor.withValues(alpha: 0.5), height: 16.h),
+                        itemBuilder: (context, index) {
+                          final notif = _notifications[index];
+                          final isRead = notif['isRead'] == true;
+                          final type = notif['type']?.toString().toLowerCase() ?? '';
+                          final title = notif['title']?.toString() ?? 'Notification';
+                          final message = notif['message']?.toString() ?? '';
+                          final timeStr = _formatNotifTime(notif['createdAt'] ?? notif['date']);
+
+                          IconData iconData = Icons.notifications_active_rounded;
+                          Color iconColor = AppColors.primary;
+
+                          if (type.contains('claim')) {
+                            iconData = Icons.assignment_turned_in_rounded;
+                            iconColor = const Color(0xFF10B981);
+                          } else if (type.contains('ticket')) {
+                            iconData = Icons.confirmation_number_rounded;
+                            iconColor = const Color(0xFF8B5CF6);
+                          } else if (type.contains('doc')) {
+                            iconData = Icons.description_rounded;
+                            iconColor = const Color(0xFF3B82F6);
+                          } else if (type.contains('partner')) {
+                            iconData = Icons.handshake_rounded;
+                            iconColor = const Color(0xFFF59E0B);
+                          }
+
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(12.r),
+                            onTap: () async {
+                              if (!isRead && notif['_id'] != null) {
+                                await ApiService.markNotificationRead(notif['_id'].toString());
+                                setState(() {
+                                  notif['isRead'] = true;
+                                  if (_unreadCount > 0) _unreadCount--;
+                                });
+                                setSheetState(() {});
+                              }
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 38.w, height: 38.w,
+                                    decoration: BoxDecoration(
+                                      color: iconColor.withValues(alpha: 0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(iconData, color: iconColor, size: 18.sp),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                title,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13.sp,
+                                                  fontWeight: isRead ? FontWeight.w600 : FontWeight.w800,
+                                                  color: context.textColor,
+                                                ),
+                                              ),
+                                            ),
+                                            if (timeStr.isNotEmpty) ...[
+                                              SizedBox(width: 6.w),
+                                              Text(
+                                                timeStr,
+                                                style: GoogleFonts.inter(fontSize: 10.sp, color: context.textSecondaryColor),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        SizedBox(height: 3.h),
+                                        Text(
+                                          message,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12.sp,
+                                            color: context.textSecondaryColor,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (!isRead) ...[
+                                    SizedBox(width: 8.w),
+                                    Container(
+                                      width: 8.w, height: 8.w,
+                                      margin: EdgeInsets.only(top: 6.h),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1247,31 +1497,6 @@ class _RecentActivitySection extends StatelessWidget {
   }
 
 
-  Widget _buildActivityItem(BuildContext context, String title, String subtitle, String time, IconData icon, {bool isSuccess = false}) {
-    return ListTile(
-      leading: Container(
-        padding: EdgeInsets.all(8.r),
-        decoration: BoxDecoration(
-          color: isSuccess ? AppColors.primary.withValues(alpha: 0.15) : AppColors.surface,
-          shape: BoxShape.circle,
-          border: Border.all(color: context.borderColor),
-        ),
-        child: Icon(icon, color: isSuccess ? AppColors.primary : context.textColor, size: 20.sp),
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: context.textColor),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: GoogleFonts.inter(fontSize: 11.sp, color: context.textSecondaryColor),
-      ),
-      trailing: Text(
-        time,
-        style: GoogleFonts.inter(fontSize: 10.sp, color: context.textSecondaryColor),
-      ),
-    );
-  }
 }
 
 class _HelpfulResourcesSection extends StatelessWidget {

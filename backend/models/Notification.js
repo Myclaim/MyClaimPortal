@@ -5,38 +5,67 @@ const notificationSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
-      index: true
+      required: false,
+      index: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+      index: true,
+    },
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client',
+      required: false,
+      index: true,
+    },
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    senderRole: {
+      type: String,
+      default: '',
     },
     type: {
       type: String,
       required: true,
-      // e.g., 'ticket_assigned', 'ticket_reassigned', 'comment_added', 'doc_rejected', 'doc_approved', 'task_completed'
     },
     title: {
       type: String,
-      required: true
+      required: true,
     },
     message: {
       type: String,
-      required: true
+      required: true,
     },
     link: {
       type: String,
-      // e.g., '?tab=tickets&id=123', '?tab=docs'
+      default: '',
     },
     isRead: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Ensure index on user + createdAt for fast queries
+notificationSchema.pre('save', function (next) {
+  if (!this.user && this.userId) {
+    this.user = this.userId;
+  } else if (!this.userId && this.user) {
+    this.userId = this.user;
+  }
+  next();
+});
+
 notificationSchema.index({ user: 1, createdAt: -1 });
+notificationSchema.index({ userId: 1, createdAt: -1 });
 
 const Notification = mongoose.model('Notification', notificationSchema);
 module.exports = Notification;

@@ -94,14 +94,34 @@ const createActivityAndNotify = async ({ action, user, ticket = null, proposal =
     }
 
     // 3. Resolve all recipients across hierarchy
-    const recipientIds = await resolveHierarchyRecipients(user);
+    const recipientIds = new Set(await resolveHierarchyRecipients(user));
+
+    // If an action targets a specific client (ticket, claim, proposal, etc.), notify that client
+    let targetClientId = null;
+    if (ticket) {
+      targetClientId = ticket.client?._id || ticket.client || ticket.clientId;
+    }
+    if (!targetClientId && claim) {
+      targetClientId = claim.userId || claim.client_id || claim.client?._id || claim.client;
+    }
+    if (!targetClientId && proposal) {
+      targetClientId = proposal.client_id || proposal.client?._id || proposal.client;
+    }
+
+    if (targetClientId) {
+      recipientIds.add(targetClientId.toString());
+    }
 
     const title = getTitleForType(type, action);
     const link = getLinkForType(type, ticket, proposal, claim);
 
-    const notifPromises = recipientIds.map(recId => {
+    const notifPromises = Array.from(recipientIds).map(recId => {
       return Notification.create({
         user: recId,
+        userId: recId,
+        clientId: targetClientId && recId.toString() === targetClientId.toString() ? recId : undefined,
+        sender: userId,
+        senderRole: user?.role || 'admin',
         type: type,
         title: title,
         message: action,

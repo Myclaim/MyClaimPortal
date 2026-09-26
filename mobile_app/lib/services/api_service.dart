@@ -106,9 +106,37 @@ class ApiService {
         return jsonDecode(response.body);
       }
     } catch (e) {
-      // ignore errors
+      debugPrint('[getNotifications] Error: $e');
     }
     return null;
+  }
+
+  static Future<bool> markAllNotificationsRead() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('$baseUrl/notifications/read-all'),
+        headers: headers,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('[markAllNotificationsRead] Error: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> markNotificationRead(String id) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('$baseUrl/notifications/$id/read'),
+        headers: headers,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('[markNotificationRead] Error: $e');
+      return false;
+    }
   }
 
   /// GET /api/users/client/profile
