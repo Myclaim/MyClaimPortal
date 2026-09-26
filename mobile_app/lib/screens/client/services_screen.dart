@@ -346,11 +346,11 @@ class _TicketDetailSheet extends StatelessWidget {
         Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(99.r)))),
         SizedBox(height: 20.h),
         Row(children: [
-          Text(ticket['icon'] as String, style: TextStyle(fontSize: 28.sp)),
+          Text(ticket['icon']?.toString() ?? '🎫', style: TextStyle(fontSize: 28.sp)),
           SizedBox(width: 14.w),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(ticket['service'] as String, style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w900, color: context.textColor)),
-            Text(ticket['id'] as String, style: TextStyle(fontSize: 12.sp, color: context.textSecondaryColor)),
+            Text(ticket['service']?.toString() ?? ticket['title']?.toString() ?? 'Service Request', style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w900, color: context.textColor)),
+            Text(ticket['id']?.toString() ?? ticket['ticketNo']?.toString() ?? '', style: TextStyle(fontSize: 12.sp, color: context.textSecondaryColor)),
           ])),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
