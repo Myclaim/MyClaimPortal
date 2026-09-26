@@ -1059,127 +1059,52 @@ class _ReferralBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // ── Become a Partner ──────────────────────────────────────────
-        GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BecomePartnerScreen())),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(20.r),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFF7C3AED), const Color(0xFF5B21B6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen())),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20.r),
+        decoration: BoxDecoration(
+          gradient: AppColors.greenGradient,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Refer & Earn ₹500',
+                    style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Invite friends to recover their lost shares and earn rewards.',
+                    style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.9)),
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF7C3AED).withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20.r),
-                        ),
-                        child: Text('★ PARTNER PROGRAM', style: GoogleFonts.inter(fontSize: 9.sp, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.6)),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Become a Partner',
-                        style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.w900, color: Colors.white),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Earn ₹25K+ monthly by helping investors reclaim their wealth.',
-                        style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.88)),
-                      ),
-                      SizedBox(height: 10.h),
-                      Row(
-                        children: [
-                          Text('Apply Now', style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.primary)),
-                          SizedBox(width: 4.w),
-                          Icon(Icons.arrow_forward_rounded, size: 14.sp, color: AppColors.primary),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Container(
-                  padding: EdgeInsets.all(14.r),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.handshake_rounded, color: Colors.white, size: 28.sp),
-                ),
-              ],
+            SizedBox(width: 16.w),
+            Container(
+              padding: EdgeInsets.all(12.r),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 28.sp),
             ),
-          ),
+          ],
         ),
-        SizedBox(height: 12.h),
-        // ── Refer & Earn ──────────────────────────────────────────────
-        GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen())),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(20.r),
-            decoration: BoxDecoration(
-              gradient: AppColors.greenGradient,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Refer & Earn ₹500',
-                        style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Invite friends to recover their lost shares and earn rewards.',
-                        style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.9)),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Container(
-                  padding: EdgeInsets.all(12.r),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 28.sp),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1);
   }
 }
