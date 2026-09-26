@@ -7,7 +7,8 @@ import '../../../services/api_service.dart';
 import '../../../utils/constants.dart';
 
 class NewClientScreen extends StatefulWidget {
-  const NewClientScreen({super.key});
+  final String? initialService;
+  const NewClientScreen({super.key, this.initialService});
 
   @override
   State<NewClientScreen> createState() => _NewClientScreenState();
@@ -27,6 +28,14 @@ class _NewClientScreenState extends State<NewClientScreen> {
 
   String? _service;
   String? _state;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialService != null && _services.contains(widget.initialService)) {
+      _service = widget.initialService;
+    }
+  }
 
   static const _services = [
     'IEPF Claim (Unclaimed Shares & Dividends)',

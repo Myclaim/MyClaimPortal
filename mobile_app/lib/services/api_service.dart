@@ -442,6 +442,25 @@ class ApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getServiceCategories() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/categories'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true && body['data'] is List) {
+          return List<Map<String, dynamic>>.from(body['data']);
+        }
+      }
+    } catch (e) {
+      debugPrint('[getServiceCategories] Error: $e');
+    }
+    return [];
+  }
+
   static Future<Map<String, dynamic>> sendIepfOtp({
     required String target,
     required String type, // 'email' or 'mobile'

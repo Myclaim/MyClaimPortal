@@ -39,6 +39,7 @@ app.use('/api/employees', require('./routes/employeeRoutes'));
 app.use('/api/partners', require('./routes/partnerRoutes'));
 app.use('/api/partner-requests', require('./routes/partnerRequestRoutes'));
 app.use('/api/client-requests', require('./routes/clientRequestRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/iepf-reports', require('./routes/iepfReportRoutes'));
 app.use('/api/finance', require('./routes/financeRoutes'));
 app.use('/api/department-services', require('./routes/departmentServiceRoutes'));

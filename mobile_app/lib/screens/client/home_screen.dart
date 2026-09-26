@@ -17,6 +17,7 @@ import 'quick_actions/referral_screen.dart';
 import 'quick_actions/upload_document_screen.dart';
 import 'quick_actions/become_partner_screen.dart';
 import 'quick_actions/free_iepf_report_screen.dart';
+import 'quick_actions/category_detail_screen.dart';
 import 'claims_screen.dart';
 import 'profile_screen.dart';
 import 'resource_detail_screen.dart';
@@ -514,39 +515,103 @@ class _PromoBannerCarouselState extends State<_PromoBannerCarousel> {
 
 // ─── Category Section ───────────────────────────────────────────────────────
 
-class _CategorySection extends StatelessWidget {
+class _CategorySection extends StatefulWidget {
   const _CategorySection();
 
-  static final _categories = [
+  @override
+  State<_CategorySection> createState() => _CategorySectionState();
+}
+
+class _CategorySectionState extends State<_CategorySection> {
+  List<Map<String, dynamic>> _categories = [
     {
+      'key': 'iepf-claims',
       'name': 'IEPF\nClaims',
+      'tag': 'Unclaimed Wealth',
       'icon': Icons.account_balance_rounded,
       'bg': const Color(0xFFEDFDF5),
       'bgDark': const Color(0xFF0D2118),
       'iconColor': AppColors.primary,
+      'serviceMapping': 'IEPF Claim (Unclaimed Shares & Dividends)',
+      'actionLabel': 'Free IEPF Search',
+      'stats': '₹1.18L Cr+ Unclaimed',
+      'estimatedTime': '60 - 90 Days',
     },
     {
+      'key': 'share-transfer',
       'name': 'Share\nTransfer',
+      'tag': 'Transmission & Gifting',
       'icon': Icons.swap_horiz_rounded,
       'bg': const Color(0xFFECFDF5),
       'bgDark': const Color(0xFF0D2016),
       'iconColor': AppColors.success,
+      'serviceMapping': 'Physical Shares Transmission / Transfer',
+      'actionLabel': 'Apply for Share Transfer',
+      'stats': '100% Legal Backing',
+      'estimatedTime': '30 - 45 Days',
     },
     {
+      'key': 'duplicate-certificate',
       'name': 'Duplicate\nCertificate',
+      'tag': 'Lost / Damaged Shares',
       'icon': Icons.file_copy_rounded,
       'bg': const Color(0xFFFFF7ED),
       'bgDark': const Color(0xFF1F1508),
       'iconColor': AppColors.warning,
+      'serviceMapping': 'Loss of Share Certificates (Duplicate)',
+      'actionLabel': 'Request Duplicate Certificate',
+      'stats': 'End-to-End RTA Liaison',
+      'estimatedTime': '45 - 60 Days',
     },
     {
+      'key': 'kyc-name-update',
       'name': 'KYC &\nName Update',
+      'tag': 'SEBI Compliance',
       'icon': Icons.manage_accounts_rounded,
       'bg': const Color(0xFFFDF2F8),
       'bgDark': const Color(0xFF1F0A14),
       'iconColor': AppColors.secondary,
+      'serviceMapping': 'Name / Signature / Address Mismatch',
+      'actionLabel': 'Start KYC Update',
+      'stats': 'Unfreeze Blocked Folios',
+      'estimatedTime': '15 - 30 Days',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFromBackend();
+  }
+
+  Future<void> _loadFromBackend() async {
+    final list = await ApiService.getServiceCategories();
+    if (list.isNotEmpty && mounted) {
+      setState(() {
+        final updated = <Map<String, dynamic>>[];
+        for (var defaultCat in _categories) {
+          final match = list.firstWhere(
+            (c) => c['key'] == defaultCat['key'],
+            orElse: () => <String, dynamic>{},
+          );
+          if (match.isNotEmpty) {
+            updated.add({
+              ...defaultCat,
+              ...match,
+              'icon': defaultCat['icon'],
+              'bg': defaultCat['bg'],
+              'bgDark': defaultCat['bgDark'],
+              'iconColor': defaultCat['iconColor'],
+              'name': defaultCat['name'],
+            });
+          } else {
+            updated.add(defaultCat);
+          }
+        }
+        _categories = updated;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -586,9 +651,12 @@ class _CategorySection extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        if (name.contains('IEPF')) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeIepfReportScreen()));
-        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CategoryDetailScreen(category: cat),
+          ),
+        );
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18.r),
