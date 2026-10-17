@@ -52,12 +52,12 @@ function CounterItem({ end, suffix = '+', label, duration = 1800, delay = 0 }) {
   return (
     <div 
       ref={ref} 
-      className="flex flex-col items-center justify-center p-2 group hover:-translate-y-1 transition-all duration-300"
+      className="flex flex-col items-center justify-center p-3 rounded-2xl group hover:-translate-y-1.5 hover:bg-white/5 transition-all duration-300 cursor-default"
     >
-      <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#85df95] font-sans tracking-tight leading-none mb-2 tabular-nums group-hover:text-emerald-200 transition-colors">
+      <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#85df95] font-sans tracking-tight leading-none mb-2 tabular-nums group-hover:text-emerald-200 group-hover:scale-105 transition-all duration-300 drop-shadow-sm">
         {count}{suffix}
       </span>
-      <span className="text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider leading-snug">
+      <span className="text-white/90 group-hover:text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider leading-snug transition-colors">
         {label}
       </span>
     </div>
@@ -75,8 +75,11 @@ export default function StatsBar() {
   ];
 
   return (
-    <section className="bg-[#2d6632] py-10 sm:py-12 px-4 sm:px-6 lg:px-8 border-y border-emerald-950/20 shadow-inner">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-8 items-center text-center">
+    <section className="relative bg-gradient-to-r from-[#25562a] via-[#2d6632] to-[#25562a] py-10 sm:py-12 px-4 sm:px-6 lg:px-8 border-y border-emerald-950/20 shadow-inner overflow-hidden">
+      {/* Subtle animated background light beam */}
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-100 via-transparent to-transparent pointer-events-none" />
+      
+      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 lg:gap-8 items-center text-center">
         {stats.map((stat, i) => (
           <CounterItem
             key={i}

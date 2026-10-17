@@ -75,15 +75,15 @@ export default function Hero() {
 
   return (
     <section id="hero" className="relative min-h-[92vh] flex flex-col justify-between bg-[#F8F9FB] pt-36 sm:pt-40 pb-8 overflow-hidden w-full">
-      
-      {/* Background glow ambiance */}
+
+      {/* Background glow ambiance with smooth breathing pulse */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-12 right-1/4 w-[550px] h-[550px] bg-emerald-100/40 rounded-full blur-[140px]" />
-        <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-amber-100/40 rounded-full blur-[140px]" />
+        <div className="absolute top-12 right-1/4 w-[550px] h-[550px] bg-emerald-200/35 rounded-full blur-[140px] animate-pulse-glow" />
+        <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-amber-100/40 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: '3s' }} />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-        
+
         {/* Left Column: Heading with Wealthy.in style rotating text, Description, Badges, and Reviews Card */}
         <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
 
@@ -93,13 +93,12 @@ export default function Hero() {
               Recover and Claim{' '}
               <span className="inline-block relative">
                 <span
-                  className={`inline-block text-[#2FBF71] font-sans font-extrabold ${
-                    fadeState === 'visible'
+                  className={`inline-block text-[#2FBF71] font-sans font-extrabold ${fadeState === 'visible'
                       ? 'transition-all duration-300 ease-out transform opacity-100 translate-y-0'
                       : fadeState === 'exiting'
-                      ? 'transition-all duration-300 ease-in transform opacity-0 -translate-y-3'
-                      : 'transition-none transform opacity-0 translate-y-3'
-                  }`}
+                        ? 'transition-all duration-300 ease-in transform opacity-0 -translate-y-3'
+                        : 'transition-none transform opacity-0 translate-y-3'
+                    }`}
                 >
                   {ROTATING_WORDS[wordIndex]}
                 </span>
@@ -111,16 +110,16 @@ export default function Hero() {
 
           {/* Subtitle */}
           <p className="text-[#556987] text-base sm:text-lg leading-relaxed max-w-xl font-normal">
-            MyClaim India brings India’s investors, families, and legal heirs onto one unified platform — regulatory IEPF tech, physical share dematerialization, and High-Court legal succession support.
+            MyClaim India brings India’s investors, families, and legal heirs onto one unified platform - regulatory IEPF tech, physical share dematerialization, and High-Court legal succession support.
           </p>
 
-          {/* Dual CTAs */}
+          {/* Dual CTAs with Shine & Elevation Animations */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1">
             <a
               href="tel:+918511000454"
-              className="inline-flex items-center justify-center gap-2.5 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-base rounded-full px-8 py-3.5 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 transition-all duration-300 transform hover:-translate-y-0.5"
+              className="btn-shine-effect inline-flex items-center justify-center gap-2.5 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-base rounded-full px-8 py-3.5 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-bounce" style={{ animationDuration: '2s' }}>
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
               Talk To Us
@@ -128,7 +127,7 @@ export default function Hero() {
 
             <a
               href="#claim-check"
-              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-[#1C1C1C] font-bold text-base rounded-full px-8 py-3.5 border border-slate-200 shadow-sm hover:shadow transition-all duration-300 transform hover:-translate-y-0.5"
+              className="btn-shine-effect inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-[#1C1C1C] font-bold text-base rounded-full px-8 py-3.5 border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2FBF71" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8" />
@@ -140,11 +139,11 @@ export default function Hero() {
 
           {/* Notebook Section: [ Reviews ] Card & Frequently Connect Badges */}
           <div className="pt-2 w-full max-w-xl">
-            <div className="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-              
+            <div className="card-hover-elevate bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+
               {/* Star Rating & Stat */}
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/15 text-[#C9A227] flex items-center justify-center text-xl font-black">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/15 text-[#C9A227] flex items-center justify-center text-xl font-black group-hover:scale-110 transition-transform">
                   ★
                 </div>
                 <div className="text-left">
@@ -164,7 +163,8 @@ export default function Hero() {
                   <div className="text-base font-extrabold text-[#2FBF71]">₹500+ Cr</div>
                   <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Total Recovered</div>
                 </div>
-                <div className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-[10px] font-bold text-[#2FBF71]">
+                <div className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-[10px] font-bold text-[#2FBF71] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71] animate-ping" />
                   MCA Certified
                 </div>
               </div>
@@ -173,15 +173,15 @@ export default function Hero() {
 
             {/* App / Frequent Connect Links */}
             <div className="flex items-center justify-center lg:justify-start gap-4 mt-3 text-xs text-slate-500 font-medium">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
                 <span className="w-2 h-2 rounded-full bg-[#2FBF71]" />
                 Zero Travel NRI Support
               </span>
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
                 <span className="w-2 h-2 rounded-full bg-[#2FBF71]" />
                 Success-Fee Only
               </span>
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
                 <span className="w-2 h-2 rounded-full bg-[#2FBF71]" />
                 PAN-India Service
               </span>
@@ -190,30 +190,31 @@ export default function Hero() {
 
         </div>
 
-        {/* Right Column: "mobile screen" container as sketched in the notebook! */}
+        {/* Right Column: "mobile screen" container with gentle floating animation */}
         <div className="lg:col-span-5 flex flex-col justify-center items-center gap-4">
-          
-          {/* Smartphone device frame */}
-          <div className="relative w-full max-w-[340px] sm:max-w-[370px] bg-[#111827] rounded-[44px] p-3.5 shadow-2xl shadow-slate-900/25 border-4 border-slate-700/80">
-            
+
+          {/* Smartphone device frame with slow float */}
+          <div className="animate-float-slow relative w-full max-w-[340px] sm:max-w-[370px] bg-[#111827] rounded-[44px] p-3.5 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500">
+
             {/* Top Dynamic Island / Speaker Pill */}
             <div className="absolute top-6 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-20 flex items-center justify-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-800" />
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
             </div>
 
             {/* Inner Phone Screen */}
             <div className="relative bg-white rounded-[34px] overflow-hidden border border-slate-200/90 flex flex-col justify-between min-h-[520px] pt-10 pb-6 px-5 sm:px-6">
-              
+
               {/* Phone Status Bar / App Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-6 h-6 rounded-lg bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-sm shadow-emerald-500/30">
                     M
                   </div>
                   <span className="text-xs font-bold text-slate-900">MyClaim Mobile</span>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-[#2FBF71] border border-emerald-200">
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#2FBF71] border border-emerald-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71] animate-pulse" />
                   Live Desk
                 </span>
               </div>
@@ -258,7 +259,7 @@ export default function Hero() {
 
                   {/* The exact 4 fields from the notebook: First name, Last name, Mobile no., Submit */}
                   <form onSubmit={handleFormSubmit} className="space-y-3.5">
-                    
+
                     {/* First Name */}
                     <div>
                       <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -316,7 +317,7 @@ export default function Hero() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full mt-2 py-3 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-sm rounded-xl shadow-md shadow-emerald-500/25 transition-all hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                      className="btn-shine-effect w-full mt-2 py-3 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-sm rounded-xl shadow-md shadow-emerald-500/25 transition-all hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 group"
                     >
                       {submitting ? (
                         <span>Submitting...</span>

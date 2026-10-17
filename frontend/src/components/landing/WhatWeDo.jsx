@@ -34,10 +34,10 @@ export default function WhatWeDo() {
         {/* Pain Strip */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {pains.map(p => (
-            <div key={p.num} className="flex gap-4 p-6 rounded-2xl bg-[#F8F9FB] border border-slate-200/90 hover:border-[#2FBF71]/50 hover:shadow-md transition-all duration-300">
-              <span className="text-4xl font-black text-[#2FBF71] font-mono shrink-0">{p.num}</span>
+            <div key={p.num} className="group flex gap-4 p-6 rounded-2xl bg-[#F8F9FB] border border-slate-200/90 hover:border-[#2FBF71]/60 hover:bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <span className="text-4xl font-black text-[#2FBF71] font-mono shrink-0 group-hover:scale-110 group-hover:text-emerald-500 transition-all duration-300">{p.num}</span>
               <div>
-                <h4 className="font-bold text-[#1C1C1C] mb-1">{p.title}</h4>
+                <h4 className="font-bold text-[#1C1C1C] mb-1 group-hover:text-[#2FBF71] transition-colors">{p.title}</h4>
                 <p className="text-sm text-slate-500 leading-relaxed">{p.desc}</p>
               </div>
             </div>
@@ -48,19 +48,19 @@ export default function WhatWeDo() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {services.map((s) => (
             <article key={s.title}
-              className={`group relative p-6 rounded-2xl border transition-all duration-400 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer bg-white
+              className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer bg-white
                 ${s.highlight
-                  ? 'border-emerald-300 ring-2 ring-emerald-500/20 shadow-md'
+                  ? 'border-emerald-300 ring-2 ring-emerald-500/20 shadow-md hover:border-emerald-400'
                   : 'border-slate-200/90 hover:border-[#2FBF71]/60 shadow-sm'}`}>
               
               {/* Top */}
               <div className="flex items-center justify-between mb-4">
-                <div className={`p-2.5 rounded-xl ${s.highlight ? 'bg-emerald-100 text-[#2FBF71]' : 'bg-slate-100 text-slate-700'} group-hover:bg-[#2FBF71] group-hover:text-white transition-colors`}>
+                <div className={`p-2.5 rounded-xl ${s.highlight ? 'bg-emerald-100 text-[#2FBF71]' : 'bg-slate-100 text-slate-700'} group-hover:bg-[#2FBF71] group-hover:text-white group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm`}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     {s.icon}
                   </svg>
                 </div>
-                <span className="text-[11px] font-bold text-[#C9A227] bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">{s.pill}</span>
+                <span className="text-[11px] font-bold text-[#C9A227] bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 group-hover:border-amber-300 transition-colors">{s.pill}</span>
               </div>
 
               <h3 className="font-bold text-[#1C1C1C] text-base mb-2 group-hover:text-[#2FBF71] transition-colors">{s.title}</h3>
@@ -68,13 +68,13 @@ export default function WhatWeDo() {
 
               {/* Chips */}
               <div className="flex flex-wrap gap-1.5 mb-5">
-                {s.chips.map(c => <span key={c} className="text-[11px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{c}</span>)}
+                {s.chips.map(c => <span key={c} className="text-[11px] text-slate-600 bg-slate-100 group-hover:bg-emerald-50/60 px-2 py-0.5 rounded-full transition-colors">{c}</span>)}
               </div>
 
               {/* Arrow CTA */}
-              <a href="#claim-check" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2FBF71] hover:text-[#26aa62] transition-colors group-hover:gap-2.5">
-                {s.cta}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+              <a href="#claim-check" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2FBF71] hover:text-[#26aa62] transition-colors">
+                <span>{s.cta}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform duration-300">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                 </svg>
               </a>
@@ -83,12 +83,12 @@ export default function WhatWeDo() {
         </div>
 
         {/* Bottom Banner */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-8 rounded-3xl bg-gradient-to-r from-emerald-50 to-amber-50 border border-emerald-200/80 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-8 rounded-3xl bg-gradient-to-r from-emerald-50 via-white to-amber-50 border border-emerald-200/80 shadow-sm hover:shadow-md transition-shadow">
           <div>
             <strong className="text-[#1C1C1C] font-bold text-base sm:text-lg">Need assistance with PF, Mutual Funds, or Unknown Bank Accounts?</strong>
             <p className="text-slate-600 text-sm mt-1">We also handle 24+ specialized corporate and hereditary claim cases.</p>
           </div>
-          <a href="#services" className="shrink-0 px-8 py-3.5 rounded-full bg-[#2FBF71] text-white font-bold text-sm shadow-md shadow-emerald-500/20 hover:bg-[#26aa62] transition-all duration-300">
+          <a href="#services" className="btn-shine-effect shrink-0 px-8 py-3.5 rounded-full bg-[#2FBF71] text-white font-bold text-sm shadow-md shadow-emerald-500/20 hover:bg-[#26aa62] hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
             View All 24+ Services ↓
           </a>
         </div>

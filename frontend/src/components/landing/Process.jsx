@@ -96,18 +96,18 @@ export default function Process() {
           {/* Row 1: Steps 1-4 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {steps.slice(0, 4).map((step, i) => (
-              <div key={step.n} className="relative bg-white border border-slate-200/90 rounded-3xl p-6 flex flex-col items-center text-center gap-4 hover:shadow-lg hover:border-[#2FBF71]/50 transition-all duration-300 group">
+              <div key={step.n} className="relative bg-white border border-slate-200/90 rounded-3xl p-6 flex flex-col items-center text-center gap-4 hover:shadow-xl hover:border-[#2FBF71]/60 hover:-translate-y-2 transition-all duration-300 group cursor-default">
                 {i < 3 && (
-                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-[#2FBF71] rounded-full items-center justify-center shadow-md">
+                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-[#2FBF71] rounded-full items-center justify-center shadow-md animate-arrow-bounce">
                     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-3 h-3"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 )}
-                <div className="w-8 h-8 rounded-full bg-[#2FBF71] text-white text-sm font-black flex items-center justify-center shadow-md shadow-[#2FBF71]/20">
+                <div className="w-8 h-8 rounded-full bg-[#2FBF71] text-white text-sm font-black flex items-center justify-center shadow-md shadow-[#2FBF71]/30 group-hover:scale-110 transition-transform">
                   {step.n}
                 </div>
-                <img src={step.img} alt={step.title} className="h-16 w-auto object-contain group-hover:scale-105 transition-all duration-300"/>
+                <img src={step.img} alt={step.title} className="h-16 w-auto object-contain group-hover:scale-115 group-hover:-translate-y-1.5 transition-all duration-300 drop-shadow-sm"/>
                 <div>
-                  <h3 className="font-bold text-[#1C1C1C] mb-1">{step.title}</h3>
+                  <h3 className="font-bold text-[#1C1C1C] mb-1 group-hover:text-[#2FBF71] transition-colors">{step.title}</h3>
                   <p className="text-xs text-slate-500 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
@@ -117,18 +117,18 @@ export default function Process() {
           {/* Row 2: Steps 5-8 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {steps.slice(4).map((step, i) => (
-              <div key={step.n} className="relative bg-white border border-slate-200/90 rounded-3xl p-6 flex flex-col items-center text-center gap-4 hover:shadow-lg hover:border-[#C9A227]/50 transition-all duration-300 group">
+              <div key={step.n} className="relative bg-white border border-slate-200/90 rounded-3xl p-6 flex flex-col items-center text-center gap-4 hover:shadow-xl hover:border-[#C9A227]/60 hover:-translate-y-2 transition-all duration-300 group cursor-default">
                 {i < 3 && (
-                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-[#C9A227] rounded-full items-center justify-center shadow-md">
+                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-[#C9A227] rounded-full items-center justify-center shadow-md animate-arrow-bounce">
                     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-3 h-3"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 )}
-                <div className="w-8 h-8 rounded-full bg-[#C9A227] text-white text-sm font-black flex items-center justify-center shadow-md shadow-[#C9A227]/20">
+                <div className="w-8 h-8 rounded-full bg-[#C9A227] text-white text-sm font-black flex items-center justify-center shadow-md shadow-[#C9A227]/30 group-hover:scale-110 transition-transform">
                   {step.n}
                 </div>
-                <img src={step.img} alt={step.title} className="h-16 w-auto object-contain group-hover:scale-105 transition-all duration-300"/>
+                <img src={step.img} alt={step.title} className="h-16 w-auto object-contain group-hover:scale-115 group-hover:-translate-y-1.5 transition-all duration-300 drop-shadow-sm"/>
                 <div>
-                  <h3 className="font-bold text-[#1C1C1C] mb-1">{step.title}</h3>
+                  <h3 className="font-bold text-[#1C1C1C] mb-1 group-hover:text-[#C9A227] transition-colors">{step.title}</h3>
                   <p className="text-xs text-slate-500 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
@@ -158,14 +158,14 @@ export default function Process() {
             {collabPartners.map((p) => (
               <div 
                 key={p.title} 
-                className="group relative flex flex-col justify-between p-7 rounded-3xl bg-[#F8F9FB] border border-slate-200/90 hover:border-[#2FBF71]/60 hover:bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5"
+                className="group relative flex flex-col justify-between p-7 rounded-3xl bg-[#F8F9FB] border border-slate-200/90 hover:border-[#2FBF71]/60 hover:bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <div className="p-3.5 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-3.5 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                       {p.icon}
                     </div>
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${p.highlight}`}>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${p.highlight} group-hover:shadow-sm transition-shadow`}>
                       {p.badge}
                     </span>
                   </div>
@@ -183,7 +183,7 @@ export default function Process() {
 
                 <div className="pt-6 mt-6 border-t border-slate-200/70 flex items-center justify-between text-xs font-bold text-[#2FBF71]">
                   <span>Explore Workflow</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
                 </div>
               </div>
             ))}

@@ -95,15 +95,15 @@ export default function Testimonials() {
         </div>
 
         {/* Testimonial Card */}
-        <div className="relative p-8 sm:p-12 rounded-3xl bg-white border border-slate-200/90 shadow-xl">
-          <div className="absolute top-6 left-8 text-8xl text-emerald-100 font-serif leading-none select-none pointer-events-none">
+        <div className="card-hover-elevate relative p-8 sm:p-12 rounded-3xl bg-white border border-slate-200/90 shadow-xl overflow-hidden">
+          <div className="animate-float-soft absolute top-6 left-8 text-8xl text-emerald-100/80 font-serif leading-none select-none pointer-events-none">
             “
           </div>
           
-          <div className="relative z-10">
+          <div key={`${tab}-${idx}`} className="animate-fade-in-scale relative z-10">
             <div className="flex items-center justify-between mb-6">
               <div className="flex gap-1 text-[#C9A227] text-xl">
-                {[...Array(5)].map((_, i) => <span key={i}>★</span>)}
+                {[...Array(5)].map((_, i) => <span key={i} className="hover:scale-125 transition-transform cursor-default">★</span>)}
               </div>
               <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${
                 tab === 'clients' 
@@ -115,12 +115,12 @@ export default function Testimonials() {
             </div>
             
             <p className="text-slate-700 text-base sm:text-xl leading-relaxed mb-8 italic font-normal min-h-[90px]">
-              {activeList[idx].text}
+              "{activeList[idx].text}"
             </p>
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-100">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ${
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md transition-transform hover:scale-105 ${
                   tab === 'clients'
                     ? 'bg-gradient-to-br from-[#2FBF71] to-[#1e8a4f]'
                     : 'bg-gradient-to-br from-[#C9A227] to-[#8a6e19]'
@@ -134,7 +134,7 @@ export default function Testimonials() {
               </div>
 
               <div className="sm:text-right">
-                <span className="inline-block text-xs font-semibold text-[#2FBF71] bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                <span className="inline-block text-xs font-semibold text-[#2FBF71] bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100 hover:bg-emerald-100/60 transition-colors">
                   {activeList[idx].service}
                 </span>
               </div>
@@ -147,7 +147,7 @@ export default function Testimonials() {
           <button 
             onClick={() => setIdx((idx - 1 + activeList.length) % activeList.length)}
             aria-label="Previous testimonial"
-            className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:border-[#2FBF71] hover:text-[#2FBF71] transition-all"
+            className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:border-[#2FBF71] hover:text-[#2FBF71] hover:scale-110 active:scale-95 transition-all duration-200"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
@@ -157,8 +157,8 @@ export default function Testimonials() {
                 key={i} 
                 onClick={() => setIdx(i)}
                 aria-label={`Go to testimonial ${i + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === idx ? (tab === 'clients' ? 'w-8 bg-[#2FBF71]' : 'w-8 bg-[#C9A227]') : 'w-2 bg-slate-300'
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  i === idx ? (tab === 'clients' ? 'w-8 bg-[#2FBF71] shadow-sm shadow-emerald-500/40' : 'w-8 bg-[#C9A227] shadow-sm shadow-amber-500/40') : 'w-2.5 bg-slate-300 hover:bg-slate-400'
                 }`}
               />
             ))}
@@ -166,7 +166,7 @@ export default function Testimonials() {
           <button 
             onClick={() => setIdx((idx + 1) % activeList.length)}
             aria-label="Next testimonial"
-            className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:border-[#2FBF71] hover:text-[#2FBF71] transition-all"
+            className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:border-[#2FBF71] hover:text-[#2FBF71] hover:scale-110 active:scale-95 transition-all duration-200"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5"><polyline points="9 18 15 12 9 6"/></svg>
           </button>

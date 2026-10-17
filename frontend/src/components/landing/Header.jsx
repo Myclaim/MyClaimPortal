@@ -74,13 +74,13 @@ export default function Header({ onOpenLogin }) {
               <>
                 <button
                   onClick={() => navigate('/login')}
-                  className="text-sm font-semibold text-slate-700 hover:text-[#2FBF71] px-4 py-2 transition-colors cursor-pointer"
+                  className="btn-shine-effect text-sm font-semibold text-slate-700 hover:text-[#2FBF71] hover:bg-slate-50 rounded-full px-4 py-2 transition-all cursor-pointer"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="bg-[#2FBF71] hover:bg-[#26aa62] text-white text-sm font-bold rounded-full px-6 py-2 shadow-sm shadow-emerald-500/20 hover:shadow transition-all hover:-translate-y-0.5 cursor-pointer"
+                  className="btn-shine-effect bg-[#2FBF71] hover:bg-[#26aa62] text-white text-sm font-bold rounded-full px-6 py-2 shadow-sm shadow-emerald-500/20 hover:shadow-md transition-all hover:-translate-y-0.5 active:scale-95 cursor-pointer"
                 >
                   Sign Up
                 </button>
