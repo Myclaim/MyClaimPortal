@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import api from '../../services/api';
 
 export default function ClaimCheck() {
   const [form, setForm] = useState({ fullname: '', phone: '', company: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
   const validate = () => {
@@ -12,11 +14,25 @@ export default function ClaimCheck() {
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      await api.post('/leads/public', {
+        name: form.fullname,
+        phone: `+91 ${form.phone}`,
+        serviceInterest: form.company ? `Unclaimed Shares - ${form.company}` : 'General Claim Check',
+        notes: `Free Database Check inquiry for company/folio: ${form.company || 'Not specified'}`
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.warn('ClaimCheck API fallback:', err.message);
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -47,6 +47,7 @@ export default function Hero() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    countryCode: '+91',
     mobile: ''
   });
   const [submitted, setSubmitted] = useState(false);
@@ -65,8 +66,8 @@ export default function Hero() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.mobile || formData.mobile.length < 10) {
-      alert('Please enter your First Name and a valid 10-digit mobile number.');
+    if (!formData.firstName || !formData.mobile || formData.mobile.length < 8) {
+      alert('Please enter your First Name and a valid mobile number.');
       return;
     }
     setSubmitting(true);
@@ -75,7 +76,9 @@ export default function Hero() {
       await api.post('/leads/public', {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        countryCode: formData.countryCode || '+91',
         mobile: formData.mobile,
+        phone: `${formData.countryCode || '+91'} ${formData.mobile}`.trim(),
         serviceInterest: 'IEPF Claim & Verification',
         notes: `Captured from Landing Page Mobile Frame by visitor ${formData.firstName} ${formData.lastName}`
       });
@@ -312,19 +315,28 @@ export default function Hero() {
                       <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Mobile No.
                       </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">
-                          +91
-                        </span>
+                      <div className="flex gap-2">
+                        <select
+                          name="countryCode"
+                          value={formData.countryCode || '+91'}
+                          onChange={handleInputChange}
+                          className="bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#2FBF71]"
+                        >
+                          <option value="+91">🇮🇳 +91</option>
+                          <option value="+1">🇺🇸 +1</option>
+                          <option value="+44">🇬🇧 +44</option>
+                          <option value="+971">🇦🇪 +971</option>
+                          <option value="+65">🇸🇬 +65</option>
+                          <option value="+61">🇦🇺 +61</option>
+                        </select>
                         <input
                           type="tel"
                           name="mobile"
                           required
-                          maxLength={10}
                           value={formData.mobile}
                           onChange={handleInputChange}
-                          placeholder="10-digit number"
-                          className="w-full pl-11 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2FBF71] focus:bg-white transition-all"
+                          placeholder="Contact number"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2FBF71] focus:bg-white transition-all flex-1"
                         />
                       </div>
                     </div>
