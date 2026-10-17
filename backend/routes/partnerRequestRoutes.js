@@ -8,10 +8,31 @@ const User = require('../models/User');
 // POST /api/partner-requests  — submit a "Become a Partner" request (guest or authenticated)
 router.post('/', async (req, res) => {
   try {
-    const { fullName, email, phone, profession, regNo, city, state, about } = req.body;
+    const {
+      name,
+      fullName,
+      email,
+      phone,
+      contact,
+      countryCode = '+91',
+      profession,
+      regNo,
+      city,
+      state,
+      address,
+      pinCode,
+      country,
+      referredBy,
+      about,
+    } = req.body;
 
-    if (!fullName || !email || !phone || !profession || !city || !state) {
-      return res.status(400).json({ message: 'Please fill all required fields.' });
+    const finalName = (fullName || name || '').trim();
+    const rawPhone = (phone || contact || '').trim();
+    const finalPhone = rawPhone.startsWith('+') ? rawPhone : `${countryCode} ${rawPhone}`.trim();
+    const finalEmail = (email || '').trim().toLowerCase();
+
+    if (!finalName || !rawPhone) {
+      return res.status(400).json({ success: false, message: 'Please provide at least your Name and Contact number.' });
     }
 
     // Optional user ID if authenticated
@@ -30,29 +51,48 @@ router.post('/', async (req, res) => {
     // Save request in database
     const partnerRequest = await PartnerRequest.create({
       userId,
-      fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      profession,
+      fullName: finalName,
+      email: finalEmail || `${rawPhone}@partner.lead`,
+      phone: finalPhone,
+      profession: (profession || 'Associate Partner').trim(),
       regNo: (regNo || '').trim(),
-      city: city.trim(),
-      state: state.trim(),
+      city: (city || 'Not specified').trim(),
+      state: (state || 'Not specified').trim(),
+      address: (address || '').trim(),
+      pinCode: (pinCode || '').trim(),
+      country: (country || 'India').trim(),
+      referredBy: (referredBy || '').trim(),
       about: (about || '').trim(),
       status: 'pending',
     });
 
     // Notify superadmins/admins
-    const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } });
+    const admins = await User.find({ role: { $in: ['admin', 'superadmin', 'super_admin'] } });
     const notificationPromises = admins.map((adm) =>
       Notification.create({
         userId: adm._id,
         title: '🤝 New Partner Request',
-        message: `${fullName} (${profession}) from ${city}, ${state} wants to join as a partner.\nEmail: ${email} | Phone: ${phone}${regNo ? ` | Reg: ${regNo}` : ''}`,
+        message: `${finalName} (${profession || 'Associate'}) wants to join as a partner.\nPhone: ${finalPhone} | Email: ${finalEmail || 'N/A'}${city ? ` | City: ${city}` : ''}`,
         type: 'partner_request',
         isRead: false,
       })
     );
     await Promise.allSettled(notificationPromises);
+
+    // Real-time Socket.io emission
+    if (global.io) {
+      global.io.emit('partner_request_created', partnerRequest);
+      global.io.emit('activity_created', {
+        type: 'partner_request',
+        action: 'New partner application received',
+        data: partnerRequest,
+      });
+      global.io.emit('notification_created', {
+        title: '🤝 New Partner Request',
+        message: `${finalName} submitted an associate partner application.`,
+        data: partnerRequest,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -61,7 +101,7 @@ router.post('/', async (req, res) => {
     });
   } catch (err) {
     console.error('[PartnerRequest]', err);
-    res.status(500).json({ message: 'Failed to submit request. Please try again.' });
+    res.status(500).json({ success: false, message: 'Failed to submit request. Please try again.' });
   }
 });
 

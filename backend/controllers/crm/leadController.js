@@ -179,4 +179,82 @@ const updateLead = async (req, res) => {
   }
 };
 
-module.exports = { getLeads, createLead, updateLeadStatus, updateLead };
+const createPublicLead = async (req, res) => {
+  try {
+    const { firstName, lastName, name, mobile, phone, serviceInterest, notes, city, email } = req.body;
+    const finalPhone = (mobile || phone || '').trim();
+    const finalFirst = (firstName || '').trim();
+    const finalLast = (lastName || '').trim();
+    const finalName = (name || `${finalFirst} ${finalLast}`).trim() || 'Website Visitor';
+
+    if (!finalPhone) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid mobile number.' });
+    }
+
+    // Attempt to link to default admin
+    let sourceUserId = null;
+    try {
+      const defaultAdmin = await User.findOne({ role: { $in: ['super_admin', 'superadmin', 'admin'] } }).select('_id');
+      if (defaultAdmin) sourceUserId = defaultAdmin._id;
+    } catch (_) {}
+
+    const lead = await Lead.create({
+      name: finalName,
+      firstName: finalFirst,
+      lastName: finalLast,
+      phone: finalPhone.startsWith('+') ? finalPhone : `+91 ${finalPhone}`,
+      email: email || '',
+      city: city || '',
+      serviceInterest: serviceInterest || 'Claim Recovery / IEPF Check',
+      notes: notes || 'Lead captured from Landing Page Phone Claim Check Form',
+      status: 'new',
+      sourceUserId
+    });
+
+    bustLeadsCache();
+
+    // Create Notification for Admins
+    try {
+      const admins = await User.find({ role: { $in: ['admin', 'superadmin', 'super_admin'] } });
+      const notifs = admins.map(adm => ({
+        userId: adm._id,
+        title: '📱 New Claim Check Lead',
+        message: `${finalName} (${finalPhone}) submitted a claim verification inquiry from the landing page.`,
+        type: 'lead',
+        isRead: false
+      }));
+      if (notifs.length > 0) {
+        const Notification = require('../../models/Notification');
+        await Notification.insertMany(notifs);
+      }
+    } catch (notifErr) {
+      console.warn('[Public Lead Notif Error]:', notifErr.message);
+    }
+
+    // Real-time Socket.io emission
+    if (global.io) {
+      global.io.emit('lead_created', lead);
+      global.io.emit('activity_created', {
+        type: 'lead',
+        action: `New website lead: ${finalName}`,
+        lead
+      });
+      global.io.emit('notification_created', {
+        title: '📱 New Claim Check Lead',
+        message: `${finalName} submitted a claim verification inquiry.`,
+        data: lead
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Claim inquiry received. Our specialist will contact you shortly.',
+      data: lead
+    });
+  } catch (error) {
+    console.error('[Public Lead Error]:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getLeads, createLead, updateLeadStatus, updateLead, createPublicLead };

@@ -25,7 +25,8 @@ const partnerRequestSchema = new mongoose.Schema(
     },
     profession: {
       type: String,
-      required: true,
+      default: 'Associate Partner',
+      trim: true,
     },
     regNo: {
       type: String,
@@ -34,12 +35,32 @@ const partnerRequestSchema = new mongoose.Schema(
     },
     city: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     state: {
       type: String,
-      required: true,
+      default: '',
+      trim: true,
+    },
+    address: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    pinCode: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    country: {
+      type: String,
+      default: 'India',
+      trim: true,
+    },
+    referredBy: {
+      type: String,
+      default: '',
       trim: true,
     },
     about: {

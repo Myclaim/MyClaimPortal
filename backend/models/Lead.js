@@ -7,8 +7,8 @@ const leadSchema = mongoose.Schema({
   lastName: { type: String },
   phone: { type: String, required: true },
   email: { type: String },
-  serviceInterest: { type: String, required: true },
-  sourceUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  serviceInterest: { type: String, default: 'Claim Recovery' },
+  sourceUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   
   // Personal Info
   dob: { type: String },

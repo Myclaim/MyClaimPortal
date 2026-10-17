@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import FloatingActions from "./FloatingActions";
+import api from "../../services/api";
 
 function useReveal() {
   const ref = useRef(null);
@@ -156,17 +157,37 @@ export default function BecomeAssociatePage({ onOpenLogin }) {
   const [partnerSubmitted, setPartnerSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const handlePartnerSubmit = (e) => {
+  const handlePartnerSubmit = async (e) => {
     e.preventDefault();
     if (!partnerData.name || !partnerData.contact) {
       alert('Please fill out Name and Contact number.');
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      await api.post('/partner-requests', {
+        name: partnerData.name,
+        fullName: partnerData.name,
+        email: partnerData.email,
+        countryCode: partnerData.countryCode || '+91',
+        contact: partnerData.contact,
+        phone: `${partnerData.countryCode || '+91'} ${partnerData.contact}`.trim(),
+        city: partnerData.city,
+        address: partnerData.address,
+        pinCode: partnerData.pinCode,
+        country: partnerData.country,
+        state: partnerData.state,
+        profession: partnerData.profession || 'Associate Partner',
+        referredBy: partnerData.referredBy,
+        about: `Associate Desk Application. Profession: ${partnerData.profession || 'N/A'}, Address: ${partnerData.address || 'N/A'}, City: ${partnerData.city || 'N/A'}, State: ${partnerData.state || 'N/A'}, Referred By: ${partnerData.referredBy || 'N/A'}`
+      });
       setPartnerSubmitted(true);
-    }, 600);
+    } catch (err) {
+      console.warn('Partner request API fallback:', err.message);
+      setPartnerSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
