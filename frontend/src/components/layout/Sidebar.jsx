@@ -62,7 +62,7 @@ const ITEMS = [
     id: 'home',
     section: 'dashboard',
     label: 'Home',
-    path: '/',
+    path: '/home',
     icon: Home,
   },
   {

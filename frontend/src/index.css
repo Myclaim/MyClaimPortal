@@ -1,4 +1,5 @@
 @import './styles/FormAnimations.css';
+@import './styles/LandingPage.css';
 
 @tailwind base;
 @tailwind components;
@@ -131,8 +132,12 @@
     color: var(--text);
   }
 
-  /* CRITICAL: FIX REACT ROOT LAYOUT SHRINKING */
   #root {
+    width: 100%;
+    min-height: 100%;
+  }
+
+  .portal-layout {
     display: flex;
     width: 100%;
     height: 100vh;
@@ -140,7 +145,7 @@
   }
 
   @media (max-width: 1024px) {
-    #root {
+    .portal-layout {
       flex-direction: column;
     }
   }

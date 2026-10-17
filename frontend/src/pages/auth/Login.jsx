@@ -16,8 +16,12 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await login(identifier, password);
-      navigate('/');
+      const data = await login(identifier, password);
+      if (data?.role === 'client') {
+        navigate('/client');
+      } else {
+        navigate('/home');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
     } finally {
@@ -149,7 +153,28 @@ const Login = () => {
           padding: '48px', 
           borderRadius: '32px' 
         }}>
-          <div style={{ marginBottom: '32px' }}>
+          <div style={{ marginBottom: '28px' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginBottom: '14px',
+                padding: 0
+              }}
+              onMouseEnter={(e) => e.target.style.color = '#22c55e'}
+              onMouseLeave={(e) => e.target.style.color = 'var(--text-muted)'}
+            >
+              ← Back to MyClaim Website
+            </button>
             <h2 style={{ fontSize: '28px', fontWeight: 850, color: 'var(--text)', marginBottom: '8px' }}>Command Center</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Please authenticate with your secure credentials.</p>
           </div>

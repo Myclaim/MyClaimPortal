@@ -85,7 +85,7 @@ const Layout = () => {
   }, [socket, user]);
 
   return (
-    <>
+    <div className="portal-layout">
       {/* Mobile sidebar overlay */}
       <div
         className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
@@ -113,7 +113,7 @@ const Layout = () => {
       </main>
       <CommandPalette />
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-    </>
+    </div>
   );
 };
 

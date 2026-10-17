@@ -45,24 +45,38 @@ import AdminTicketManagement from './pages/admin/AdminTicketManagement';
 import AdminDocumentVerification from './pages/admin/AdminDocumentVerification';
 import AdminReports from './pages/admin/AdminReports';
 
+import LandingPage from './pages/landing/LandingPage';
+import WhoWeArePage from './components/landing/WhoWeArePage';
+import BecomeAssociatePage from './components/landing/BecomeAssociatePage';
+import ChatBot from './components/landing/ChatBot';
+import LoginModal from './components/landing/LoginModal';
+
 function App() {
+  const [loginOpen, setLoginOpen] = React.useState(false);
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider>
         <AuthProvider>
         <Routes>
+          {/* ── Public Landing Pages (Updated UI) ────────── */}
+          <Route path="/" element={<LandingPage onOpenLogin={() => setLoginOpen(true)} />} />
+          <Route path="/who-we-are" element={<WhoWeArePage onOpenLogin={() => setLoginOpen(true)} />} />
+          <Route path="/become-associate" element={<BecomeAssociatePage onOpenLogin={() => setLoginOpen(true)} />} />
+
+          {/* ── Authentication ────────────────────────────── */}
           <Route path="/login" element={<Login />} />
           
-          <Route path="/" element={
+          {/* ── Protected Portal App ──────────────────────── */}
+          <Route element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }>
 
-            <Route index element={<Dashboard />} />
-            <Route path="client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
             <Route path="home" element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
             <Route path="claims" element={<Claims />} />
             <Route path="claims/:id" element={<ClaimDetail />} />
 
@@ -126,6 +140,8 @@ function App() {
 
           </Route>
         </Routes>
+        <ChatBot />
+        <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
       </AuthProvider>
     </ThemeProvider>
   </Router>

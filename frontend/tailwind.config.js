@@ -12,6 +12,7 @@ export default {
         inter: ['Inter', 'sans-serif'],
         poppins: ['Poppins', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
+        serif: ['Fraunces', 'serif'],
       },
       colors: {
         dark: {
