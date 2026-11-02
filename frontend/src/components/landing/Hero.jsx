@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { 
   User, 
   Bell, 
-  Search, 
   ChevronRight, 
   FileText, 
   UploadCloud, 
@@ -227,8 +226,8 @@ export default function Hero() {
         {/* Right Column: "mobile screen" container with gentle floating animation */}
         <div className="lg:col-span-5 flex flex-col justify-center items-center gap-4">
 
-          {/* Smartphone device frame with slow float - updated mobile dashboard */}
-          <div className="animate-float-slow relative w-full max-w-[325px] sm:max-w-[345px] h-[640px] sm:h-[660px] bg-[#111827] rounded-[48px] p-3 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500 flex flex-col">
+          {/* Smartphone device frame with slow float - updated clean mobile dashboard */}
+          <div className="animate-float-slow relative w-full max-w-[325px] sm:max-w-[345px] h-[525px] sm:h-[545px] bg-[#111827] rounded-[48px] p-3 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500 flex flex-col">
 
             {/* Top Dynamic Island / Speaker Pill */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-30 flex items-center justify-center gap-1.5">
@@ -239,11 +238,11 @@ export default function Hero() {
             {/* Inner Phone Screen with app layout */}
             <div className="relative bg-[#F8FAF9] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6">
 
-              {/* Scrollable App Body (hidden scrollbar) */}
-              <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-3 pt-1.5 pb-2 space-y-2.5 text-left">
+              {/* App Body - Clean & Spacious without inner scroll */}
+              <div className="flex-1 px-3 pt-1.5 pb-2 flex flex-col justify-between text-left">
 
                 {/* Profile Header Row (Hello, MyClaim India > + Bell) */}
-                <div className="flex items-center justify-between pb-1 px-0.5">
+                <div className="flex items-center justify-between pb-0.5 px-0.5 shrink-0">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-xs">
                       {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : 'M'}
@@ -262,21 +261,8 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Card 1: "Track Your Claim" Card containing the Existing Form */}
-                <div className="bg-[#EEFAF3] border border-emerald-100/90 rounded-2xl p-3 shadow-2xs">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-6 h-6 rounded-full bg-white text-[#2FBF71] flex items-center justify-center shadow-xs border border-emerald-100">
-                      <Search className="w-3.5 h-3.5 text-[#2FBF71]" />
-                    </div>
-                    <div className="text-xs font-extrabold text-slate-900">
-                      Track Your Claim
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-slate-500 leading-tight mb-2.5">
-                    Check the status of your IEPF / unclaimed shares claim in real-time.
-                  </p>
-
-                  {/* Form inside Card 1 */}
+                {/* Clean Form Card (Circles 1, 2, 3 removed) */}
+                <div className="bg-[#EEFAF3] border border-emerald-100/90 rounded-2xl p-3 shadow-2xs shrink-0">
                   {submitted ? (
                     <div className="bg-white/95 p-3 rounded-xl border border-emerald-200 text-center animate-fadeIn space-y-1.5">
                       <div className="w-7 h-7 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto text-xs font-bold shadow-xs">
@@ -373,7 +359,7 @@ export default function Hero() {
                         </div>
                       </div>
 
-                      {/* Check Status Button matching screenshot */}
+                      {/* Check Status Button */}
                       <button
                         type="submit"
                         disabled={submitting}
@@ -390,74 +376,6 @@ export default function Hero() {
                       </button>
                     </form>
                   )}
-                </div>
-
-                {/* Card 2: "Your Claim Progress" matching screenshot */}
-                <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-2xs space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Your Claim Progress</span>
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
-                      In Progress
-                    </span>
-                  </div>
-
-                  {/* 3 Step Stepper */}
-                  <div className="relative pt-1 pb-1">
-                    {/* Connecting line */}
-                    <div className="absolute top-3.5 left-6 right-6 h-0.5 bg-slate-200 z-0" />
-                    <div className="absolute top-3.5 left-6 w-1/2 h-0.5 bg-[#2FBF71] z-0" />
-
-                    <div className="relative z-10 grid grid-cols-3 text-center">
-                      {/* Step 1 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-5 h-5 rounded-full bg-[#2FBF71] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
-                          ✓
-                        </div>
-                        <span className="text-[9px] font-bold text-slate-800 mt-1 leading-tight">
-                          Documents Received
-                        </span>
-                        <span className="text-[8px] text-slate-400 mt-0.5">12 Apr 2025</span>
-                      </div>
-
-                      {/* Step 2 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-5 h-5 rounded-full bg-emerald-50 border-2 border-[#2FBF71] flex items-center justify-center animate-pulse">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#2FBF71]" />
-                        </div>
-                        <span className="text-[9px] font-bold text-slate-800 mt-1 leading-tight">
-                          RTA Review
-                        </span>
-                        <span className="text-[8px] text-emerald-600 font-semibold mt-0.5">28 Apr 2025</span>
-                      </div>
-
-                      {/* Step 3 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-5 h-5 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                        </div>
-                        <span className="text-[9px] font-medium text-slate-400 mt-1 leading-tight">
-                          IEPF Processing
-                        </span>
-                        <span className="text-[8px] text-slate-400 mt-0.5">Pending</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card 3: "Start a New Claim" Banner matching screenshot */}
-                <div className="bg-[#EEFAF3] hover:bg-emerald-100/50 border border-emerald-100 rounded-2xl p-2.5 flex items-center justify-between gap-2 transition-colors cursor-pointer group">
-                  <div className="w-7 h-7 rounded-xl bg-white border border-emerald-200/80 flex items-center justify-center text-[#2FBF71] shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-                    <FileText className="w-3.5 h-3.5 text-[#2FBF71]" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                      Start a New Claim
-                    </div>
-                    <div className="text-[9px] text-slate-500 leading-tight">
-                      Lost shares, unclaimed dividends or IEPF? We'll help you get it back.
-                    </div>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </div>
 
                 {/* Section 4: "Quick Actions" matching screenshot */}
