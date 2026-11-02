@@ -56,11 +56,11 @@ export default function Testimonials() {
 
   const activeList = tab === 'clients' ? clientTestimonials : partnerTestimonials;
 
-  // Continuous automatic smooth moving rotation (5 seconds per splash card)
+  // Continuous automatic smooth moving rotation (10 seconds per splash card)
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIdx((prev) => (prev + 1) % activeList.length);
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [activeList.length]);
