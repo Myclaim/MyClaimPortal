@@ -3,13 +3,7 @@ import {
   User, 
   Bell, 
   ChevronRight, 
-  FileText, 
-  UploadCloud, 
-  ShieldCheck, 
-  TrendingUp, 
-  Headphones, 
-  Home, 
-  Folder 
+  ShieldCheck 
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -61,7 +55,9 @@ export default function Hero() {
     lastName: '',
     email: '',
     countryCode: '+91',
-    mobile: ''
+    mobile: '',
+    company: '',
+    serviceInterest: 'IEPF Claim & Verification'
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -93,8 +89,8 @@ export default function Hero() {
         countryCode: formData.countryCode || '+91',
         mobile: formData.mobile,
         phone: `${formData.countryCode || '+91'} ${formData.mobile}`.trim(),
-        serviceInterest: 'IEPF Claim & Verification',
-        notes: `Captured from Landing Page Mobile Frame by visitor ${formData.firstName} ${formData.lastName}${formData.email ? ` (${formData.email})` : ''}`
+        serviceInterest: formData.serviceInterest || 'IEPF Claim & Verification',
+        notes: `Captured from Landing Page Mobile Frame: ${formData.firstName} ${formData.lastName}${formData.email ? ` (${formData.email})` : ''}${formData.company ? ` | Company: ${formData.company}` : ''}`
       });
       setSubmitted(true);
     } catch (err) {
@@ -235,59 +231,93 @@ export default function Hero() {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
             </div>
 
-            {/* Inner Phone Screen with app layout */}
-            <div className="relative bg-[#F8FAF9] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6">
+            {/* Inner Phone Screen with Entire Screen Form */}
+            <div className="relative bg-gradient-to-b from-[#F8FAF9] to-[#F0F7F4] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6 px-3.5 pb-2.5">
 
-              {/* App Body - Clean, Tall & Spacious without inner scroll */}
-              <div className="flex-1 px-3.5 pt-2 pb-2.5 flex flex-col justify-between text-left">
-
-                {/* Profile Header Row (Hello, MyClaim India > + Bell) */}
-                <div className="flex items-center justify-between pb-1 px-0.5 shrink-0">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-xs">
-                      {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : 'M'}
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 block font-medium leading-none">Hello,</span>
-                      <div className="flex items-center gap-0.5 text-xs font-bold text-slate-800">
-                        <span>{formData.firstName ? `${formData.firstName} ${formData.lastName}` : 'MyClaim India'}</span>
-                        <ChevronRight className="w-3 h-3 text-slate-400" />
-                      </div>
-                    </div>
+              {/* Profile / Header Status Row */}
+              <div className="flex items-center justify-between pb-1 px-0.5 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-xs">
+                    {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : 'M'}
                   </div>
-                  <div className="relative p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer">
-                    <Bell className="w-4 h-4 text-slate-700" />
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#2FBF71] ring-2 ring-white animate-pulse" />
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-medium leading-none">Hello,</span>
+                    <div className="flex items-center gap-0.5 text-xs font-bold text-slate-800">
+                      <span>{formData.firstName ? `${formData.firstName} ${formData.lastName}` : 'MyClaim India'}</span>
+                      <ChevronRight className="w-3 h-3 text-slate-400" />
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full text-[9px] font-bold text-[#2FBF71]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71] animate-pulse" />
+                  MCA Live
+                </div>
+              </div>
 
-                {/* Clean Form Card */}
-                <div className="bg-[#EEFAF3] border border-emerald-100/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs shrink-0">
-                  {submitted ? (
-                    <div className="bg-white/95 p-3 rounded-xl border border-emerald-200 text-center animate-fadeIn space-y-1.5">
-                      <div className="w-7 h-7 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto text-xs font-bold shadow-xs">
-                        ✓
-                      </div>
-                      <div className="text-xs font-bold text-slate-900">Claim Check Initiated!</div>
-                      <p className="text-[10px] text-slate-500 leading-snug">
-                        Scanning IEPF & RTA registry for <strong>+91 {formData.mobile}</strong>
-                      </p>
-                      <button
-                        onClick={() => {
-                          setSubmitted(false);
-                          setFormData({ firstName: '', lastName: '', email: '', countryCode: '+91', mobile: '' });
-                        }}
-                        className="text-[10px] text-[#2FBF71] font-bold hover:underline block mx-auto pt-1"
-                      >
-                        Check Another Folio
-                      </button>
+              {/* Form fills all remaining space in phone screen */}
+              <div className="flex-1 flex flex-col justify-between pt-1">
+                {submitted ? (
+                  <div className="bg-white/95 my-auto p-4 rounded-2xl border border-emerald-200 text-center animate-fadeIn space-y-3 shadow-sm">
+                    <div className="w-12 h-12 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
+                      ✓
                     </div>
-                  ) : (
-                    <form onSubmit={handleFormSubmit} className="space-y-2.5">
+                    <div>
+                      <div className="text-sm font-bold text-slate-900">Claim Check Initiated!</div>
+                      <p className="text-xs text-slate-500 mt-1 leading-snug">
+                        Searching IEPF, MCA & RTA registries for:
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-xl p-2.5 text-left text-xs space-y-1 border border-slate-100">
+                      <div className="text-slate-600 font-medium">
+                        <strong>Name:</strong> {formData.firstName} {formData.lastName}
+                      </div>
+                      <div className="text-slate-600 font-medium">
+                        <strong>Mobile:</strong> {formData.countryCode} {formData.mobile}
+                      </div>
+                      {formData.company && (
+                        <div className="text-slate-600 font-medium">
+                          <strong>Company:</strong> {formData.company}
+                        </div>
+                      )}
+                      <div className="text-slate-600 font-medium">
+                        <strong>Interest:</strong> {formData.serviceInterest}
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-slate-500 leading-snug">
+                      Our senior claim advisor will review registry records and share your audit report within 15 minutes.
+                    </p>
+
+                    <button
+                      onClick={() => {
+                        setSubmitted(false);
+                        setFormData({ firstName: '', lastName: '', email: '', countryCode: '+91', mobile: '', company: '', serviceInterest: 'IEPF Claim & Verification' });
+                      }}
+                      className="w-full py-2 bg-[#2FBF71] hover:bg-[#26aa62] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                    >
+                      Check Another Folio
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col justify-between py-0.5">
+                    {/* Form Headline Banner */}
+                    <div className="bg-white/85 backdrop-blur-xs border border-emerald-100/90 rounded-xl px-3 py-1.5 text-left shadow-2xs">
+                      <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71]" />
+                        <span>Track Your Unclaimed Shares</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                        Free real-time scan across 500+ listed companies & IEPF
+                      </p>
+                    </div>
+
+                    {/* Inputs Container */}
+                    <div className="space-y-2 pt-1 text-left">
                       {/* Name Row: First Name & Last Name */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
                             First Name
                           </label>
                           <input
@@ -301,7 +331,7 @@ export default function Hero() {
                           />
                         </div>
                         <div>
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
                             Last Name
                           </label>
                           <input
@@ -315,25 +345,10 @@ export default function Hero() {
                         </div>
                       </div>
 
-                      {/* Email Address */}
+                      {/* Mobile Number with Country Code */}
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="e.g. rahul@example.com"
-                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
-                        />
-                      </div>
-
-                      {/* Mobile Number */}
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                          Mobile No.
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          Mobile Number
                         </label>
                         <div className="flex gap-1.5">
                           <select
@@ -353,87 +368,90 @@ export default function Hero() {
                             required
                             value={formData.mobile}
                             onChange={handleInputChange}
-                            placeholder="Enter Folio / Mobile"
+                            placeholder="Enter 10-digit mobile"
                             className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all flex-1"
                           />
                         </div>
                       </div>
 
-                      {/* Check Status Button */}
+                      {/* Email Address */}
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="e.g. rahul@example.com"
+                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                        />
+                      </div>
+
+                      {/* Company / Folio No. */}
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          Company / Folio No. <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="company"
+                          value={formData.company || ''}
+                          onChange={handleInputChange}
+                          placeholder="e.g. Reliance, Tata Steel, ITC"
+                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                        />
+                      </div>
+
+                      {/* Service / Claim Type */}
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          Claim Category
+                        </label>
+                        <select
+                          name="serviceInterest"
+                          value={formData.serviceInterest || 'IEPF Claim & Verification'}
+                          onChange={handleInputChange}
+                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                        >
+                          <option value="IEPF Claim & Verification">IEPF Claim & Recovery</option>
+                          <option value="Physical Shares to Demat">Physical Shares Demat</option>
+                          <option value="Lost Shares & Succession">Transmission / Legal Heir</option>
+                          <option value="Unclaimed Dividends">Unclaimed Dividends Search</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Bottom Actions inside Phone */}
+                    <div className="pt-2 space-y-1.5">
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="btn-shine-effect w-full mt-1 py-2.5 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1 cursor-pointer"
+                        className="btn-shine-effect w-full py-2.5 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         {submitting ? (
-                          <span>Checking Registry...</span>
+                          <span>Scanning Registry...</span>
                         ) : (
                           <>
-                            <span>Check Status</span>
+                            <span>Check Status & Search Records</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </>
                         )}
                       </button>
-                    </form>
-                  )}
-                </div>
 
-                {/* Section 4: "Quick Actions" */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="text-xs font-bold text-slate-900 text-left px-0.5">Quick Actions</div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <UploadCloud className="w-3.5 h-3.5 text-[#2FBF71]" />
+                      {/* Trust disclaimer */}
+                      <div className="flex items-center justify-center gap-1 text-[9px] text-slate-500 font-medium pt-0.5">
+                        <ShieldCheck className="w-3 h-3 text-[#2FBF71]" />
+                        <span>100% Confidential • Zero Search Fees • MCA Compliant</span>
                       </div>
-                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Upload Docs</span>
                     </div>
-
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#2FBF71]" />
-                      </div>
-                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Check IEPF</span>
-                    </div>
-
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <TrendingUp className="w-3.5 h-3.5 text-[#2FBF71]" />
-                      </div>
-                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Demat Help</span>
-                    </div>
-
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Headphones className="w-3.5 h-3.5 text-[#2FBF71]" />
-                      </div>
-                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Talk Expert</span>
-                    </div>
-                  </div>
-                </div>
-
+                  </form>
+                )}
               </div>
 
-              {/* Bottom Fixed App Navigation Bar matching screenshot */}
-              <div className="shrink-0 bg-white/95 backdrop-blur-md border-t border-slate-100 px-3 pt-2.5 pb-2 flex items-center justify-between rounded-b-[38px]">
-                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-[#2FBF71]">
-                  <Home className="w-4 h-4" />
-                  <span className="text-[8px] font-bold leading-none">Home</span>
-                  <span className="w-1 h-1 rounded-full bg-[#2FBF71] mt-0.5" />
-                </div>
-                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
-                  <FileText className="w-4 h-4" />
-                  <span className="text-[8px] font-medium leading-none">My Claims</span>
-                </div>
-                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
-                  <Folder className="w-4 h-4" />
-                  <span className="text-[8px] font-medium leading-none">Documents</span>
-                </div>
-                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
-                  <User className="w-4 h-4" />
-                  <span className="text-[8px] font-medium leading-none">Profile</span>
-                </div>
-              </div>
+              {/* Home indicator bar (iPhone gesture line) */}
+              <div className="w-24 h-1 bg-slate-300/80 rounded-full mx-auto mt-1 shrink-0" />
 
             </div>
           </div>
