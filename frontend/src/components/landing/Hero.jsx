@@ -226,8 +226,8 @@ export default function Hero() {
         {/* Right Column: "mobile screen" container with gentle floating animation */}
         <div className="lg:col-span-5 flex flex-col justify-center items-center gap-4">
 
-          {/* Smartphone device frame with slow float - updated clean mobile dashboard */}
-          <div className="animate-float-slow relative w-full max-w-[325px] sm:max-w-[345px] h-[525px] sm:h-[545px] bg-[#111827] rounded-[48px] p-3 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500 flex flex-col">
+          {/* Smartphone device frame with slow float - taller & longer flagship phone design */}
+          <div className="animate-float-slow relative w-full max-w-[330px] sm:max-w-[350px] h-[630px] sm:h-[650px] bg-[#111827] rounded-[50px] p-3.5 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500 flex flex-col">
 
             {/* Top Dynamic Island / Speaker Pill */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-30 flex items-center justify-center gap-1.5">
@@ -238,11 +238,11 @@ export default function Hero() {
             {/* Inner Phone Screen with app layout */}
             <div className="relative bg-[#F8FAF9] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6">
 
-              {/* App Body - Clean & Spacious without inner scroll */}
-              <div className="flex-1 px-3 pt-1.5 pb-2 flex flex-col justify-between text-left">
+              {/* App Body - Clean, Tall & Spacious without inner scroll */}
+              <div className="flex-1 px-3.5 pt-2 pb-2.5 flex flex-col justify-between text-left">
 
                 {/* Profile Header Row (Hello, MyClaim India > + Bell) */}
-                <div className="flex items-center justify-between pb-0.5 px-0.5 shrink-0">
+                <div className="flex items-center justify-between pb-1 px-0.5 shrink-0">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-xs">
                       {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : 'M'}
@@ -261,8 +261,8 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Clean Form Card (Circles 1, 2, 3 removed) */}
-                <div className="bg-[#EEFAF3] border border-emerald-100/90 rounded-2xl p-3 shadow-2xs shrink-0">
+                {/* Clean Form Card */}
+                <div className="bg-[#EEFAF3] border border-emerald-100/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs shrink-0">
                   {submitted ? (
                     <div className="bg-white/95 p-3 rounded-xl border border-emerald-200 text-center animate-fadeIn space-y-1.5">
                       <div className="w-7 h-7 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto text-xs font-bold shadow-xs">
@@ -283,11 +283,11 @@ export default function Hero() {
                       </button>
                     </div>
                   ) : (
-                    <form onSubmit={handleFormSubmit} className="space-y-2">
+                    <form onSubmit={handleFormSubmit} className="space-y-2.5">
                       {/* Name Row: First Name & Last Name */}
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                             First Name
                           </label>
                           <input
@@ -301,7 +301,7 @@ export default function Hero() {
                           />
                         </div>
                         <div>
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                             Last Name
                           </label>
                           <input
@@ -317,7 +317,7 @@ export default function Hero() {
 
                       {/* Email Address */}
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                           Email Address
                         </label>
                         <input
@@ -332,7 +332,7 @@ export default function Hero() {
 
                       {/* Mobile Number */}
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                           Mobile No.
                         </label>
                         <div className="flex gap-1.5">
@@ -363,7 +363,7 @@ export default function Hero() {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="btn-shine-effect w-full mt-1 py-2 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1 cursor-pointer"
+                        className="btn-shine-effect w-full mt-1 py-2.5 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1 cursor-pointer"
                       >
                         {submitting ? (
                           <span>Checking Registry...</span>
@@ -378,33 +378,33 @@ export default function Hero() {
                   )}
                 </div>
 
-                {/* Section 4: "Quick Actions" matching screenshot */}
-                <div className="space-y-1.5">
+                {/* Section 4: "Quick Actions" */}
+                <div className="space-y-1.5 pt-1">
                   <div className="text-xs font-bold text-slate-900 text-left px-0.5">Quick Actions</div>
                   <div className="grid grid-cols-4 gap-1.5">
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <UploadCloud className="w-3.5 h-3.5 text-[#2FBF71]" />
                       </div>
                       <span className="text-[8px] font-bold text-slate-700 leading-tight">Upload Docs</span>
                     </div>
 
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <ShieldCheck className="w-3.5 h-3.5 text-[#2FBF71]" />
                       </div>
                       <span className="text-[8px] font-bold text-slate-700 leading-tight">Check IEPF</span>
                     </div>
 
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <TrendingUp className="w-3.5 h-3.5 text-[#2FBF71]" />
                       </div>
                       <span className="text-[8px] font-bold text-slate-700 leading-tight">Demat Help</span>
                     </div>
 
-                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Headphones className="w-3.5 h-3.5 text-[#2FBF71]" />
                       </div>
                       <span className="text-[8px] font-bold text-slate-700 leading-tight">Talk Expert</span>
@@ -415,7 +415,7 @@ export default function Hero() {
               </div>
 
               {/* Bottom Fixed App Navigation Bar matching screenshot */}
-              <div className="shrink-0 bg-white/95 backdrop-blur-md border-t border-slate-100 px-3 pt-2 pb-1.5 flex items-center justify-between rounded-b-[38px]">
+              <div className="shrink-0 bg-white/95 backdrop-blur-md border-t border-slate-100 px-3 pt-2.5 pb-2 flex items-center justify-between rounded-b-[38px]">
                 <div className="flex flex-col items-center gap-0.5 cursor-pointer text-[#2FBF71]">
                   <Home className="w-4 h-4" />
                   <span className="text-[8px] font-bold leading-none">Home</span>
