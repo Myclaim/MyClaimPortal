@@ -232,10 +232,10 @@ export default function Hero() {
             </div>
 
             {/* Inner Phone Screen with Entire Screen Form */}
-            <div className="relative bg-gradient-to-b from-[#F8FAF9] to-[#F0F7F4] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6 px-3.5 pb-2.5">
+            <div className="relative bg-gradient-to-b from-[#F8FAF9] to-[#F0F7F4] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6 px-3.5 pb-2">
 
               {/* Profile / Header Status Row */}
-              <div className="flex items-center justify-between pb-1 px-0.5 shrink-0">
+              <div className="flex items-center justify-between pb-1.5 px-0.5 shrink-0 border-b border-slate-100/80">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-xs">
                     {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : 'M'}
@@ -254,8 +254,8 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Form fills all remaining space in phone screen */}
-              <div className="flex-1 flex flex-col justify-between pt-1">
+              {/* Form fills all space with equally proportionate distribution */}
+              <div className="flex-1 flex flex-col justify-between pt-2">
                 {submitted ? (
                   <div className="bg-white/95 my-auto p-4 rounded-2xl border border-emerald-200 text-center animate-fadeIn space-y-3 shadow-sm">
                     <div className="w-12 h-12 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
@@ -300,9 +300,9 @@ export default function Hero() {
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col justify-between py-0.5">
-                    {/* Form Headline Banner */}
-                    <div className="bg-white/85 backdrop-blur-xs border border-emerald-100/90 rounded-xl px-3 py-1.5 text-left shadow-2xs">
+                  <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col justify-between text-left">
+                    {/* Item 1: Form Headline Banner */}
+                    <div className="bg-white/90 backdrop-blur-xs border border-emerald-100/90 rounded-xl px-3 py-1.5 text-left shadow-2xs">
                       <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71]" />
                         <span>Track Your Unclaimed Shares</span>
@@ -312,12 +312,11 @@ export default function Hero() {
                       </p>
                     </div>
 
-                    {/* Inputs Container */}
-                    <div className="space-y-2 pt-1 text-left">
-                      {/* Name Row: First Name & Last Name */}
+                    {/* Item 2: Name Row (First Name & Last Name) */}
+                    <div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          <label className="block text-[9.5px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                             First Name
                           </label>
                           <input
@@ -327,11 +326,11 @@ export default function Hero() {
                             value={formData.firstName}
                             onChange={handleInputChange}
                             placeholder="e.g. Rahul"
-                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                            className="w-full px-2.5 py-2 bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] shadow-2xs transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          <label className="block text-[9.5px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                             Last Name
                           </label>
                           <input
@@ -340,95 +339,95 @@ export default function Hero() {
                             value={formData.lastName}
                             onChange={handleInputChange}
                             placeholder="e.g. Sharma"
-                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                            className="w-full px-2.5 py-2 bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] shadow-2xs transition-all"
                           />
                         </div>
-                      </div>
-
-                      {/* Mobile Number with Country Code */}
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
-                          Mobile Number
-                        </label>
-                        <div className="flex gap-1.5">
-                          <select
-                            name="countryCode"
-                            value={formData.countryCode || '+91'}
-                            onChange={handleInputChange}
-                            className="bg-white border border-emerald-200/80 rounded-xl px-1.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71]"
-                          >
-                            <option value="+91">🇮🇳 +91</option>
-                            <option value="+1">🇺🇸 +1</option>
-                            <option value="+44">🇬🇧 +44</option>
-                            <option value="+971">🇦🇪 +971</option>
-                          </select>
-                          <input
-                            type="tel"
-                            name="mobile"
-                            required
-                            value={formData.mobile}
-                            onChange={handleInputChange}
-                            placeholder="Enter 10-digit mobile"
-                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all flex-1"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Email Address */}
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="e.g. rahul@example.com"
-                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
-                        />
-                      </div>
-
-                      {/* Company / Folio No. */}
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
-                          Company / Folio No. <span className="text-slate-400 font-normal lowercase">(optional)</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="company"
-                          value={formData.company || ''}
-                          onChange={handleInputChange}
-                          placeholder="e.g. Reliance, Tata Steel, ITC"
-                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
-                        />
-                      </div>
-
-                      {/* Service / Claim Type */}
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
-                          Claim Category
-                        </label>
-                        <select
-                          name="serviceInterest"
-                          value={formData.serviceInterest || 'IEPF Claim & Verification'}
-                          onChange={handleInputChange}
-                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
-                        >
-                          <option value="IEPF Claim & Verification">IEPF Claim & Recovery</option>
-                          <option value="Physical Shares to Demat">Physical Shares Demat</option>
-                          <option value="Lost Shares & Succession">Transmission / Legal Heir</option>
-                          <option value="Unclaimed Dividends">Unclaimed Dividends Search</option>
-                        </select>
                       </div>
                     </div>
 
-                    {/* Bottom Actions inside Phone */}
-                    <div className="pt-2 space-y-1.5">
+                    {/* Item 3: Mobile Number with Country Code */}
+                    <div>
+                      <label className="block text-[9.5px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Mobile Number
+                      </label>
+                      <div className="flex gap-1.5">
+                        <select
+                          name="countryCode"
+                          value={formData.countryCode || '+91'}
+                          onChange={handleInputChange}
+                          className="bg-white border border-slate-200/90 rounded-xl px-1.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] shadow-2xs"
+                        >
+                          <option value="+91">🇮🇳 +91</option>
+                          <option value="+1">🇺🇸 +1</option>
+                          <option value="+44">🇬🇧 +44</option>
+                          <option value="+971">🇦🇪 +971</option>
+                        </select>
+                        <input
+                          type="tel"
+                          name="mobile"
+                          required
+                          value={formData.mobile}
+                          onChange={handleInputChange}
+                          placeholder="Enter 10-digit mobile"
+                          className="w-full px-2.5 py-2 bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] shadow-2xs transition-all flex-1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Item 4: Email Address */}
+                    <div>
+                      <label className="block text-[9.5px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="e.g. rahul@example.com"
+                        className="w-full px-2.5 py-2 bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] shadow-2xs transition-all"
+                      />
+                    </div>
+
+                    {/* Item 5: Company / Folio No. */}
+                    <div>
+                      <label className="block text-[9.5px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Company / Folio No. <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="company"
+                        value={formData.company || ''}
+                        onChange={handleInputChange}
+                        placeholder="e.g. Reliance, Tata Steel, ITC"
+                        className="w-full px-2.5 py-2 bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] shadow-2xs transition-all"
+                      />
+                    </div>
+
+                    {/* Item 6: Claim Category */}
+                    <div>
+                      <label className="block text-[9.5px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Claim Category
+                      </label>
+                      <select
+                        name="serviceInterest"
+                        value={formData.serviceInterest || 'IEPF Claim & Verification'}
+                        onChange={handleInputChange}
+                        className="w-full px-2.5 py-2 bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] shadow-2xs transition-all"
+                      >
+                        <option value="IEPF Claim & Verification">IEPF Claim & Recovery</option>
+                        <option value="Physical Shares to Demat">Physical Shares Demat</option>
+                        <option value="Lost Shares & Succession">Transmission / Legal Heir</option>
+                        <option value="Unclaimed Dividends">Unclaimed Dividends Search</option>
+                      </select>
+                    </div>
+
+                    {/* Item 7: Bottom Actions (CTA Button + Trust Disclaimer) */}
+                    <div className="space-y-1.5">
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="btn-shine-effect w-full py-2.5 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="btn-shine-effect w-full py-2.5 sm:py-3 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         {submitting ? (
                           <span>Scanning Registry...</span>
@@ -440,8 +439,7 @@ export default function Hero() {
                         )}
                       </button>
 
-                      {/* Trust disclaimer */}
-                      <div className="flex items-center justify-center gap-1 text-[9px] text-slate-500 font-medium pt-0.5">
+                      <div className="flex items-center justify-center gap-1 text-[9px] text-slate-500 font-medium">
                         <ShieldCheck className="w-3 h-3 text-[#2FBF71]" />
                         <span>100% Confidential • Zero Search Fees • MCA Compliant</span>
                       </div>
