@@ -1,4 +1,17 @@
 import { useState, useEffect } from 'react';
+import { 
+  User, 
+  Bell, 
+  Search, 
+  ChevronRight, 
+  FileText, 
+  UploadCloud, 
+  ShieldCheck, 
+  TrendingUp, 
+  Headphones, 
+  Home, 
+  Folder 
+} from 'lucide-react';
 import api from '../../services/api';
 
 const TICKER_COMPANIES = [
@@ -47,6 +60,7 @@ export default function Hero() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    email: '',
     countryCode: '+91',
     mobile: ''
   });
@@ -76,11 +90,12 @@ export default function Hero() {
       await api.post('/leads/public', {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        email: formData.email,
         countryCode: formData.countryCode || '+91',
         mobile: formData.mobile,
         phone: `${formData.countryCode || '+91'} ${formData.mobile}`.trim(),
         serviceInterest: 'IEPF Claim & Verification',
-        notes: `Captured from Landing Page Mobile Frame by visitor ${formData.firstName} ${formData.lastName}`
+        notes: `Captured from Landing Page Mobile Frame by visitor ${formData.firstName} ${formData.lastName}${formData.email ? ` (${formData.email})` : ''}`
       });
       setSubmitted(true);
     } catch (err) {
@@ -212,169 +227,296 @@ export default function Hero() {
         {/* Right Column: "mobile screen" container with gentle floating animation */}
         <div className="lg:col-span-5 flex flex-col justify-center items-center gap-4">
 
-          {/* Smartphone device frame with slow float */}
-          <div className="animate-float-slow relative w-full max-w-[340px] sm:max-w-[370px] bg-[#111827] rounded-[44px] p-3.5 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500">
+          {/* Smartphone device frame with slow float - updated mobile dashboard */}
+          <div className="animate-float-slow relative w-full max-w-[325px] sm:max-w-[345px] h-[640px] sm:h-[660px] bg-[#111827] rounded-[48px] p-3 shadow-2xl shadow-emerald-950/20 border-4 border-slate-700/80 hover:shadow-emerald-500/20 transition-all duration-500 flex flex-col">
 
             {/* Top Dynamic Island / Speaker Pill */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-20 flex items-center justify-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-800" />
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-30 flex items-center justify-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800" />
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
             </div>
 
-            {/* Inner Phone Screen */}
-            <div className="relative bg-white rounded-[34px] overflow-hidden border border-slate-200/90 flex flex-col justify-between min-h-[520px] pt-10 pb-6 px-5 sm:px-6">
+            {/* Inner Phone Screen with app layout */}
+            <div className="relative bg-[#F8FAF9] rounded-[38px] overflow-hidden border border-slate-200/90 h-full flex flex-col justify-between pt-6">
 
-              {/* Phone Status Bar / App Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-sm shadow-emerald-500/30">
-                    M
-                  </div>
-                  <span className="text-xs font-bold text-slate-900">MyClaim Mobile</span>
-                </div>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#2FBF71] border border-emerald-200 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71] animate-pulse" />
-                  Live Desk
-                </span>
-              </div>
+              {/* Scrollable App Body (hidden scrollbar) */}
+              <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-3 pt-1.5 pb-2 space-y-2.5 text-left">
 
-              {/* Form Content as drawn on left page */}
-              {submitted ? (
-                <div className="py-8 text-center my-auto animate-fadeIn">
-                  <div className="w-16 h-16 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold shadow-md">
-                    ✓
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1.5">Claim Check Initiated!</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed mb-6">
-                    Thank you, <strong className="text-slate-800">{formData.firstName}</strong>. Our senior claim specialist is running an initial scan for +91 {formData.mobile} across IEPF, RTA, and banking registries.
-                  </p>
-                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-left mb-6 space-y-1.5">
-                    <div className="text-[11px] text-slate-400 font-semibold uppercase">Status</div>
-                    <div className="text-xs font-bold text-[#2FBF71] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#2FBF71] animate-pulse" />
-                      Free Consultation Call Assigned (~15 mins)
+                {/* Profile Header Row (Hello, MyClaim India > + Bell) */}
+                <div className="flex items-center justify-between pb-1 px-0.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-[#2FBF71] flex items-center justify-center text-white text-xs font-bold shadow-xs">
+                      {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : 'M'}
                     </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSubmitted(false);
-                      setFormData({ firstName: '', lastName: '', mobile: '' });
-                    }}
-                    className="w-full py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    Submit Another Query
-                  </button>
-                </div>
-              ) : (
-                <div className="my-auto py-2">
-                  <div className="text-center mb-5">
-                    <h2 className="text-lg font-extrabold text-slate-900 leading-tight">
-                      Check Your Claim
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Enter details for an instant free folio and IEPF scan
-                    </p>
-                  </div>
-
-                  {/* The exact 4 fields from the notebook: First name, Last name, Mobile no., Submit */}
-                  <form onSubmit={handleFormSubmit} className="space-y-3.5">
-
-                    {/* First Name */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        required
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        placeholder="e.g. Rahul"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2FBF71] focus:bg-white transition-all"
-                      />
-                    </div>
-
-                    {/* Last Name */}
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        placeholder="e.g. Sharma"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2FBF71] focus:bg-white transition-all"
-                      />
-                    </div>
-
-                    {/* Mobile Number */}
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Mobile No.
-                      </label>
-                      <div className="flex gap-2">
-                        <select
-                          name="countryCode"
-                          value={formData.countryCode || '+91'}
-                          onChange={handleInputChange}
-                          className="bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#2FBF71]"
-                        >
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+65">🇸🇬 +65</option>
-                          <option value="+61">🇦🇺 +61</option>
-                        </select>
-                        <input
-                          type="tel"
-                          name="mobile"
-                          required
-                          value={formData.mobile}
-                          onChange={handleInputChange}
-                          placeholder="Contact number"
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2FBF71] focus:bg-white transition-all flex-1"
-                        />
+                      <span className="text-[10px] text-slate-400 block font-medium leading-none">Hello,</span>
+                      <div className="flex items-center gap-0.5 text-xs font-bold text-slate-800">
+                        <span>{formData.firstName ? `${formData.firstName} ${formData.lastName}` : 'MyClaim India'}</span>
+                        <ChevronRight className="w-3 h-3 text-slate-400" />
                       </div>
                     </div>
-
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="btn-shine-effect w-full mt-2 py-3 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-sm rounded-xl shadow-md shadow-emerald-500/25 transition-all hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 group"
-                    >
-                      {submitting ? (
-                        <span>Submitting...</span>
-                      ) : (
-                        <>
-                          <span>Submit & Search</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                          </svg>
-                        </>
-                      )}
-                    </button>
-
-                  </form>
+                  </div>
+                  <div className="relative p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer">
+                    <Bell className="w-4 h-4 text-slate-700" />
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#2FBF71] ring-2 ring-white animate-pulse" />
+                  </div>
                 </div>
-              )}
 
-              {/* Bottom Phone Indicator */}
-              <div className="pt-2 text-center border-t border-slate-100">
-                <span className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2FBF71" strokeWidth="2.5">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                  100% Confidential · No Upfront Charges
-                </span>
-                <div className="w-24 h-1 bg-slate-300 rounded-full mx-auto mt-2" />
+                {/* Card 1: "Track Your Claim" Card containing the Existing Form */}
+                <div className="bg-[#EEFAF3] border border-emerald-100/90 rounded-2xl p-3 shadow-2xs">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-6 h-6 rounded-full bg-white text-[#2FBF71] flex items-center justify-center shadow-xs border border-emerald-100">
+                      <Search className="w-3.5 h-3.5 text-[#2FBF71]" />
+                    </div>
+                    <div className="text-xs font-extrabold text-slate-900">
+                      Track Your Claim
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-tight mb-2.5">
+                    Check the status of your IEPF / unclaimed shares claim in real-time.
+                  </p>
+
+                  {/* Form inside Card 1 */}
+                  {submitted ? (
+                    <div className="bg-white/95 p-3 rounded-xl border border-emerald-200 text-center animate-fadeIn space-y-1.5">
+                      <div className="w-7 h-7 bg-emerald-100 text-[#2FBF71] rounded-full flex items-center justify-center mx-auto text-xs font-bold shadow-xs">
+                        ✓
+                      </div>
+                      <div className="text-xs font-bold text-slate-900">Claim Check Initiated!</div>
+                      <p className="text-[10px] text-slate-500 leading-snug">
+                        Scanning IEPF & RTA registry for <strong>+91 {formData.mobile}</strong>
+                      </p>
+                      <button
+                        onClick={() => {
+                          setSubmitted(false);
+                          setFormData({ firstName: '', lastName: '', email: '', countryCode: '+91', mobile: '' });
+                        }}
+                        className="text-[10px] text-[#2FBF71] font-bold hover:underline block mx-auto pt-1"
+                      >
+                        Check Another Folio
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleFormSubmit} className="space-y-2">
+                      {/* Name Row: First Name & Last Name */}
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            name="firstName"
+                            required
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Rahul"
+                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Sharma"
+                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Email Address */}
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="e.g. rahul@example.com"
+                          className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all"
+                        />
+                      </div>
+
+                      {/* Mobile Number */}
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">
+                          Mobile No.
+                        </label>
+                        <div className="flex gap-1.5">
+                          <select
+                            name="countryCode"
+                            value={formData.countryCode || '+91'}
+                            onChange={handleInputChange}
+                            className="bg-white border border-emerald-200/80 rounded-xl px-1.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71]"
+                          >
+                            <option value="+91">🇮🇳 +91</option>
+                            <option value="+1">🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+971">🇦🇪 +971</option>
+                          </select>
+                          <input
+                            type="tel"
+                            name="mobile"
+                            required
+                            value={formData.mobile}
+                            onChange={handleInputChange}
+                            placeholder="Enter Folio / Mobile"
+                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-200/80 rounded-xl text-xs font-medium focus:outline-none focus:ring-1.5 focus:ring-[#2FBF71] focus:border-[#2FBF71] transition-all flex-1"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Check Status Button matching screenshot */}
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="btn-shine-effect w-full mt-1 py-2 bg-[#2FBF71] hover:bg-[#26aa62] text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        {submitting ? (
+                          <span>Checking Registry...</span>
+                        ) : (
+                          <>
+                            <span>Check Status</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
+                </div>
+
+                {/* Card 2: "Your Claim Progress" matching screenshot */}
+                <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-2xs space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900">Your Claim Progress</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
+                      In Progress
+                    </span>
+                  </div>
+
+                  {/* 3 Step Stepper */}
+                  <div className="relative pt-1 pb-1">
+                    {/* Connecting line */}
+                    <div className="absolute top-3.5 left-6 right-6 h-0.5 bg-slate-200 z-0" />
+                    <div className="absolute top-3.5 left-6 w-1/2 h-0.5 bg-[#2FBF71] z-0" />
+
+                    <div className="relative z-10 grid grid-cols-3 text-center">
+                      {/* Step 1 */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-5 h-5 rounded-full bg-[#2FBF71] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                          ✓
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-800 mt-1 leading-tight">
+                          Documents Received
+                        </span>
+                        <span className="text-[8px] text-slate-400 mt-0.5">12 Apr 2025</span>
+                      </div>
+
+                      {/* Step 2 */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-5 h-5 rounded-full bg-emerald-50 border-2 border-[#2FBF71] flex items-center justify-center animate-pulse">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#2FBF71]" />
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-800 mt-1 leading-tight">
+                          RTA Review
+                        </span>
+                        <span className="text-[8px] text-emerald-600 font-semibold mt-0.5">28 Apr 2025</span>
+                      </div>
+
+                      {/* Step 3 */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-5 h-5 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                        </div>
+                        <span className="text-[9px] font-medium text-slate-400 mt-1 leading-tight">
+                          IEPF Processing
+                        </span>
+                        <span className="text-[8px] text-slate-400 mt-0.5">Pending</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 3: "Start a New Claim" Banner matching screenshot */}
+                <div className="bg-[#EEFAF3] hover:bg-emerald-100/50 border border-emerald-100 rounded-2xl p-2.5 flex items-center justify-between gap-2 transition-colors cursor-pointer group">
+                  <div className="w-7 h-7 rounded-xl bg-white border border-emerald-200/80 flex items-center justify-center text-[#2FBF71] shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+                    <FileText className="w-3.5 h-3.5 text-[#2FBF71]" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                      Start a New Claim
+                    </div>
+                    <div className="text-[9px] text-slate-500 leading-tight">
+                      Lost shares, unclaimed dividends or IEPF? We'll help you get it back.
+                    </div>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+                </div>
+
+                {/* Section 4: "Quick Actions" matching screenshot */}
+                <div className="space-y-1.5">
+                  <div className="text-xs font-bold text-slate-900 text-left px-0.5">Quick Actions</div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <UploadCloud className="w-3.5 h-3.5 text-[#2FBF71]" />
+                      </div>
+                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Upload Docs</span>
+                    </div>
+
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#2FBF71]" />
+                      </div>
+                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Check IEPF</span>
+                    </div>
+
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <TrendingUp className="w-3.5 h-3.5 text-[#2FBF71]" />
+                      </div>
+                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Demat Help</span>
+                    </div>
+
+                    <div className="bg-white border border-slate-100 hover:border-emerald-200 rounded-xl p-1.5 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer group shadow-2xs">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#2FBF71] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Headphones className="w-3.5 h-3.5 text-[#2FBF71]" />
+                      </div>
+                      <span className="text-[8px] font-bold text-slate-700 leading-tight">Talk Expert</span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
+
+              {/* Bottom Fixed App Navigation Bar matching screenshot */}
+              <div className="shrink-0 bg-white/95 backdrop-blur-md border-t border-slate-100 px-3 pt-2 pb-1.5 flex items-center justify-between rounded-b-[38px]">
+                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-[#2FBF71]">
+                  <Home className="w-4 h-4" />
+                  <span className="text-[8px] font-bold leading-none">Home</span>
+                  <span className="w-1 h-1 rounded-full bg-[#2FBF71] mt-0.5" />
+                </div>
+                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
+                  <FileText className="w-4 h-4" />
+                  <span className="text-[8px] font-medium leading-none">My Claims</span>
+                </div>
+                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
+                  <Folder className="w-4 h-4" />
+                  <span className="text-[8px] font-medium leading-none">Documents</span>
+                </div>
+                <div className="flex flex-col items-center gap-0.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
+                  <User className="w-4 h-4" />
+                  <span className="text-[8px] font-medium leading-none">Profile</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -409,11 +551,11 @@ export default function Hero() {
 
       </div>
 
-      {/* Infinite Marquee Ticker: "frequently connect" */}
-      <div className="relative z-10 w-full mt-6 border-t border-slate-200/60 bg-white/75 backdrop-blur-sm py-3 overflow-hidden">
+      {/* Infinite Marquee Ticker: "frequently connect" - visible directly on screen */}
+      <div className="relative z-20 w-full mt-4 sm:mt-6 border-y border-slate-200/80 bg-white/95 backdrop-blur-sm py-2.5 overflow-hidden shadow-xs">
         <div className="flex items-center gap-0">
-          <span className="hidden md:flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap shrink-0 pl-6 pr-4 border-r border-slate-200 mr-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71] animate-pulse" />
+          <span className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0 pl-6 pr-4 border-r border-slate-200 mr-2">
+            <span className="w-2 h-2 rounded-full bg-[#2FBF71] animate-pulse" />
             Frequently Connected
           </span>
 
@@ -425,7 +567,7 @@ export default function Hero() {
               {MARQUEE_ITEMS.map((company, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/70 text-xs text-slate-700 font-medium whitespace-nowrap hover:border-[#2FBF71]/50 hover:bg-emerald-50 hover:text-[#2FBF71] transition-colors duration-200 cursor-default"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/70 text-xs text-slate-700 font-medium whitespace-nowrap hover:border-[#2FBF71]/50 hover:bg-emerald-50 hover:text-[#2FBF71] transition-colors duration-200 cursor-default shadow-2xs"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#2FBF71] flex-shrink-0" />
                   {company}
