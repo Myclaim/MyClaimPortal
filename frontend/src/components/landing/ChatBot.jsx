@@ -105,16 +105,16 @@ export default function ChatBot() {
   return (
     <>
       {/* Floating Button */}
-      <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-2">
+      <div className="fixed bottom-52 right-5 z-50 flex flex-col items-end gap-2">
         {/* Attention bubble */}
         {showBubble && !open && (
           <div
-            className="bg-white border border-slate-200 rounded-2xl rounded-bl-none px-4 py-2.5 shadow-lg text-sm font-medium text-slate-700 max-w-[200px] leading-snug cursor-pointer animate-bounce-slow"
+            className="bg-white border border-slate-200 rounded-2xl rounded-br-none px-3 py-2 shadow-lg text-xs font-medium text-slate-700 max-w-[170px] leading-snug cursor-pointer animate-bounce-slow"
             onClick={() => setOpen(true)}
             style={{ animation: 'fadeInUp 0.4s ease' }}
           >
             💬 Have a query? Ask us!
-            <div className="absolute -bottom-2 left-4 w-3 h-3 bg-white border-b border-r border-slate-200 rotate-45" />
+            <div className="absolute -bottom-2 right-4 w-3 h-3 bg-white border-b border-r border-slate-200 rotate-45" />
           </div>
         )}
 
@@ -122,14 +122,14 @@ export default function ChatBot() {
           onClick={() => setOpen(o => !o)}
           id="chatbot-toggle"
           aria-label="Open MyClaim Chat Assistant"
-          className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#2FBF71] to-emerald-600 text-white shadow-xl shadow-emerald-500/30 flex items-center justify-center hover:scale-110 transition-transform duration-300"
+          className="relative w-12 h-12 rounded-full bg-gradient-to-br from-[#2FBF71] to-emerald-600 text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center hover:scale-105 transition-transform duration-300"
         >
           {open ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           )}
@@ -142,7 +142,7 @@ export default function ChatBot() {
 
       {/* Chat Window */}
       <div
-        className="fixed bottom-24 left-6 z-50 w-[340px] sm:w-[380px] bg-white rounded-3xl shadow-2xl shadow-slate-900/20 border border-slate-200/80 flex flex-col overflow-hidden"
+        className="fixed bottom-20 right-4 z-50 w-[calc(100vw-2rem)] max-w-[360px] bg-white rounded-3xl shadow-2xl shadow-slate-900/20 border border-slate-200/80 flex flex-col overflow-hidden"
         style={{
           maxHeight: '560px',
           opacity: open ? 1 : 0,

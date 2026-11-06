@@ -66,7 +66,7 @@ export default function FAQ() {
 
   return (
     <section id="faq" ref={ref} className="py-24 bg-white" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="flex flex-col lg:flex-row gap-16 items-start">
           
           {/* Left Column: Heading & Tab Selection */}

@@ -46,6 +46,8 @@ import AdminDocumentVerification from './pages/admin/AdminDocumentVerification';
 import AdminReports from './pages/admin/AdminReports';
 
 import LandingPage from './pages/landing/LandingPage';
+import ServiceDetailPage from './pages/landing/ServiceDetailPage';
+import ReviewsPage from './pages/landing/ReviewsPage';
 import WhoWeArePage from './components/landing/WhoWeArePage';
 import BecomeAssociatePage from './components/landing/BecomeAssociatePage';
 import ChatBot from './components/landing/ChatBot';
@@ -61,6 +63,8 @@ function App() {
         <Routes>
           {/* ── Public Landing Pages (Updated UI) ────────── */}
           <Route path="/" element={<LandingPage onOpenLogin={() => setLoginOpen(true)} />} />
+          <Route path="/services/:slug" element={<ServiceDetailPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/who-we-are" element={<WhoWeArePage onOpenLogin={() => setLoginOpen(true)} />} />
           <Route path="/become-associate" element={<BecomeAssociatePage onOpenLogin={() => setLoginOpen(true)} />} />
 

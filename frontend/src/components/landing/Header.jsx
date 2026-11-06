@@ -32,7 +32,7 @@ export default function Header({ onOpenLogin }) {
       
       {/* Tier 1: Top Bar (Logo, For Partners / Associates, Login & Sign Up) */}
       <div className="bg-white">
-        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 min-h-[72px] sm:min-h-[82px] py-1.5 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-12 min-h-[72px] sm:min-h-[82px] py-1.5 flex items-center justify-between">
           
           {/* Left: Logo & For Partners Link */}
           <div className="flex items-center gap-8">
@@ -104,7 +104,7 @@ export default function Header({ onOpenLogin }) {
 
       {/* Tier 2: Sub-Header Navigation (Exact items requested: Approach of what we do, Our claim process, Who we collab with, Client testimonials, FAQs for clients & partners) */}
       <div className="hidden lg:block bg-white">
-        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 h-11 flex items-center justify-between text-sm font-semibold">
+        <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-12 h-11 flex items-center justify-between text-sm font-semibold">
           
           <div className="flex items-center gap-8">
             {/* 1. Approach of What We Do */}

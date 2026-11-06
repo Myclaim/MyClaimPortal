@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const clientTestimonials = [
   { 
@@ -93,7 +94,7 @@ export default function Testimonials() {
 
   return (
     <section id="testimonials" className="py-24 bg-white overflow-hidden">
-      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-10">
@@ -297,6 +298,12 @@ export default function Testimonials() {
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
+        </div>
+
+        <div className="mt-8 text-center">
+          <Link to="/reviews" className="inline-flex items-center gap-2 rounded-full border border-emerald-200 px-5 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50">
+            Read all reviews <span aria-hidden="true">→</span>
+          </Link>
         </div>
 
       </div>

@@ -6,6 +6,7 @@ import {
   ShieldCheck 
 } from 'lucide-react';
 import api from '../../services/api';
+import AppDownloadStrip from './AppDownloadStrip';
 
 const TICKER_COMPANIES = [
   'Tata Steel', 'Reliance Industries', 'ITC Limited', 'HDFC Bank',
@@ -137,13 +138,13 @@ export default function Hero() {
         <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-amber-100/40 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: '3s' }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 my-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+      <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-12 my-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
 
         {/* Left Column: Heading with Wealthy.in style rotating text, Description, Badges, and Reviews Card */}
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
 
           {/* Main Headline with Wealthy.in style Whole-Word Slide & Fade Transition */}
-          <div className="space-y-1 -translate-y-3">
+          <div className="space-y-1 -translate-y-16">
             <h1 className="font-serif text-4xl sm:text-5xl xl:text-6xl font-bold text-[#1C1C1C] leading-[1.2] tracking-tight">
               Recover and Claim{' '}
               <span className="inline-block relative">
@@ -164,7 +165,7 @@ export default function Hero() {
           </div>
 
           {/* Subtitle */}
-          <p className="text-[#556987] text-base sm:text-lg leading-relaxed max-w-xl font-normal -translate-y-3">
+          <p className="text-[#556987] text-base sm:text-lg leading-relaxed max-w-xl font-normal -translate-y-16">
             MyClaim India brings India’s investors, families, and legal heirs onto one unified platform - regulatory IEPF tech, physical share dematerialization, and High-Court legal succession support.
           </p>
 
@@ -225,7 +226,7 @@ export default function Hero() {
                 </svg>
               </div>
               <div className="text-left">
-                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Track Your<br/>Claim</div>
+                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Track Your IEPF<br/>Claim</div>
                 <div className="text-[10.5px] text-slate-400 font-medium mt-0.5">Real-time updates</div>
               </div>
             </div>
@@ -239,8 +240,8 @@ export default function Hero() {
                 </svg>
               </div>
               <div className="text-left">
-                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Trusted &amp;<br/>Compliant</div>
-                <div className="text-[10.5px] text-slate-400 font-medium mt-0.5">SEBI | MCA Certified</div>
+                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">NRI Assistance</div>
+                <div className="text-[10.5px] text-slate-400 font-medium mt-0.5">Zero-Travel Global Support</div>
               </div>
             </div>
 
@@ -253,7 +254,7 @@ export default function Hero() {
                 </svg>
               </div>
               <div className="text-left">
-                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Dematerialise<br/>Shares</div>
+                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Dematerialise<br/>Physical Share</div>
                 <div className="text-[10.5px] text-slate-400 font-medium mt-0.5">Fast &amp; Secure</div>
               </div>
             </div>
@@ -270,22 +271,29 @@ export default function Hero() {
                 </svg>
               </div>
               <div className="text-left">
-                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Expert Support</div>
-                <div className="text-[10.5px] text-slate-400 font-medium mt-0.5">At Every Step</div>
+                <div className="text-[13px] font-extrabold text-slate-800 leading-tight">Expert Legal<br/>Support</div>
+                <div className="text-[10.5px] text-slate-400 font-medium mt-0.5">Guidance at Every Step</div>
               </div>
             </div>
 
           {/* ── Smartphone device frame (centered flagship frame matching screenshot) ── */}
-          <div className="relative w-[288px] sm:w-[316px] h-[615px] sm:h-[640px] bg-[#0E1520] rounded-[52px] p-3 shadow-2xl shadow-slate-900/40 border-[5px] border-[#222E3E] z-10 flex flex-col shrink-0">
+          <div className="relative w-[288px] sm:w-[316px] h-[615px] sm:h-[640px] rounded-[56px] bg-gradient-to-br from-[#D7DEE6] via-[#536171] to-[#AAB5C1] p-[3px] shadow-[0_28px_70px_rgba(15,23,42,0.38),inset_0_0_0_1px_rgba(255,255,255,0.55)] border border-[#8793A0] z-10 shrink-0">
+
+            {/* Metallic side controls */}
+            <span aria-hidden="true" className="absolute -left-[4px] top-[112px] w-[3px] h-8 rounded-l bg-gradient-to-b from-[#697583] to-[#D5DCE3] shadow-sm" />
+            <span aria-hidden="true" className="absolute -left-[4px] top-[158px] w-[3px] h-14 rounded-l bg-gradient-to-b from-[#697583] to-[#D5DCE3] shadow-sm" />
+            <span aria-hidden="true" className="absolute -right-[4px] top-[170px] w-[3px] h-[68px] rounded-r bg-gradient-to-b from-[#D5DCE3] to-[#697583] shadow-sm" />
+
+            <div className="relative flex h-full w-full flex-col rounded-[52px] border border-[#161D26] bg-[#07090D] p-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
 
             {/* Top Dynamic Island / Speaker Pill */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-30 flex items-center justify-between px-3">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-30 flex items-center justify-between px-3 shadow-inner">
               <span className="w-2 h-2 rounded-full bg-[#1A2533]" />
               <span className="w-2.5 h-2.5 rounded-full bg-[#0a0a0a] border border-[#222]" />
             </div>
 
             {/* Inner Phone Screen */}
-            <div className="relative bg-[#FAFCFB] rounded-[42px] overflow-hidden border border-slate-200/60 h-full flex flex-col justify-between pt-7 px-3.5 pb-2">
+            <div className="relative bg-[#FAFCFB] rounded-[43px] overflow-hidden border border-slate-200/60 h-full flex flex-col justify-between pt-7 px-3.5 pb-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.9)]">
 
               {/* Profile / Header Status Row */}
               <div className="flex items-center justify-between pb-2 px-0.5 shrink-0">
@@ -408,9 +416,12 @@ export default function Hero() {
               {/* Home indicator */}
               <div className="w-24 h-1 bg-slate-300/80 rounded-full mx-auto mt-1 shrink-0" />
             </div>
+            </div>
           </div>{/* end phone frame */}
 
           </div>{/* end outer wrapper */}
+
+          <AppDownloadStrip />
 
         </div>
 
