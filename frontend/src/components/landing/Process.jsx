@@ -78,7 +78,7 @@ export default function Process() {
     <>
       {/* 3) Our Claim Process (matching notebook section 3) */}
       <section id="process-section" className="py-24 bg-[#F8F9FB] border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
           
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-100 text-[#2FBF71] text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-300/60">
@@ -139,7 +139,7 @@ export default function Process() {
 
       {/* 4) Who We Collaborate With (matching notebook section 4: "icons change") */}
       <section id="collaborate" className="py-24 bg-white border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
           
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1.5 rounded-full bg-amber-100 text-[#C9A227] text-xs font-bold uppercase tracking-wider mb-4 border border-amber-300/60">

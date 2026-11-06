@@ -32,7 +32,7 @@ export default function Header({ onOpenLogin }) {
       <div className={`bg-white transition-all duration-300 ${
         scrolled ? 'shadow-sm border-b border-slate-200/70' : 'border-b border-slate-100'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[72px] sm:min-h-[82px] py-1.5 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 min-h-[72px] sm:min-h-[82px] py-1.5 flex items-center justify-between">
           
           {/* Left: Logo & For Partners Link */}
           <div className="flex items-center gap-8">
@@ -104,7 +104,7 @@ export default function Header({ onOpenLogin }) {
 
       {/* Tier 2: Sub-Header Navigation (Exact items requested: Approach of what we do, Our claim process, Who we collab with, Client testimonials, FAQs for clients & partners) */}
       <div className="hidden lg:block bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-between text-sm font-semibold">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 h-11 flex items-center justify-between text-sm font-semibold">
           
           <div className="flex items-center gap-8">
             {/* 1. Approach of What We Do */}

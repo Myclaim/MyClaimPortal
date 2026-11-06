@@ -91,7 +91,7 @@ export default function StatsBar() {
 
   return (
     <section className="relative bg-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80 overflow-hidden">
-      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-6 lg:gap-8 items-center text-center">
+      <div className="relative z-10 max-w-screen-2xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-6 lg:gap-8 items-center text-center">
         {stats.map((stat, i) => (
           <CounterItem
             key={i}

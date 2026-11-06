@@ -67,7 +67,7 @@ export default function Footer() {
 
       {/* Main Footer */}
       <footer className="bg-white border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
 
             {/* Brand */}
@@ -139,7 +139,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-100 py-6 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+          <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <p className="text-slate-500 text-xs sm:text-sm">© 2026 MyClaim India. All rights reserved.</p>
             <p className="text-slate-400 text-xs max-w-xl">MyClaim India provides advisory and claim-assistance services. Outcomes depend on the facts of each case and the decisions of the relevant authorities.</p>
           </div>

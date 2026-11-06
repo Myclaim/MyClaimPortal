@@ -18,7 +18,7 @@ const pains = [
 export default function WhatWeDo() {
   return (
     <section id="what-we-do" className="py-24 bg-white border-b border-slate-200/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
         
         {/* Section Head */}
         <div className="text-center mb-16">
