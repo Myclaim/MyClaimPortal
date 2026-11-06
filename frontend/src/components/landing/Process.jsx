@@ -77,7 +77,7 @@ export default function Process() {
   return (
     <>
       {/* 3) Our Claim Process (matching notebook section 3) */}
-      <section id="process-section" className="py-24 bg-[#F8F9FB] border-b border-slate-200/80">
+      <section id="process-section" className="py-24 bg-white">
         <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
           
           <div className="text-center mb-16">
@@ -138,7 +138,7 @@ export default function Process() {
       </section>
 
       {/* 4) Who We Collaborate With (matching notebook section 4: "icons change") */}
-      <section id="collaborate" className="py-24 bg-white border-b border-slate-200/80">
+      <section id="collaborate" className="py-24 bg-white">
         <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
           
           <div className="text-center mb-16">

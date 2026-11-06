@@ -190,6 +190,9 @@ const Dashboard = () => {
         .dash-topbar-search:focus { outline:none; border-color:rgba(0,208,132,.4) !important; box-shadow:0 0 0 3px rgba(0,208,132,.1); }
         .notif-row:hover { background:rgba(255,255,255,.04) !important; }
         .profile-item:hover { background:rgba(255,255,255,.08) !important; color:#17E6A1 !important; }
+        /* Keep the dashboard surfaces clean while retaining their existing fills and spacing. */
+        .page.active .sa-card { border-color: transparent !important; }
+        .page.active [style*="border: 1px solid rgba(255,255,255"] { border-color: transparent !important; }
       `}</style>
 
       <div className="blob blob-1" />
@@ -198,7 +201,7 @@ const Dashboard = () => {
       {/* ════════════════════ TOP BAR ════════════════════ */}
       <div style={{
         padding: '0 36px', height: 92,
-        borderBottom: '1px solid var(--border)',
+        borderBottom: 'none',
         background: 'rgba(13,21,38,.90)',
         backdropFilter: 'blur(16px)',
         position: 'sticky', top: 0, zIndex: 100,

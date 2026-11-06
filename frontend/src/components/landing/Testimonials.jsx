@@ -92,7 +92,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section id="testimonials" className="py-24 bg-[#F8F9FB] border-b border-slate-200/80 overflow-hidden">
+    <section id="testimonials" className="py-24 bg-white overflow-hidden">
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
         
         {/* Section Header */}

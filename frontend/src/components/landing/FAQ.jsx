@@ -65,7 +65,7 @@ export default function FAQ() {
   const toggle = (i) => setOpenIndex(openIndex === i ? -1 : i);
 
   return (
-    <section id="faq" ref={ref} className="py-24 bg-white border-b border-slate-200" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+    <section id="faq" ref={ref} className="py-24 bg-white" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex flex-col lg:flex-row gap-16 items-start">
           
