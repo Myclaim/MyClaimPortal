@@ -129,7 +129,7 @@ export default function Hero() {
   };
 
   return (
-    <section id="hero" className="relative min-h-[88vh] flex flex-col justify-between bg-[#F8F9FB] pt-0 pb-8 overflow-hidden w-full px-0">
+    <section id="hero" className="relative min-h-[88vh] flex flex-col justify-between bg-white pt-0 pb-8 overflow-hidden w-full px-0">
 
       {/* Background glow ambiance with smooth breathing pulse */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -143,7 +143,7 @@ export default function Hero() {
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
 
           {/* Main Headline with Wealthy.in style Whole-Word Slide & Fade Transition */}
-          <div className="space-y-1">
+          <div className="space-y-1 -translate-y-3">
             <h1 className="font-serif text-4xl sm:text-5xl xl:text-6xl font-bold text-[#1C1C1C] leading-[1.2] tracking-tight">
               Recover and Claim{' '}
               <span className="inline-block relative">
@@ -164,7 +164,7 @@ export default function Hero() {
           </div>
 
           {/* Subtitle */}
-          <p className="text-[#556987] text-base sm:text-lg leading-relaxed max-w-xl font-normal">
+          <p className="text-[#556987] text-base sm:text-lg leading-relaxed max-w-xl font-normal -translate-y-3">
             MyClaim India brings India’s investors, families, and legal heirs onto one unified platform - regulatory IEPF tech, physical share dematerialization, and High-Court legal succession support.
           </p>
 
