@@ -194,21 +194,6 @@ export default function Hero() {
 
           {/* Frequently Connect Links */}
           <div className="pt-2 w-full max-w-xl">
-            {/* App / Frequent Connect Links */}
-            <div className="flex items-center justify-center lg:justify-start gap-4 mt-3 text-xs text-slate-500 font-medium">
-              <span className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-[#2FBF71]" />
-                Zero Travel NRI Support
-              </span>
-              <span className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-[#2FBF71]" />
-                Success-Fee Only
-              </span>
-              <span className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-[#2FBF71]" />
-                PAN-India Service
-              </span>
-            </div>
           </div>
 
         </div>
