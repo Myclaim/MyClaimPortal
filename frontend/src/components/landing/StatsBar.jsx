@@ -54,7 +54,7 @@ function CounterItem({ end, prefix = '', suffix = '+', label, iconSrc, duration 
       className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl group hover:-translate-y-1.5 transition-all duration-300 cursor-default"
     >
       {/* 3D Metallic & Neon Icon */}
-      <div className="w-16 h-16 sm:w-20 sm:h-20 mb-3 flex items-center justify-center transform group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300">
+      <div className="w-24 h-24 sm:w-28 sm:h-28 mb-3 flex items-center justify-center transform group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300">
         <img 
           src={iconSrc} 
           alt={label} 

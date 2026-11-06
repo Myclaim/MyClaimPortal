@@ -99,6 +99,19 @@
   animation: float-slow 4.5s ease-in-out infinite;
 }
 
+@media (max-width: 1023px) {
+  .hero-feature-card {
+    left: var(--mobile-left) !important;
+    top: var(--mobile-top) !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: calc(50% - 12px) !important;
+    min-height: 76px;
+    padding: 10px 8px !important;
+    gap: 8px !important;
+  }
+}
+
 .animate-float-soft {
   animation: float-soft 5s ease-in-out infinite;
 }

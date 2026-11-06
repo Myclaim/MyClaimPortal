@@ -42,6 +42,12 @@ export default function Hero() {
     bottomRight: { left: 'calc(50% + 215px)', top: 'calc(100% - 225px)' },
     bottomLeft: { left: 'calc(50% - 410px)', top: 'calc(100% - 215px)' },
   }[slot]);
+  const mobileCardPosition = (slot) => ({
+    topLeft: { '--mobile-left': '8px', '--mobile-top': '650px' },
+    topRight: { '--mobile-left': 'calc(50% + 4px)', '--mobile-top': '650px' },
+    bottomRight: { '--mobile-left': 'calc(50% + 4px)', '--mobile-top': '740px' },
+    bottomLeft: { '--mobile-left': '8px', '--mobile-top': '740px' },
+  }[slot]);
 
   // Smooth whole-word vertical flip transition (Wealthy.in style)
   const [wordIndex, setWordIndex] = useState(0);
@@ -211,7 +217,7 @@ export default function Hero() {
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center items-center gap-4 relative overflow-visible lg:-translate-x-12 xl:-translate-x-16 lg:-translate-y-8">
 
           {/* Outer wrapper — wide enough for phone + side cards without overlapping */}
-          <div className="relative flex justify-center items-center w-full min-h-[720px] overflow-visible">
+          <div className="relative flex justify-center items-start lg:items-center w-full min-h-[830px] lg:min-h-[720px] overflow-visible">
 
             {/* ── Green decorative dots ── */}
             <span className="hidden lg:block absolute w-3.5 h-3.5 rounded-full bg-[#2FBF71] opacity-75" style={{ right: 'calc(50% + 180px)', top: '45px' }} />
@@ -226,8 +232,8 @@ export default function Hero() {
             </svg>
 
             {/* ── Floating card 1: Track Your Claim (top-left, clearly spaced away from phone) ── */}
-            <div className="hidden lg:flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
-              style={{ ...cardPosition(heroCardSlots.track), width: '185px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
+            <div data-slot={heroCardSlots.track} className="hero-feature-card flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
+              style={{ ...cardPosition(heroCardSlots.track), ...mobileCardPosition(heroCardSlots.track), width: '185px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
               <div className="w-11 h-11 rounded-xl bg-[#2FBF71] flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/25">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
@@ -240,8 +246,8 @@ export default function Hero() {
             </div>
 
             {/* ── Floating card 2: Trusted & Compliant (bottom-left, clearly spaced away from phone) ── */}
-            <div className="hidden lg:flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
-              style={{ ...cardPosition(heroCardSlots.trusted), width: '195px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
+            <div data-slot={heroCardSlots.trusted} className="hero-feature-card flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
+              style={{ ...cardPosition(heroCardSlots.trusted), ...mobileCardPosition(heroCardSlots.trusted), width: '195px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
               <div className="w-11 h-11 rounded-xl bg-[#6366F1] flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/25">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>
@@ -254,8 +260,8 @@ export default function Hero() {
             </div>
 
             {/* ── Floating card 3: Dematerialise Shares (top-right, clearly spaced away from phone) ── */}
-            <div className="hidden lg:flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
-              style={{ ...cardPosition(heroCardSlots.demat), width: '195px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
+            <div data-slot={heroCardSlots.demat} className="hero-feature-card flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
+              style={{ ...cardPosition(heroCardSlots.demat), ...mobileCardPosition(heroCardSlots.demat), width: '195px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
               <div className="w-11 h-11 rounded-xl bg-[#F59E0B] flex items-center justify-center shrink-0 shadow-md shadow-amber-500/25">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
@@ -268,8 +274,8 @@ export default function Hero() {
             </div>
 
             {/* ── Floating card 4: Expert Support (bottom-right, clearly spaced away from phone) ── */}
-            <div className="hidden lg:flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
-              style={{ ...cardPosition(heroCardSlots.expert), width: '185px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
+            <div data-slot={heroCardSlots.expert} className="hero-feature-card flex absolute z-20 bg-white rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] px-4 py-3.5 items-center gap-3.5 border border-slate-100"
+              style={{ ...cardPosition(heroCardSlots.expert), ...mobileCardPosition(heroCardSlots.expert), width: '185px', transition: 'left 1.1s ease-in-out, top 1.1s ease-in-out' }}>
               <div className="w-11 h-11 rounded-xl bg-[#3B82F6] flex items-center justify-center shrink-0 shadow-md shadow-blue-500/25">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 17l-1.5-1.5a2.5 2.5 0 0 1 0-3.5l3.5-3.5a2.5 2.5 0 0 1 3.5 0L18 10"/>
